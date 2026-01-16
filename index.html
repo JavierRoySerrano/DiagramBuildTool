@@ -236,6 +236,31 @@
     .toggle{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:4px; font-size:12px; color:#555; }
     .toggle input{ accent-color:#0096D6; }
 
+    /* Tag filter styles */
+    .tag-filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .tag-filter-item:hover { background: #f5f5f5; }
+    .tag-filter-item input { accent-color: #0096D6; }
+    .tag-filter-item .tag-name { flex: 1; }
+    .tag-filter-item .tag-count { 
+      color: #999; 
+      font-size: 11px;
+      background: #f0f0f0;
+      padding: 1px 6px;
+      border-radius: 10px;
+    }
+    #btnTagFilter.filtering { 
+      background: #e8f4fc; 
+      color: #0096D6;
+      border-color: #0096D6;
+    }
+
     .marquee { fill: rgba(0,150,214,0.1); stroke:#0096D6; stroke-width:1; stroke-dasharray:4 2; }
   
     /* Color Palette Picker */
@@ -379,6 +404,7 @@
       <div class="item" id="miFitView">Fit to View</div>
       <div class="sep"></div>
       <div class="item" id="miToggleInspector">Toggle Inspector <span style="opacity:0.5;float:right">I</span></div>
+      <div class="item" id="miTagFilter">Tag Filter… <span style="opacity:0.5;float:right">F</span></div>
       <div class="sep"></div>
       <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Show Latency</label>
       <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Show Node Codes</label>
@@ -462,6 +488,27 @@
     
     <!-- Brush (Format Painter) -->
     <button class="tool-btn" id="btnBrush" type="button" title="Brush - Copy and apply formatting">⌘</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Tag Filter -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnTagFilter" type="button" title="Filter by Tags">🏷</button>
+      <div class="menu" id="tagFilterMenu" hidden style="min-width:220px; max-height:400px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Filter by Tags</div>
+        <label class="item toggle-item"><input type="radio" name="filterMode" value="all" checked /> Show All (no filter)</label>
+        <label class="item toggle-item"><input type="radio" name="filterMode" value="include" /> Show only selected tags</label>
+        <label class="item toggle-item"><input type="radio" name="filterMode" value="exclude" /> Hide selected tags</label>
+        <div class="sep"></div>
+        <div style="padding:4px 12px; font-size:11px; color:#666;">Tags:</div>
+        <div id="tagFilterList" style="max-height:200px; overflow-y:auto;"></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:8px; padding:8px 12px;">
+          <button class="mini-btn" id="btnTagSelectAll" type="button">Select All</button>
+          <button class="mini-btn" id="btnTagClearAll" type="button">Clear All</button>
+        </div>
+      </div>
+    </div>
     
     <div class="tool-sep"></div>
     
@@ -657,6 +704,11 @@
         <label>Link Tag</label>
         <input id="edgeTag" />
       </div>
+      
+      <div class="row">
+        <label>Filter Tags (comma-separated)</label>
+        <textarea id="edgeFilterTags" placeholder="default, onnet, Asia" style="height:40px;"></textarea>
+      </div>
 
       <div class="row">
         <label>Latency value (ms)</label>
@@ -753,6 +805,11 @@
       <div class="row">
         <label>Box Title</label>
         <input id="groupTitle" />
+      </div>
+      
+      <div class="row">
+        <label>Filter Tags (comma-separated)</label>
+        <textarea id="groupFilterTags" placeholder="default, APAC, production" style="height:40px;"></textarea>
       </div>
 
       <div class="row inline">
@@ -1029,6 +1086,12 @@
     // Grid settings
     gridEnabled: true,
     gridSize: 40,
+
+    // Tag filter settings
+    tagFilter: {
+      mode: 'all',  // 'all', 'include', 'exclude'
+      selectedTags: new Set()
+    },
 
     // Zoom level (CSS transform based)
     zoom: 1,
@@ -1726,6 +1789,438 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     btnGridToggle.classList.toggle('active', state.gridEnabled);
   }
 
+  // ============== TAG FILTER SYSTEM ==============
+  const btnTagFilter = document.getElementById('btnTagFilter');
+  const tagFilterMenu = document.getElementById('tagFilterMenu');
+  const tagFilterList = document.getElementById('tagFilterList');
+  const btnTagSelectAll = document.getElementById('btnTagSelectAll');
+  const btnTagClearAll = document.getElementById('btnTagClearAll');
+  const miTagFilter = document.getElementById('miTagFilter');
+
+  // Collect all unique tags from nodes, edges, and groups - returns separate counts
+  function collectAllTags() {
+    const nodeTags = new Map();
+    const edgeTags = new Map();
+    const groupTags = new Map();
+    const allTags = new Set();
+    
+    // Count from nodes
+    for (const node of state.nodes) {
+      const tags = getNodeTags(node);
+      for (const tag of tags) {
+        nodeTags.set(tag, (nodeTags.get(tag) || 0) + 1);
+        allTags.add(tag);
+      }
+    }
+    // Count from edges
+    for (const edge of state.edges) {
+      const tags = getEdgeTags(edge);
+      for (const tag of tags) {
+        edgeTags.set(tag, (edgeTags.get(tag) || 0) + 1);
+        allTags.add(tag);
+      }
+    }
+    // Count from groups
+    for (const group of state.groups) {
+      const tags = getGroupTags(group);
+      for (const tag of tags) {
+        groupTags.set(tag, (groupTags.get(tag) || 0) + 1);
+        allTags.add(tag);
+      }
+    }
+    return { nodeTags, edgeTags, groupTags, allTags };
+  }
+
+  // Get all tags for a node (from tags array + extraTags)
+  function getNodeTags(node) {
+    const tags = new Set();
+    // Always add 'default' tag
+    tags.add('default');
+    // Add from tags array
+    if (Array.isArray(node.tags)) {
+      node.tags.forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    // Add from extraTags (comma-separated)
+    if (node.extraTags) {
+      node.extraTags.split(',').forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    return tags;
+  }
+
+  // Get all tags for an edge (from filterTags array + extraTags)
+  function getEdgeTags(edge) {
+    const tags = new Set();
+    // Always add 'default' tag
+    tags.add('default');
+    // Add from filterTags array
+    if (Array.isArray(edge.filterTags)) {
+      edge.filterTags.forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    // Add from extraTags (comma-separated)
+    if (edge.extraTags) {
+      edge.extraTags.split(',').forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    return tags;
+  }
+
+  // Get all tags for a group (from filterTags array + extraTags)
+  function getGroupTags(group) {
+    const tags = new Set();
+    // Always add 'default' tag
+    tags.add('default');
+    // Add from filterTags array
+    if (Array.isArray(group.filterTags)) {
+      group.filterTags.forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    // Add from extraTags (comma-separated)
+    if (group.extraTags) {
+      group.extraTags.split(',').forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    return tags;
+  }
+
+  // Check if a node should be visible based on current filter
+  function isNodeVisible(node) {
+    if (state.tagFilter.mode === 'all') return true;
+    
+    const nodeTags = getNodeTags(node);
+    const selectedTags = state.tagFilter.selectedTags;
+    
+    if (selectedTags.size === 0) return true; // No tags selected = show all
+    
+    // Check if node has ANY of the selected tags
+    let hasSelectedTag = false;
+    for (const tag of nodeTags) {
+      if (selectedTags.has(tag)) {
+        hasSelectedTag = true;
+        break;
+      }
+    }
+    
+    if (state.tagFilter.mode === 'include') {
+      return hasSelectedTag;
+    } else if (state.tagFilter.mode === 'exclude') {
+      return !hasSelectedTag;
+    }
+    
+    return true;
+  }
+
+  // Check if an edge should be visible
+  // Hierarchy: First check if both connected nodes are visible, then apply edge's own tag filter
+  function isEdgeVisible(edge) {
+    const nodeA = findNode(edge.a);
+    const nodeB = findNode(edge.b);
+    if (!nodeA || !nodeB) return false;
+    
+    // FIRST: Both nodes must be visible (node filtering takes priority)
+    if (!isNodeVisible(nodeA) || !isNodeVisible(nodeB)) return false;
+    
+    // THEN: Apply edge's own tag filter (only if nodes are visible)
+    if (state.tagFilter.mode === 'all') return true;
+    
+    const edgeTags = getEdgeTags(edge);
+    const selectedTags = state.tagFilter.selectedTags;
+    
+    if (selectedTags.size === 0) return true;
+    
+    let hasSelectedTag = false;
+    for (const tag of edgeTags) {
+      if (selectedTags.has(tag)) {
+        hasSelectedTag = true;
+        break;
+      }
+    }
+    
+    if (state.tagFilter.mode === 'include') {
+      return hasSelectedTag;
+    } else if (state.tagFilter.mode === 'exclude') {
+      return !hasSelectedTag;
+    }
+    
+    return true;
+  }
+
+  // Check if a group contains any visible nodes
+  function groupHasVisibleNodes(group) {
+    return state.nodes.some(n => n.groupId === group.id && isNodeVisible(n));
+  }
+
+  // Check if a group should be visible based on current filter
+  // Hierarchy: First check if group contains visible nodes, then apply group's own tag filter
+  function isGroupVisible(group) {
+    // FIRST: Group must contain at least one visible node to be considered
+    // (unless it's a region that contains visible country boxes)
+    if (group.type === 'region') {
+      // Region is visible if it contains any visible country box
+      const hasVisibleCountry = state.groups.some(g => 
+        g.type === 'country' && g.parentId === group.id && isCountryBoxVisible(g)
+      );
+      if (!hasVisibleCountry) return false;
+    } else {
+      // Country box must have visible nodes
+      if (!groupHasVisibleNodes(group)) return false;
+    }
+    
+    // THEN: Apply group's own tag filter (only if it has visible content)
+    if (state.tagFilter.mode === 'all') return true;
+    
+    const groupTags = getGroupTags(group);
+    const selectedTags = state.tagFilter.selectedTags;
+    
+    if (selectedTags.size === 0) return true;
+    
+    let hasSelectedTag = false;
+    for (const tag of groupTags) {
+      if (selectedTags.has(tag)) {
+        hasSelectedTag = true;
+        break;
+      }
+    }
+    
+    if (state.tagFilter.mode === 'include') {
+      return hasSelectedTag;
+    } else if (state.tagFilter.mode === 'exclude') {
+      return !hasSelectedTag;
+    }
+    
+    return true;
+  }
+
+  // Helper for country boxes specifically (checks if it has visible nodes)
+  function isCountryBoxVisible(group) {
+    if (group.type !== 'country') return isGroupVisible(group);
+    
+    // Must have visible nodes
+    if (!groupHasVisibleNodes(group)) return false;
+    
+    // Then apply tag filter
+    if (state.tagFilter.mode === 'all') return true;
+    
+    const groupTags = getGroupTags(group);
+    const selectedTags = state.tagFilter.selectedTags;
+    
+    if (selectedTags.size === 0) return true;
+    
+    let hasSelectedTag = false;
+    for (const tag of groupTags) {
+      if (selectedTags.has(tag)) {
+        hasSelectedTag = true;
+        break;
+      }
+    }
+    
+    if (state.tagFilter.mode === 'include') {
+      return hasSelectedTag;
+    } else if (state.tagFilter.mode === 'exclude') {
+      return !hasSelectedTag;
+    }
+    
+    return true;
+  }
+
+  // Update the tag filter list UI
+  function updateTagFilterList() {
+    if (!tagFilterList) return;
+    
+    const { nodeTags, edgeTags, groupTags, allTags } = collectAllTags();
+    tagFilterList.innerHTML = '';
+    
+    // Helper function to sort tags (default first, then alphabetically)
+    const sortTags = (tagsMap) => {
+      return Array.from(tagsMap.keys()).sort((a, b) => {
+        if (a === 'default') return -1;
+        if (b === 'default') return 1;
+        return a.localeCompare(b);
+      });
+    };
+    
+    // Helper function to create a tag item
+    const createTagItem = (tag, count) => {
+      const label = document.createElement('label');
+      label.className = 'tag-filter-item';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = state.tagFilter.selectedTags.has(tag);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          state.tagFilter.selectedTags.add(tag);
+        } else {
+          state.tagFilter.selectedTags.delete(tag);
+        }
+        updateFilterButtonState();
+        render();
+      });
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'tag-name';
+      nameSpan.textContent = tag;
+      
+      const countSpan = document.createElement('span');
+      countSpan.className = 'tag-count';
+      countSpan.textContent = count;
+      
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+      label.appendChild(countSpan);
+      return label;
+    };
+    
+    // Helper function to create section header
+    const createSectionHeader = (title, icon) => {
+      const header = document.createElement('div');
+      header.style.cssText = 'padding:6px 12px; font-size:11px; font-weight:600; color:#666; background:#f5f5f5; border-top:1px solid #e0e0e0; border-bottom:1px solid #e0e0e0;';
+      header.textContent = `${icon} ${title}`;
+      return header;
+    };
+    
+    // Node Tags Section
+    if (nodeTags.size > 0) {
+      tagFilterList.appendChild(createSectionHeader('Node Tags', '○'));
+      const sortedNodeTags = sortTags(nodeTags);
+      for (const tag of sortedNodeTags) {
+        tagFilterList.appendChild(createTagItem(tag, nodeTags.get(tag)));
+      }
+    }
+    
+    // Link Tags Section
+    if (edgeTags.size > 0) {
+      tagFilterList.appendChild(createSectionHeader('Link Tags', '↗'));
+      const sortedEdgeTags = sortTags(edgeTags);
+      for (const tag of sortedEdgeTags) {
+        tagFilterList.appendChild(createTagItem(tag, edgeTags.get(tag)));
+      }
+    }
+    
+    // Box Tags Section
+    if (groupTags.size > 0) {
+      tagFilterList.appendChild(createSectionHeader('Box Tags', '▢'));
+      const sortedGroupTags = sortTags(groupTags);
+      for (const tag of sortedGroupTags) {
+        tagFilterList.appendChild(createTagItem(tag, groupTags.get(tag)));
+      }
+    }
+  }
+
+  // Update filter button state (highlight if filtering)
+  function updateFilterButtonState() {
+    if (!btnTagFilter) return;
+    const isFiltering = state.tagFilter.mode !== 'all' && state.tagFilter.selectedTags.size > 0;
+    btnTagFilter.classList.toggle('filtering', isFiltering);
+  }
+
+  // Tag filter menu handling
+  if (btnTagFilter && tagFilterMenu) {
+    btnTagFilter.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateTagFilterList();
+      tagFilterMenu.hidden = !tagFilterMenu.hidden;
+    });
+
+    // Filter mode radio buttons
+    tagFilterMenu.querySelectorAll('input[name="filterMode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        state.tagFilter.mode = radio.value;
+        updateFilterButtonState();
+        render();
+      });
+    });
+
+    // Select All button
+    if (btnTagSelectAll) {
+      btnTagSelectAll.addEventListener('click', () => {
+        const tagCounts = collectAllTags();
+        state.tagFilter.selectedTags = new Set(tagCounts.keys());
+        updateTagFilterList();
+        updateFilterButtonState();
+        render();
+      });
+    }
+
+    // Clear All button
+    if (btnTagClearAll) {
+      btnTagClearAll.addEventListener('click', () => {
+        state.tagFilter.selectedTags.clear();
+        updateTagFilterList();
+        updateFilterButtonState();
+        render();
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      tagFilterMenu.hidden = true;
+    });
+    
+    tagFilterMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+  }
+
+  // View menu - Tag Filter option
+  if (miTagFilter) {
+    miTagFilter.addEventListener('click', () => {
+      // Close other menus but not tagFilterMenu
+      fileMenu.hidden = true;
+      if (editMenu) editMenu.hidden = true;
+      if (viewMenu) viewMenu.hidden = true;
+      const zoomMenu = document.getElementById('zoomMenu');
+      if (zoomMenu) zoomMenu.hidden = true;
+      const gridMenu = document.getElementById('gridMenu');
+      if (gridMenu) gridMenu.hidden = true;
+      
+      if (btnTagFilter && tagFilterMenu) {
+        updateTagFilterList();
+        tagFilterMenu.hidden = false;
+        // Position near the button
+        const rect = btnTagFilter.getBoundingClientRect();
+        tagFilterMenu.style.position = 'fixed';
+        tagFilterMenu.style.left = rect.left + 'px';
+        tagFilterMenu.style.top = rect.bottom + 'px';
+      }
+    });
+  }
+
+  // Keyboard shortcut for tag filter (F key)
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key === 'f' || ev.key === 'F') {
+      if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'TEXTAREA') return;
+      ev.preventDefault();
+      if (btnTagFilter && tagFilterMenu) {
+        closeAllMenus();
+        updateTagFilterList();
+        tagFilterMenu.hidden = !tagFilterMenu.hidden;
+      }
+    }
+  });
+
+  // Add tagFilterMenu to closeAllMenus
+  const originalCloseAllMenus = closeAllMenus;
+  closeAllMenus = function() {
+    originalCloseAllMenus();
+    if (tagFilterMenu) tagFilterMenu.hidden = true;
+  };
+
   // Mouse wheel zoom (centered on mouse position)
   svg.addEventListener('wheel', (ev) => {
     if (ev.ctrlKey || ev.metaKey) {
@@ -1923,14 +2418,32 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   function render() {
     svg.innerHTML = '';
     drawGrid();
-    state.groups.filter(g=>g.type==='region').forEach(g => drawGroup(g));
-    state.groups.filter(g=>g.type!=='region').forEach(g => drawGroup(g));
-    state.edges.forEach(e => drawEdge(e));
-    state.nodes.forEach(n => drawNode(n));
+    
+    // Filter groups (regions first, then countries) based on tag filter
+    state.groups.filter(g=>g.type==='region').forEach(g => {
+      if (isGroupVisible(g)) drawGroup(g);
+    });
+    state.groups.filter(g=>g.type!=='region').forEach(g => {
+      if (isGroupVisible(g)) drawGroup(g);
+    });
+    
+    // Filter edges based on node visibility and edge tags
+    state.edges.forEach(e => {
+      if (isEdgeVisible(e)) {
+        drawEdge(e);
+      }
+    });
+    
+    // Filter nodes based on tag filter
+    state.nodes.forEach(n => {
+      if (isNodeVisible(n)) {
+        drawNode(n);
+      }
+    });
 
     if (state.connectFrom) {
       const n = findNode(state.connectFrom);
-      if (n) {
+      if (n && isNodeVisible(n)) {
         const hint = document.createElementNS('http://www.w3.org/2000/svg','text');
         hint.setAttribute('x', n.x);
         hint.setAttribute('y', n.y - 40);
@@ -2693,6 +3206,7 @@ const nodeCity = document.getElementById('nodeCity');
 const nodeCountry = document.getElementById('nodeCountry');
   const nodeSize = document.getElementById('nodeSize');
 const edgeTag = document.getElementById('edgeTag');
+  const edgeFilterTags = document.getElementById('edgeFilterTags');
   const edgeLatency = document.getElementById('edgeLatency');
   const edgeExtraTags = document.getElementById('edgeExtraTags');
   const edgeCode = document.getElementById('edgeCode');
@@ -2705,6 +3219,7 @@ const edgeTag = document.getElementById('edgeTag');
   const edgeCapacity = document.getElementById('edgeCapacity');
   const edgeStrokeColor = document.getElementById('edgeStrokeColor');
 const groupTitle = document.getElementById('groupTitle');
+  const groupFilterTags = document.getElementById('groupFilterTags');
   const groupType = document.getElementById('groupType');
   const groupParent = document.getElementById('groupParent');
   const groupExtraTags = document.getElementById('groupExtraTags');
@@ -2824,7 +3339,12 @@ const groupTitle = document.getElementById('groupTitle');
       if (!n.uuid) n.uuid = generateUUID();
       if (nodeUUID) nodeUUID.value = n.uuid;
       nodeName.value = n.name || '';
-      nodeTags.value = (n.tags||[]).join(', ');
+      // Ensure 'default' tag is shown in tags field
+      let tagsArray = n.tags || [];
+      if (!tagsArray.some(t => t.trim().toLowerCase() === 'default')) {
+        tagsArray = ['default', ...tagsArray];
+      }
+      nodeTags.value = tagsArray.join(', ');
       nodeExtraTags.value = n.extraTags || '';
       nodeCode.value = n.code || '';
       nodeShowCode.value = (n.showCode !== false) ? '1' : '0';
@@ -2870,6 +3390,12 @@ const groupTitle = document.getElementById('groupTitle');
         }
       }
       edgeTag.value = e.tag || '';
+      // Ensure 'default' tag is shown in filter tags field
+      let edgeTagsArray = e.filterTags || [];
+      if (!edgeTagsArray.some(t => t.trim().toLowerCase() === 'default')) {
+        edgeTagsArray = ['default', ...edgeTagsArray];
+      }
+      if (edgeFilterTags) edgeFilterTags.value = edgeTagsArray.join(', ');
       edgeLatency.value = (typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : '';
       edgeExtraTags.value = e.extraTags || '';
       edgeCode.value = e.code || '';
@@ -2901,6 +3427,12 @@ const groupTitle = document.getElementById('groupTitle');
       if (!g.uuid) g.uuid = generateUUID();
       if (groupUUID) groupUUID.value = g.uuid;
       groupTitle.value = g.title || '';
+      // Ensure 'default' tag is shown in filter tags field
+      let groupTagsArray = g.filterTags || [];
+      if (!groupTagsArray.some(t => t.trim().toLowerCase() === 'default')) {
+        groupTagsArray = ['default', ...groupTagsArray];
+      }
+      if (groupFilterTags) groupFilterTags.value = groupTagsArray.join(', ');
       groupType.value = g.type || 'country';
       // Parent Region dropdown
       while (groupParent.firstChild) groupParent.removeChild(groupParent.firstChild);
@@ -2935,10 +3467,16 @@ const groupTitle = document.getElementById('groupTitle');
     const n = findNode(state.selected.id); if (!n) return;
     n.name = nodeName.value; commit(); render();
   });
-  nodeTags.addEventListener('input', () => {
+  nodeTags.addEventListener('change', () => {
     if (state.selected?.type!=='node') return;
     const n = findNode(state.selected.id); if (!n) return;
-    n.tags = nodeTags.value.split(',').map(s=>s.trim()).filter(Boolean); commit(); render();
+    let tags = nodeTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+    // Ensure 'default' is always present
+    if (!tags.some(t => t.toLowerCase() === 'default')) {
+      tags = ['default', ...tags];
+    }
+    n.tags = tags;
+    commit(); render();
   });
   nodeExtraTags.addEventListener('input', () => {
     if (state.selected?.type!=='node') return;
@@ -3038,6 +3576,19 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     const e = findEdge(state.selected.id); if (!e) return;
     e.tag = edgeTag.value; commit(); render();
   });
+  if (edgeFilterTags) {
+    edgeFilterTags.addEventListener('change', () => {
+      if (state.selected?.type!=='edge') return;
+      const e = findEdge(state.selected.id); if (!e) return;
+      let tags = edgeFilterTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+      // Ensure 'default' is always present
+      if (!tags.some(t => t.toLowerCase() === 'default')) {
+        tags = ['default', ...tags];
+      }
+      e.filterTags = tags;
+      commit(); render();
+    });
+  }
   edgeLatency.addEventListener('change', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
@@ -3121,6 +3672,19 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     const g = findGroup(state.selected.id); if (!g) return;
     g.title = groupTitle.value; commit(); render();
   });
+  if (groupFilterTags) {
+    groupFilterTags.addEventListener('change', () => {
+      if (state.selected?.type!=='group') return;
+      const g = findGroup(state.selected.id); if (!g) return;
+      let tags = groupFilterTags.value.split(',').map(s=>s.trim()).filter(Boolean);
+      // Ensure 'default' is always present
+      if (!tags.some(t => t.toLowerCase() === 'default')) {
+        tags = ['default', ...tags];
+      }
+      g.filterTags = tags;
+      commit(); render();
+    });
+  }
   groupType.addEventListener('change', () => {
     if (state.selected?.type!=='group') return;
     const g = findGroup(state.selected.id); if (!g) return;
@@ -3237,7 +3801,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       name: `Node${id}`,
       code: `N-${id}`,
       showCode: true,
-      tags: [],
+      tags: ['default'],
       extraTags:"",
       groupId:null,
       fill:"#dae8fc", stroke:"#6c8ebf",
@@ -3252,6 +3816,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       id, a, b,
       uuid: generateUUID(),
       tag:'',
+      filterTags: ['default'],
       latencyMs:null,
       strokeW:2,
       strokeColor:"#666666",
@@ -3278,6 +3843,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       w: isRegion ? 520 : 320,
       h: isRegion ? 320 : 220,
       title: isRegion ? `Region${id}` : "Country",
+      filterTags: ['default'],
       extraTags:"",
       fill: isRegion ? "rgba(245, 245, 245, 0.9)" : "rgba(255, 255, 255, 0.95)",
       stroke: isRegion ? "#999999" : "#666666",
@@ -3856,7 +4422,11 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       canvasHeight: state.canvasHeight,
       showCanvasBorder: state.showCanvasBorder,
       gridEnabled: state.gridEnabled,
-      gridSize: state.gridSize
+      gridSize: state.gridSize,
+      tagFilter: {
+        mode: state.tagFilter.mode,
+        selectedTags: Array.from(state.tagFilter.selectedTags)
+      }
     };
   }
 
@@ -3986,6 +4556,26 @@ function loadProjectObject(obj) {
     gridMenu.querySelectorAll('.grid-size').forEach(item => {
       item.classList.toggle('active', parseInt(item.dataset.size) === state.gridSize);
     });
+  }
+  
+  // Restore tag filter settings
+  if (obj.tagFilter) {
+    state.tagFilter.mode = obj.tagFilter.mode || 'all';
+    state.tagFilter.selectedTags = new Set(obj.tagFilter.selectedTags || []);
+  } else {
+    state.tagFilter.mode = 'all';
+    state.tagFilter.selectedTags = new Set();
+  }
+  // Update tag filter UI
+  const tagFilterMenu = document.getElementById('tagFilterMenu');
+  const btnTagFilter = document.getElementById('btnTagFilter');
+  if (tagFilterMenu) {
+    const modeRadio = tagFilterMenu.querySelector(`input[name="filterMode"][value="${state.tagFilter.mode}"]`);
+    if (modeRadio) modeRadio.checked = true;
+  }
+  if (btnTagFilter) {
+    const isFiltering = state.tagFilter.mode !== 'all' && state.tagFilter.selectedTags.size > 0;
+    btnTagFilter.classList.toggle('filtering', isFiltering);
   }
   
   svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
