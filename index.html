@@ -5,143 +5,324 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Diagram Builder (Nodes/Links/Country Boxes) → CSV + NDG</title>
   <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 0; background:#0b0c10; color:#eaeaea; }
+    :root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
+    body { margin: 0; background:#ffffff; color:#333; }
     header {
       display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      padding:10px 12px; border-bottom:1px solid #222;
-      position: sticky; top: 0; background:#0b0c10; z-index: 10;
+      padding:0; border-bottom:1px solid #e0e0e0;
+      position: sticky; top: 0; background:#fafafa; z-index: 10;
     }
+    
+    /* Menu Bar Items */
+    .menu-item {
+      background: transparent;
+      border: none;
+      color: #444;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      border-radius: 4px;
+    }
+    .menu-item:hover { background: #e8e8e8; }
+    
+    /* Tool Buttons */
+    .tool-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: #555;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 16px;
+      border-radius: 4px;
+      min-width: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .tool-btn:hover { background: #e8e8e8; border-color: #d0d0d0; }
+    .tool-btn.active, .tool-btn.primary { background: #0096D6; color: #fff; border-color: #0096D6; }
+    .tool-btn.shape-tool.active { background: #0096D6; color: #fff; }
+    
+    .tool-sep { width: 1px; height: 24px; background: #d0d0d0; margin: 0 6px; }
+    
+    /* Toggle items in menu */
+    .toggle-item { display: flex; align-items: center; gap: 8px; }
+    .toggle-item input { accent-color: #0096D6; }
+    
     .btn {
-      background:#16181f; border:1px solid #2a2d38; color:#eaeaea;
-      padding:8px 10px; border-radius:10px; cursor:pointer; font-weight:650;
+      background:#fff; border:1px solid #d0d0d0; color:#333;
+      padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:500; font-size: 12px;
     }
-    .btn:hover { border-color:#4a5166; }
-    .btn.primary { background:#2b59ff; border-color:#2b59ff; color:#fff; }
-    .btn.primary:hover { filter: brightness(1.05); }
-    .hint { opacity:.85; font-size: 13px; }
+    .btn:hover { background:#f5f5f5; border-color:#bbb; }
+    .btn.primary { background:#0096D6; border-color:#0096D6; color:#fff; }
+    .btn.primary:hover { background:#0080b8; }
+    .mini-btn { padding:4px 8px; font-size:11px; }
+    .hint { opacity:.7; font-size: 12px; color:#666; }
     input[type="file"]{ display:none; }
 
-    #layout { display:grid; grid-template-columns: 1fr 410px; height: calc(100vh - 58px); }
-    #wrap { position: relative; }
+    #layout { display: flex; height: calc(100vh - 72px); position: relative; }
+    #wrap { flex: 1; position: relative; overflow: auto; background: #f0f0f0; }
     #inspector {
-      border-left:1px solid #222;
-      padding:12px;
-      background:#0b0c10;
-      overflow:auto;
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      width: 340px;
+      max-height: calc(100vh - 120px);
+      background: #ffffff;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      resize: horizontal;
+      min-width: 280px;
+      max-width: 500px;
     }
-    #inspector h3 { margin:0 0 10px; font-size:15px; }
-    #inspector .muted { opacity:.8; font-size:12px; line-height:1.35; margin-bottom:10px; }
+    #inspector.minimized {
+      height: 40px !important;
+      max-height: 40px;
+      resize: none;
+    }
+    #inspectorHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #f8f8f8;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: move;
+      user-select: none;
+    }
+    #inspectorHeader h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    #inspectorControls {
+      display: flex;
+      gap: 4px;
+    }
+    #inspectorControls button {
+      background: transparent;
+      border: 1px solid #d0d0d0;
+      color: #666;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+    #inspectorControls button:hover {
+      background: #e8e8e8;
+      border-color: #bbb;
+    }
+    #inspectorContent {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 12px;
+      background: #fff;
+    }
+    #inspector.minimized #inspectorContent {
+      display: none;
+    }
+    #inspector h3 { margin:0 0 10px; font-size:14px; color:#333; }
+    #inspector .muted { opacity:.8; font-size:11px; line-height:1.4; margin-bottom:10px; color:#666; }
     #inspector .row { margin:10px 0; }
-    #inspector label { display:block; font-size:12px; opacity:.85; margin:0 0 6px; }
+    #inspector label { display:block; font-size:11px; color:#555; margin:0 0 4px; }
     #inspector input, #inspector textarea, #inspector select {
       width:100%; box-sizing:border-box;
-      padding:10px; border-radius:10px; border:1px solid #2a2d38;
-      background:#0b0c10; color:#eaeaea; font-size: 14px;
+      padding:8px 10px; border-radius:6px; border:1px solid #d0d0d0;
+      background:#fff; color:#333; font-size: 13px;
     }
-    #inspector textarea { min-height: 70px; resize: vertical; }
+    #inspector input:focus, #inspector select:focus, #inspector textarea:focus {
+      outline: none;
+      border-color: #0096D6;
+      box-shadow: 0 0 0 2px rgba(0,150,214,0.15);
+    }
+    #inspector textarea { min-height: 60px; resize: vertical; }
     #inspector .inline { display:flex; gap:8px; }
     #inspector .inline > * { flex:1; }
+    #inspector h4 { color:#333; margin:16px 0 8px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+    #inspector input[type="color"] { padding:2px; height:32px; }
+    #inspector input[type="checkbox"] { width:auto; accent-color:#0096D6; }
+    .muted kbd { background:#f0f0f0; padding:2px 5px; border-radius:3px; font-size:10px; border:1px solid #d0d0d0; }
 
-    svg { width: 100%; height: 100%; display:block; user-select:none; }
-    .grid { stroke:#14161d; stroke-width:1; }
+    svg { display:block; user-select:none; background:#fff; }
+    #svgContainer { display: inline-block; }
+    .grid { stroke:#e8e8e8; stroke-width:1; }
 
-    .group-rect { rx:14; ry:14; }
-    .group-selected .group-rect { stroke:#ffffff !important; }
-    .group-label { font-weight:650; user-select:none; cursor: default; }
-    .group-handle { fill:#eaeaea; opacity:.9; cursor:nwse-resize; }
+    .group-rect { rx:8; ry:8; }
+    .group-selected .group-rect { 
+      stroke: #0096D6 !important; 
+      stroke-width: 2 !important; 
+      filter: drop-shadow(0 0 3px rgba(0,150,214,0.4));
+    }
+    .group-label { font-weight:600; user-select:none; cursor: default; }
+    .group-handle { fill:#888; opacity:.7; cursor:nwse-resize; }
 
     .edge { fill:none; }
-    .edge.selected { stroke-width: 4; opacity: 0.8; filter: brightness(1.5)}
+    .edge.selected { stroke:#0096D6 !important; stroke-width: 3 !important; filter: drop-shadow(0 0 3px rgba(0,150,214,0.5)); }
     .edge-label {
-      fill:#eaeaea;
-      paint-order: stroke; stroke:#0b0c10; stroke-width:4px;
+      fill:#333;
+      paint-order: stroke; stroke:#ffffff; stroke-width:3px;
       cursor: default; user-select:none;
     }
 
     .node { cursor: grab; }
     .node:active { cursor: grabbing; }
     .node-circle { }
-    .node.selected .node-circle { stroke:#ffffff !important; }
+    .node.selected .node-circle { 
+      stroke: #0096D6 !important; 
+      stroke-width: 3 !important; 
+      filter: drop-shadow(0 0 4px rgba(0,150,214,0.5));
+    }
+    .node.link-source .node-circle {
+      stroke: #ff9800 !important;
+      stroke-width: 4 !important;
+      filter: drop-shadow(0 0 6px rgba(255,152,0,0.6));
+      animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
     .node-text, .tag-text { text-anchor: middle; user-select:none; cursor: default; }
     .node-text { dominant-baseline: middle; }
-    .tag-text { dominant-baseline: hanging; opacity:.9; }
+    .tag-text { dominant-baseline: hanging; opacity:.8; }
 
     .toast {
-      position:absolute; right:14px; bottom:14px; background:#14161d; border:1px solid #2a2d38;
-      padding:10px 12px; border-radius:12px; max-width: 520px; font-size: 13px; opacity:0;
+      position:absolute; right:14px; bottom:14px; background:#333; border:1px solid #222;
+      color:#fff; padding:10px 16px; border-radius:8px; max-width: 520px; font-size: 13px; opacity:0;
       transform: translateY(8px); transition: all .2s ease; z-index: 20;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     .toast.show { opacity:1; transform: translateY(0); }
-    kbd{ padding:1px 6px; border:1px solid #2a2d38; border-bottom-width:2px; border-radius:6px; background:#0f1118; font-size:12px; }
+    kbd{ padding:1px 6px; border:1px solid #d0d0d0; border-bottom-width:2px; border-radius:4px; background:#f5f5f5; font-size:11px; color:#333; }
 
     header { position: sticky; top: 0; }
     .menu {
       position:absolute;
-      top: 52px;
-      left: 12px;
-      background:#14161d;
-      border:1px solid #2a2d38;
-      border-radius:12px;
-      padding:6px;
-      min-width: 220px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.35);
+      top: 28px;
+      left: 0;
+      background:#ffffff;
+      border:1px solid #d0d0d0;
+      border-radius:6px;
+      padding:4px 0;
+      min-width: 200px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       z-index: 30;
     }
     .menu[hidden]{ display:none; }
     .menu .item{
       display:flex; align-items:center; gap:10px;
-      padding:8px 10px;
-      border-radius:10px;
+      padding:8px 14px;
       cursor:pointer;
       user-select:none;
       font-size: 13px;
-      opacity:.95;
+      color:#333;
     }
-    .menu .item:hover{ background:#0f1118; }
-    .menu .sep{ height:1px; background:#2a2d38; margin:6px 4px; }
+    .menu .item:hover{ background:#f5f5f5; }
+    .menu .item.active { background:#e8f4fc; color:#0096D6; }
+    .menu .sep{ height:1px; background:#e0e0e0; margin:4px 0; }
 
-    .toggle{ display:inline-flex; align-items:center; gap:6px; padding:6px 8px; border:1px solid #2a2d38; border-radius:10px; background:#0b0c10; font-size:13px; opacity:.95; }
-    .toggle input{ accent-color:#2b59ff; }
-    .mini-btn{
-      background:#16181f; border:1px solid #2a2d38; color:#eaeaea;
-      padding:7px 9px; border-radius:10px; cursor:pointer; font-weight:650; font-size:12px;
-    }
-    .mini-btn:hover { border-color:#4a5166; }
+    .toggle{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:4px; font-size:12px; color:#555; }
+    .toggle input{ accent-color:#0096D6; }
 
-
-    .toggle {
-      display:inline-flex; align-items:center; gap:6px;
-      padding:6px 10px; border-radius:999px;
-      border:1px solid #2a2d38; background:#0f1118;
-      font-size:12px; opacity:.95; user-select:none;
-    }
-    .toggle input { accent-color:#2b59ff; }
-    .marquee { fill: rgba(43,89,255,0.12); stroke:#2b59ff; stroke-width:2; stroke-dasharray:6 4; }
+    .marquee { fill: rgba(0,150,214,0.1); stroke:#0096D6; stroke-width:1; stroke-dasharray:4 2; }
   
-    .ribbon{ display:flex; flex-direction:column; gap:10px; width:100%; }
-    .ribbon-tabs{ display:flex; gap:18px; align-items:flex-end; }
-    .rib-tab{
-      background:transparent; border:none; color:#eaeaea;
-      padding:6px 2px; cursor:pointer; font-weight:750; font-size:14px;
-      opacity:.9;
+    /* Color Palette Picker */
+    .color-picker-wrap { position: relative; }
+    .color-swatch {
+      width: 100%;
+      height: 32px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      gap: 8px;
     }
-    .rib-tab:hover{ opacity:1; }
-    .rib-tab.active{
-      opacity:1;
-      border-bottom:3px solid #2b59ff;
-      padding-bottom:3px;
+    .color-swatch:hover { border-color: #0096D6; }
+    .color-swatch-preview {
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.1);
     }
-    .ribbon-panels{ display:flex; flex-direction:column; gap:8px; }
-    .rib-panel{ display:none; flex-wrap:wrap; gap:10px; align-items:center; }
-    .rib-panel.active{ display:flex; }
-    .rib-hint{ margin-left:auto; }
+    .color-swatch-label { font-size: 11px; color: #666; }
+    .color-palette {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      padding: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 50;
+      display: none;
+    }
+    .color-palette.show { display: block; }
+    .color-palette-row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 4px;
+    }
+    .color-palette-row:last-child { margin-bottom: 0; }
+    .color-palette-item {
+      width: 24px;
+      height: 24px;
+      border-radius: 3px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.1);
+      transition: transform 0.1s;
+    }
+    .color-palette-item:hover { transform: scale(1.15); border-color: #0096D6; }
+    .color-palette-item.selected { outline: 2px solid #0096D6; outline-offset: 1px; }
+    .color-palette-custom {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .color-palette-custom input[type="color"] {
+      width: 32px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid #d0d0d0;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .color-palette-custom span { font-size: 11px; color: #666; }
 
-  
-    .shape-bar{ display:flex; gap:6px; align-items:center; padding:4px 6px; border:1px solid #2a2d38; border-radius:12px; background:#0f1118; }
-    .shape-btn{ background:transparent; border:1px solid #2a2d38; color:#eaeaea; padding:6px 8px; border-radius:10px; cursor:pointer; font-weight:650; font-size:12px; }
-    .shape-btn:hover{ border-color:#4a5166; }
-    .shape-btn.active{ background:#16181f; border-color:#4a5166; }
+    .shape-bar{ display:flex; gap:4px; align-items:center; padding:4px 6px; border:1px solid #d0d0d0; border-radius:6px; background:#fff; }
+    .shape-btn{ 
+      background:transparent; 
+      border:1px solid transparent; 
+      color:#555; 
+      padding:6px 10px; 
+      border-radius:4px; 
+      cursor:pointer; 
+      font-size:14px;
+      min-width:36px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .shape-btn:hover{ background:#f0f0f0; }
+    .shape-btn.active{ background:#0096D6; border-color:#0096D6; color:#fff; }
 
   
     @media print{
@@ -157,82 +338,192 @@
 </head>
 <body>
 
-<header>
-  <div class="ribbon">
-    <div class="ribbon-tabs">
-      <button class="rib-tab" id="tabFile" type="button">File</button>
-      <button class="rib-tab active" id="tabHome" type="button">Home</button>
+<header style="background:#fafafa; border-bottom:1px solid #e0e0e0;">
+  <!-- Menu Bar (text menus) -->
+  <div style="display:flex; align-items:center; gap:0; padding:4px 12px; background:#fff; border-bottom:1px solid #e8e8e8;">
+    <span style="font-weight:600; color:#7b5eac; font-size:15px; margin-right:16px;">⬡ Diagram Builder</span>
+    <button class="menu-item" id="btnFile" type="button">File</button>
+    <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
+    <button class="menu-item" id="btnViewMenu" type="button">View</button>
+    <div class="menu" id="fileMenu" hidden>
+      <div class="item" id="miSave">Save <span style="opacity:0.5;float:right">Ctrl+S</span></div>
+      <div class="item" id="miSaveAs">Save As…</div>
+      <div class="sep"></div>
+      <div class="item" id="miOpen">Open… <span style="opacity:0.5;float:right">Ctrl+O</span></div>
+      <div class="sep"></div>
+      <div class="item" id="miRecover">Recover Autosave</div>
+      <div class="item" id="miClearAutosave">Clear Autosave</div>
+      <div class="sep"></div>
+      <div class="item" id="miClearDiagram">Clear Diagram</div>
+      <div class="sep"></div>
+      <div class="item" id="miExportSVG">Export as SVG…</div>
+      <div class="item" id="miExportPNG">Export as PNG…</div>
+      <div class="item" id="miExportJPG">Export as JPG…</div>
+      <div class="sep"></div>
+      <div class="item" id="btnExportLinks">Export Links CSV</div>
+      <div class="item" id="btnExportNodes">Export Nodes CSV</div>
     </div>
-
-    <div class="ribbon-panels">
-      <div class="rib-panel" id="panelFile">
-        <button class="btn" id="btnFile" type="button">File ▾</button>
-        <div class="menu" id="fileMenu" hidden>
-          <div class="item" id="miSave">Save</div>
-          <div class="item" id="miSaveAs">Save As…</div>
-          <div class="sep"></div>
-          <div class="item" id="miOpen">Open…</div>
-          <div class="sep"></div>
-          <div class="item" id="miRecover">Recover Autosave</div>
-          <div class="item" id="miClearAutosave">Clear Autosave</div>
-          <div class="sep"></div>
-          <div class="item" id="miClearDiagram">Clear Diagram</div>
-          <div class="sep"></div>
-          <div class="item" id="miExportSVG">Export SVG…</div>
-          <div class="item" id="miExportPNG">Export PNG…</div>
-          <div class="item" id="miExportJPG">Export JPG…</div>
-        </div>
-        <span class="hint">Use the menu to save/open/recover/clear.</span>
-      </div>
-
-      <div class="rib-panel active" id="panelHome">
-        <button class="btn primary" id="btnAddGroup" type="button">Add Country Box</button>
-        <button class="btn" id="btnAddRegion" type="button">Add Region Box</button>
-        <button class="btn" id="btnExportLinks" type="button">Export Links CSV</button>
-        <button class="btn" id="btnExportNodes" type="button">Export Nodes CSV</button>
-        <div class="shape-bar" id="shapeBar">
-          <button class="shape-btn active" data-shape="circle" type="button">Circle</button>
-          <button class="shape-btn" data-shape="square" type="button">Square</button>
-          <button class="shape-btn" data-shape="triangle" type="button">Triangle</button>
-          <button class="shape-btn" data-shape="rectangle" type="button">Rectangle</button>
-          <button class="shape-btn" data-shape="ellipse" type="button">Elipse</button>
-          <button class="shape-btn" data-shape="hexagon" type="button">Hexagon</button>
-        </div>
-
-
-        <button class="btn" id="btnBrush" type="button" title="Copy and apply formatting (Esc to cancel)">🖌️ Format Painter</button>
-
-        <input type="file" id="fileLoad" accept=".ndg,application/json" />
-
-        <label class="toggle"><input type="checkbox" id="tglShowLatency" checked />Show Latency</label>
-        <label class="toggle"><input type="checkbox" id="tglShowNodeCode" checked />Show Node Codes</label>
-        <label class="toggle"><input type="checkbox" id="tglShowLinkCode" checked />Show Link Codes</label>
-
-        <span class="hint rib-hint">
-          Double-click empty space: node • Shift+click A then B: link • Drag empty space: select • Ctrl+C/X/V: copy/cut/paste • Undo: Ctrl+Z
-        </span>
+    <div class="menu" id="editMenu" hidden>
+      <div class="item" id="miUndo">Undo <span style="opacity:0.5;float:right">Ctrl+Z</span></div>
+      <div class="item" id="miRedo">Redo <span style="opacity:0.5;float:right">Ctrl+Shift+Z</span></div>
+      <div class="sep"></div>
+      <div class="item" id="miCopy">Copy <span style="opacity:0.5;float:right">Ctrl+C</span></div>
+      <div class="item" id="miCut">Cut <span style="opacity:0.5;float:right">Ctrl+X</span></div>
+      <div class="item" id="miPaste">Paste <span style="opacity:0.5;float:right">Ctrl+V</span></div>
+      <div class="sep"></div>
+      <div class="item" id="miDelete">Delete <span style="opacity:0.5;float:right">Del</span></div>
+    </div>
+    <div class="menu" id="viewMenu" hidden>
+      <div class="item" id="miZoomIn">Zoom In <span style="opacity:0.5;float:right">Ctrl++</span></div>
+      <div class="item" id="miZoomOut">Zoom Out <span style="opacity:0.5;float:right">Ctrl+-</span></div>
+      <div class="item" id="miFitView">Fit to View</div>
+      <div class="sep"></div>
+      <div class="item" id="miToggleInspector">Toggle Inspector <span style="opacity:0.5;float:right">I</span></div>
+      <div class="sep"></div>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Show Latency</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Show Node Codes</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkCode" checked /> Show Link Codes</label>
+    </div>
+    <input type="file" id="fileLoad" accept=".ndg,application/json" style="display:none;" />
+  </div>
+  
+  <!-- Icon Toolbar -->
+  <div style="display:flex; align-items:center; gap:2px; padding:4px 12px; background:#fafafa;">
+    <!-- Zoom Controls -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnZoomLevel" type="button" style="min-width:60px; font-size:12px; gap:4px;" title="Click for zoom options">
+        <span id="zoomLevel">100%</span> <span style="font-size:10px;">▾</span>
+      </button>
+      <div class="menu" id="zoomMenu" hidden style="min-width:180px;">
+        <div class="item" id="zoomFitView">Fit to View <span style="opacity:0.5;float:right">Enter</span></div>
+        <div class="sep"></div>
+        <div class="item zoom-preset" data-zoom="0.25">25%</div>
+        <div class="item zoom-preset" data-zoom="0.50">50%</div>
+        <div class="item zoom-preset" data-zoom="0.75">75%</div>
+        <div class="item zoom-preset" data-zoom="1.00">100%</div>
+        <div class="item zoom-preset" data-zoom="1.25">125%</div>
+        <div class="item zoom-preset" data-zoom="1.50">150%</div>
+        <div class="item zoom-preset" data-zoom="2.00">200%</div>
+        <div class="item zoom-preset" data-zoom="3.00">300%</div>
+        <div class="item zoom-preset" data-zoom="4.00">400%</div>
+        <div class="sep"></div>
+        <div class="item" id="zoomReset">Reset to 100% <span style="opacity:0.5;float:right">Ctrl+0</span></div>
       </div>
     </div>
+    <button class="tool-btn" id="btnZoomIn" type="button" title="Zoom In">⊕</button>
+    <button class="tool-btn" id="btnZoomOut" type="button" title="Zoom Out">⊖</button>
+    <button class="tool-btn" id="btnZoomFit" type="button" title="Fit to View">⊡</button>
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnGridToggle" type="button" title="Toggle Grid">▦</button>
+      <div class="menu" id="gridMenu" hidden style="min-width:150px;">
+        <label class="item toggle-item"><input type="checkbox" id="gridEnabled" checked /> Show Grid</label>
+        <div class="sep"></div>
+        <div class="item grid-size" data-size="10">Fine (10px)</div>
+        <div class="item grid-size" data-size="20">Small (20px)</div>
+        <div class="item grid-size active" data-size="40">Medium (40px)</div>
+        <div class="item grid-size" data-size="60">Large (60px)</div>
+        <div class="item grid-size" data-size="100">Extra Large (100px)</div>
+      </div>
+    </div>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Undo/Redo -->
+    <button class="tool-btn" id="btnUndo" type="button" title="Undo (Ctrl+Z)">↶</button>
+    <button class="tool-btn" id="btnRedo" type="button" title="Redo (Ctrl+Shift+Z)">↷</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Delete -->
+    <button class="tool-btn" id="btnDelete" type="button" title="Delete Selected">⌫</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Containers -->
+    <button class="tool-btn" id="btnAddGroup" type="button" title="Add Country/Organization Box">▢</button>
+    <button class="tool-btn" id="btnAddRegion" type="button" title="Add Region Container">⊞</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Shape Tools -->
+    <button class="tool-btn shape-tool active" data-shape="circle" type="button" title="Circle">○</button>
+    <button class="tool-btn shape-tool" data-shape="square" type="button" title="Square">□</button>
+    <button class="tool-btn shape-tool" data-shape="triangle" type="button" title="Triangle">△</button>
+    <button class="tool-btn shape-tool" data-shape="rectangle" type="button" title="Rectangle">▭</button>
+    <button class="tool-btn shape-tool" data-shape="ellipse" type="button" title="Ellipse">⬭</button>
+    <button class="tool-btn shape-tool" data-shape="hexagon" type="button" title="Hexagon">⎔</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Link Tool -->
+    <button class="tool-btn" id="btnCreateLink" type="button" title="Create Link (click two nodes)">↗</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Brush (Format Painter) -->
+    <button class="tool-btn" id="btnBrush" type="button" title="Brush - Copy and apply formatting">⌘</button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Inspector Toggle -->
+    <button class="tool-btn" id="btnToggleInspector" type="button" title="Toggle Inspector (I)">☰</button>
+    
+    <div style="flex:1;"></div>
+    
+    <!-- Compact Help -->
+    <span style="font-size:10px; color:#888; padding:0 8px;">
+      Dbl-click: add node • Alt+drag: select • Drag: pan • Ctrl+wheel: zoom
+    </span>
   </div>
 </header>
 
 
 <div id="layout">
   <div id="wrap">
-    <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg>
+    <div id="svgContainer" style="transform-origin: 0 0;">
+      <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg>
+    </div>
     <div class="toast" id="toast"></div>
   </div>
 
   <aside id="inspector">
-    <h3>Inspector</h3>
-    <div class="muted" id="inspectorHelp">
-      Select a node, link, or country box to edit it. Use Delete/Backspace to remove selected.
-      <br/>Move any label only with <kbd>Ctrl</kbd>+drag (so normal dragging moves nodes/boxes).
+    <div id="inspectorHeader">
+      <h3>Inspector</h3>
+      <div id="inspectorControls">
+        <button id="btnMinimizeInspector" title="Minimize/Maximize">−</button>
+        <button id="btnCloseInspector" title="Hide Inspector">✕</button>
+      </div>
+    </div>
+    <div id="inspectorContent">
+      <div class="muted" id="inspectorHelp">
+        Select a node, link, or country box to edit it. Use Delete/Backspace to remove selected.
+        <br/>Move any label only with <kbd>Ctrl</kbd>+drag (so normal dragging moves nodes/boxes).
+      </div>
+
+      <div id="canvasSettings">
+        <h4 style="margin: 12px 0 10px; font-size: 13px; opacity: 0.9;">Canvas Settings</h4>
+        <div class="row inline">
+          <div>
+            <label>Canvas Width</label>
+            <input id="canvasWidth" type="number" min="400" step="100" />
+        </div>
+        <div>
+          <label>Canvas Height</label>
+          <input id="canvasHeight" type="number" min="300" step="100" />
+        </div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="tglCanvasBorder" checked />Show Canvas Border</label>
+      <div class="muted" style="margin-top: 8px;">Drag objects beyond the border to expand the workspace.</div>
     </div>
 
     <div id="noSelection" class="muted">Nothing selected.</div>
 
 <div id="nodeInspector" style="display:none;">
+  <div class="row">
+    <label>Unique ID</label>
+    <input id="nodeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
+  </div>
+
   <div class="row">
     <label>Node Style Preset</label>
     <div class="inline">
@@ -337,6 +628,22 @@
 
     <div id="edgeInspector" style="display:none;">
       <div class="row">
+        <label>Unique ID</label>
+        <input id="edgeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
+      </div>
+      
+      <div class="row inline">
+        <div>
+          <label>Source Node UUID</label>
+          <input id="edgeSourceUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
+        </div>
+        <div>
+          <label>Target Node UUID</label>
+          <input id="edgeTargetUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
+        </div>
+      </div>
+
+      <div class="row">
         <label>Link Style Preset</label>
         <div class="inline">
           <select id="edgePreset"></select>
@@ -353,7 +660,7 @@
 
       <div class="row">
         <label>Latency value (ms)</label>
-        <input id="edgeLatency" type="number" step="0.01" min="0" placeholder="e.g. 1.23" />
+        <input id="edgeLatency" type="text" inputmode="decimal" placeholder="e.g. 1.234" />
         <div class="muted">This field only accepts a number. The diagram shows it as “X ms”.</div>
       </div>
       
@@ -398,6 +705,7 @@
           <select id="edgeStyle">
             <option value="straight">Straight</option>
             <option value="orthogonal">90° Orthogonal</option>
+            <option value="curve">Curve (Bezier)</option>
           </select>
         </div>
         <div>
@@ -407,6 +715,12 @@
             <option value="vh">Vertical then Horizontal</option>
           </select>
         </div>
+      </div>
+
+      <div class="row" id="curveArchControl" style="display:none;">
+         <label>Curve Bend (drag handle on curve or adjust slider)</label>
+         <input id="edgeCurveArch" type="range" min="-0.6" max="0.6" step="0.05" />
+         <span id="curveArchValue">0.30</span>
       </div>
 
       <div class="row">
@@ -421,6 +735,11 @@
     </div>
      
     <div id="groupInspector" style="display:none;">
+      <div class="row">
+        <label>Unique ID</label>
+        <input id="groupUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
+      </div>
+
       <div class="row">
         <label>Box Style Preset</label>
         <div class="inline">
@@ -493,6 +812,7 @@
   	 <input id="groupStrokeW" type="number" min="0.5" max="12" step="0.5" />
       </div>
     </div>
+    </div><!-- end inspectorContent -->
   </aside>
 </div>
 
@@ -501,16 +821,147 @@
   const svg = document.getElementById('svg');
   const toastEl = document.getElementById('toast');
 
+  // UUID generation for unique identifiers
+  function generateUUID() {
+    // Use crypto.randomUUID if available (modern browsers), fallback to manual generation
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      return crypto.randomUUID();
+    }
+    // Fallback UUID v4 generation
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // Color Palette System
+  const colorPalette = {
+    // Row 1: White, Light grays, Soft colors
+    row1: ['#ffffff', '#f5f5f5', '#e8e8e8', '#dae8fc', '#d5e8d4', '#fff2cc', '#f8cecc', '#e1d5e7'],
+    // Row 2: Pastel colors
+    row2: ['#eeeeee', '#dae8fc', '#d5e8d4', '#fff2cc', '#f8cecc', '#e1d5e7', '#fce5cd', '#cce5ff'],
+    // Row 3: Medium colors  
+    row3: ['#b3b3b3', '#6c8ebf', '#82b366', '#d6b656', '#b85450', '#9673a6', '#d79b00', '#36a2eb'],
+    // Row 4: Darker/saturated colors
+    row4: ['#666666', '#1a5276', '#196f3d', '#b7950b', '#922b21', '#6c3483', '#a04000', '#1f618d']
+  };
+
+  function createColorPicker(inputElement, onChange) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'color-picker-wrap';
+    
+    const swatch = document.createElement('div');
+    swatch.className = 'color-swatch';
+    
+    const preview = document.createElement('div');
+    preview.className = 'color-swatch-preview';
+    preview.style.backgroundColor = inputElement.value || '#ffffff';
+    
+    const label = document.createElement('span');
+    label.className = 'color-swatch-label';
+    label.textContent = inputElement.value || '#ffffff';
+    
+    swatch.appendChild(preview);
+    swatch.appendChild(label);
+    
+    const palette = document.createElement('div');
+    palette.className = 'color-palette';
+    
+    // Add color rows
+    [colorPalette.row1, colorPalette.row2, colorPalette.row3, colorPalette.row4].forEach(row => {
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'color-palette-row';
+      row.forEach(color => {
+        const item = document.createElement('div');
+        item.className = 'color-palette-item';
+        item.style.backgroundColor = color;
+        item.dataset.color = color;
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectColor(color);
+        });
+        rowDiv.appendChild(item);
+      });
+      palette.appendChild(rowDiv);
+    });
+    
+    // Custom color picker
+    const customDiv = document.createElement('div');
+    customDiv.className = 'color-palette-custom';
+    const customInput = document.createElement('input');
+    customInput.type = 'color';
+    customInput.value = inputElement.value || '#ffffff';
+    customInput.addEventListener('input', (e) => {
+      selectColor(e.target.value);
+    });
+    const customLabel = document.createElement('span');
+    customLabel.textContent = 'Custom color';
+    customDiv.appendChild(customInput);
+    customDiv.appendChild(customLabel);
+    palette.appendChild(customDiv);
+    
+    wrapper.appendChild(swatch);
+    wrapper.appendChild(palette);
+    
+    // Replace original input
+    inputElement.style.display = 'none';
+    inputElement.parentNode.insertBefore(wrapper, inputElement);
+    
+    function selectColor(color) {
+      inputElement.value = color;
+      preview.style.backgroundColor = color;
+      label.textContent = color;
+      customInput.value = color;
+      palette.classList.remove('show');
+      if (onChange) onChange(color);
+      // Trigger change event on original input
+      inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+    
+    function updateFromInput() {
+      const color = inputElement.value || '#ffffff';
+      preview.style.backgroundColor = color;
+      label.textContent = color;
+      customInput.value = color;
+    }
+    
+    swatch.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Close other palettes
+      document.querySelectorAll('.color-palette.show').forEach(p => {
+        if (p !== palette) p.classList.remove('show');
+      });
+      palette.classList.toggle('show');
+    });
+    
+    // Close palette when clicking outside
+    document.addEventListener('click', () => {
+      palette.classList.remove('show');
+    });
+    
+    palette.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+    
+    return { update: updateFromInput };
+  }
 
   // Global visibility toggles
   const tglShowLatency = document.getElementById('tglShowLatency');
   const tglShowNodeCode = document.getElementById('tglShowNodeCode');
   const tglShowLinkCode = document.getElementById('tglShowLinkCode');
+  const canvasWidth = document.getElementById('canvasWidth');
+  const canvasHeight = document.getElementById('canvasHeight');
+  const tglCanvasBorder = document.getElementById('tglCanvasBorder');
 
   function syncGlobalToggles() {
     if (tglShowLatency) tglShowLatency.checked = !!state.ui.showLatency;
     if (tglShowNodeCode) tglShowNodeCode.checked = !!state.ui.showNodeCode;
     if (tglShowLinkCode) tglShowLinkCode.checked = !!state.ui.showLinkCode;
+    if (canvasWidth) canvasWidth.value = state.canvasWidth;
+    if (canvasHeight) canvasHeight.value = state.canvasHeight;
+    if (tglCanvasBorder) tglCanvasBorder.checked = !!state.showCanvasBorder;
   }
 
   [tglShowLatency, tglShowNodeCode, tglShowLinkCode].forEach(el => {
@@ -522,6 +973,36 @@
       render();
     });
   });
+
+  if (canvasWidth) {
+    canvasWidth.addEventListener('input', () => {
+      const val = parseInt(canvasWidth.value, 10);
+      if (val >= 400) {
+        state.canvasWidth = val;
+        svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
+        render();
+      }
+    });
+  }
+
+  if (canvasHeight) {
+    canvasHeight.addEventListener('input', () => {
+      const val = parseInt(canvasHeight.value, 10);
+      if (val >= 300) {
+        state.canvasHeight = val;
+        svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
+        render();
+      }
+    });
+  }
+
+  if (tglCanvasBorder) {
+    tglCanvasBorder.addEventListener('change', () => {
+      state.showCanvasBorder = !!tglCanvasBorder.checked;
+      render();
+    });
+  }
+
 
 
 
@@ -540,6 +1021,18 @@
     defaultNodeShape: 'circle',
     placingGroupType: 'country',
 
+    // Canvas dimensions (now customizable)
+    canvasWidth: 1600,
+    canvasHeight: 900,
+    showCanvasBorder: true,
+
+    // Grid settings
+    gridEnabled: true,
+    gridSize: 40,
+
+    // Zoom level (CSS transform based)
+    zoom: 1,
+
     // UI/global toggles
     ui: { showLatency: true, showNodeCode: true, showLinkCode: true },
 
@@ -557,6 +1050,102 @@
 
   const history = { stack: [], index: -1, max: 120 };
   let dirty = false;
+
+  // Pan and Zoom functionality using CSS transform and scrollbars
+  function updateViewBox() {
+    // Keep the viewBox matching canvas dimensions
+    svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
+    
+    // Update SVG size and container transform for zoom
+    const svgContainer = document.getElementById('svgContainer');
+    const scaledWidth = state.canvasWidth * state.zoom;
+    const scaledHeight = state.canvasHeight * state.zoom;
+    
+    svg.setAttribute('width', scaledWidth);
+    svg.setAttribute('height', scaledHeight);
+    
+    // Update zoom level display
+    const zoomPct = Math.round(state.zoom * 100);
+    const zoomLevelEl = document.getElementById('zoomLevel');
+    if (zoomLevelEl) zoomLevelEl.textContent = `${zoomPct}%`;
+  }
+
+  function setZoom(newZoom, centerOnMouse = false, mouseX = 0, mouseY = 0) {
+    newZoom = Math.max(0.1, Math.min(5, newZoom)); // Clamp between 10% and 500%
+    
+    const wrap = document.getElementById('wrap');
+    const oldZoom = state.zoom;
+    
+    if (centerOnMouse && wrap) {
+      // Calculate the point under the mouse in canvas coordinates before zoom
+      const scrollLeft = wrap.scrollLeft;
+      const scrollTop = wrap.scrollTop;
+      const pointX = (scrollLeft + mouseX) / oldZoom;
+      const pointY = (scrollTop + mouseY) / oldZoom;
+      
+      state.zoom = newZoom;
+      updateViewBox();
+      
+      // After zoom, scroll to keep the same point under the mouse
+      wrap.scrollLeft = pointX * newZoom - mouseX;
+      wrap.scrollTop = pointY * newZoom - mouseY;
+    } else {
+      state.zoom = newZoom;
+      updateViewBox();
+    }
+  }
+
+  function fitToView() {
+    if (state.nodes.length === 0 && state.groups.length === 0) {
+      // Nothing to fit - reset to 100%
+      state.zoom = 1;
+      updateViewBox();
+      const wrap = document.getElementById('wrap');
+      if (wrap) {
+        wrap.scrollLeft = 0;
+        wrap.scrollTop = 0;
+      }
+      return;
+    }
+
+    // Calculate bounding box of all content
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    state.nodes.forEach(n => {
+      const r = n.r || 24;
+      minX = Math.min(minX, n.x - r - 50);
+      minY = Math.min(minY, n.y - r - 50);
+      maxX = Math.max(maxX, n.x + r + 50);
+      maxY = Math.max(maxY, n.y + r + 50);
+    });
+    
+    state.groups.forEach(g => {
+      minX = Math.min(minX, g.x - 20);
+      minY = Math.min(minY, g.y - 20);
+      maxX = Math.max(maxX, g.x + g.w + 20);
+      maxY = Math.max(maxY, g.y + g.h + 20);
+    });
+
+    const contentWidth = maxX - minX;
+    const contentHeight = maxY - minY;
+    
+    const wrap = document.getElementById('wrap');
+    const wrapWidth = wrap.clientWidth;
+    const wrapHeight = wrap.clientHeight;
+    
+    const scaleX = wrapWidth / contentWidth;
+    const scaleY = wrapHeight / contentHeight;
+    const scale = Math.min(scaleX, scaleY) * 0.9; // 90% to add padding
+    
+    state.zoom = Math.max(0.1, Math.min(5, scale));
+    updateViewBox();
+    
+    // Scroll to show the content
+    if (wrap) {
+      wrap.scrollLeft = minX * state.zoom;
+      wrap.scrollTop = minY * state.zoom;
+    }
+  }
 
   // In-app clipboard (for copy/paste)
   let clipboard = null; // { nodes:[], groups:[], edges:[], bbox:{minX,minY} }
@@ -671,37 +1260,19 @@
   };
 
   // Ribbon tabs (File/Home). This does not change any existing handlers.
-  const tabFile = document.getElementById('tabFile');
-  const tabHome = document.getElementById('tabHome');
-  const panelFile = document.getElementById('panelFile');
-  const panelHome = document.getElementById('panelHome');
-
-  function setRibbon(which){
-    const isHome = which === 'home';
-    tabHome.classList.toggle('active', isHome);
-    tabFile.classList.toggle('active', !isHome);
-    panelHome.classList.toggle('active', isHome);
-    panelFile.classList.toggle('active', !isHome);
-  }
-  tabHome.addEventListener('click', () => setRibbon('home'));
-  tabFile.addEventListener('click', () => setRibbon('file'));
-  setRibbon('home');
-
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   // Node shape tool (sets default for NEW nodes only)
-  const shapeBar = document.getElementById('shapeBar');
+  const shapeButtons = document.querySelectorAll('.shape-tool');
   function setActiveShape(shape){
     state.defaultNodeShape = shape;
-    if (!shapeBar) return;
-    [...shapeBar.querySelectorAll('.shape-btn')].forEach(b=>{
+    shapeButtons.forEach(b=>{
       b.classList.toggle('active', b.dataset.shape === shape);
     });
   }
-  if (shapeBar){
-    shapeBar.addEventListener('click', (ev) => {
-      const btn = ev.target.closest('.shape-btn');
-      if (!btn) return;
+  
+  shapeButtons.forEach(btn => {
+    btn.addEventListener('click', (ev) => {
       const shape = btn.dataset.shape;
       setActiveShape(shape);
 
@@ -717,21 +1288,66 @@
       }
       showToast('New nodes will be ' + shape + '.');
     });
-  }
+  });
 
   // --- File menu UI ---
   const fileBtn = document.getElementById('btnFile');
   const fileMenu = document.getElementById('fileMenu');
-  function closeFileMenu(){ fileMenu.hidden = true; }
-  function toggleFileMenu(){
-    fileMenu.hidden = !fileMenu.hidden;
-    // position menu under the File button
-    const r = fileBtn.getBoundingClientRect();
-    fileMenu.style.left = Math.max(12, r.left) + "px";
+  const editBtn = document.getElementById('btnEditMenu');
+  const editMenu = document.getElementById('editMenu');
+  const viewBtn = document.getElementById('btnViewMenu');
+  const viewMenu = document.getElementById('viewMenu');
+  
+  function closeAllMenus(){ 
+    fileMenu.hidden = true; 
+    if (editMenu) editMenu.hidden = true;
+    if (viewMenu) viewMenu.hidden = true;
+    const zoomMenu = document.getElementById('zoomMenu');
+    if (zoomMenu) zoomMenu.hidden = true;
+    const gridMenu = document.getElementById('gridMenu');
+    if (gridMenu) gridMenu.hidden = true;
   }
-  fileBtn.addEventListener('click', (ev) => { ev.stopPropagation(); toggleFileMenu(); });
-  document.addEventListener('click', () => closeFileMenu());
-  window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeFileMenu(); });
+  
+  function toggleMenu(btn, menu) {
+    closeAllMenus();
+    menu.hidden = !menu.hidden;
+    if (!menu.hidden) {
+      const r = btn.getBoundingClientRect();
+      menu.style.left = r.left + "px";
+      menu.style.top = r.bottom + "px";
+    }
+  }
+  
+  fileBtn.addEventListener('click', (ev) => { ev.stopPropagation(); toggleMenu(fileBtn, fileMenu); });
+  if (editBtn && editMenu) editBtn.addEventListener('click', (ev) => { ev.stopPropagation(); toggleMenu(editBtn, editMenu); });
+  if (viewBtn && viewMenu) viewBtn.addEventListener('click', (ev) => { ev.stopPropagation(); toggleMenu(viewBtn, viewMenu); });
+  
+  document.addEventListener('click', () => closeAllMenus());
+  window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeAllMenus(); });
+
+  // Edit menu actions
+  if (document.getElementById('miUndo')) document.getElementById('miUndo').addEventListener('click', () => { undo(); closeAllMenus(); });
+  if (document.getElementById('miRedo')) document.getElementById('miRedo').addEventListener('click', () => { redo(); closeAllMenus(); });
+  if (document.getElementById('miCopy')) document.getElementById('miCopy').addEventListener('click', () => { copySelection(); closeAllMenus(); });
+  if (document.getElementById('miCut')) document.getElementById('miCut').addEventListener('click', () => { copySelection(); deleteSelected(); closeAllMenus(); });
+  if (document.getElementById('miPaste')) document.getElementById('miPaste').addEventListener('click', () => { pasteSelection(); closeAllMenus(); });
+  if (document.getElementById('miDelete')) document.getElementById('miDelete').addEventListener('click', () => { deleteSelected(); closeAllMenus(); });
+
+  // View menu actions
+  if (document.getElementById('miZoomIn')) document.getElementById('miZoomIn').addEventListener('click', () => { setZoom(state.zoom * 1.2); closeAllMenus(); });
+  if (document.getElementById('miZoomOut')) document.getElementById('miZoomOut').addEventListener('click', () => { setZoom(state.zoom / 1.2); closeAllMenus(); });
+  if (document.getElementById('miFitView')) document.getElementById('miFitView').addEventListener('click', () => { fitToView(); closeAllMenus(); });
+  if (document.getElementById('miToggleInspector')) document.getElementById('miToggleInspector').addEventListener('click', () => {
+    const inspector = document.getElementById('inspector');
+    inspector.style.display = inspector.style.display === 'none' ? 'flex' : 'none';
+    closeAllMenus();
+  });
+
+  // Toolbar button actions
+  if (document.getElementById('btnUndo')) document.getElementById('btnUndo').addEventListener('click', () => undo());
+  if (document.getElementById('btnRedo')) document.getElementById('btnRedo').addEventListener('click', () => redo());
+  if (document.getElementById('btnDelete')) document.getElementById('btnDelete').addEventListener('click', () => deleteSelected());
+
 
   
   // --- Export helpers (SVG/PNG/JPG) ---
@@ -837,16 +1453,16 @@
     downloadBlob(outBlob, name);
   }
 
-document.getElementById('miSave').addEventListener('click', () => { closeFileMenu(); saveProject(false); });
-  document.getElementById('miSaveAs').addEventListener('click', () => { closeFileMenu(); saveProject(true); });
-  document.getElementById('miOpen').addEventListener('click', () => { closeFileMenu(); document.getElementById('fileLoad').click(); });
-  document.getElementById('miRecover').addEventListener('click', () => { closeFileMenu(); recoverAutosave(); });
-  document.getElementById('miClearAutosave').addEventListener('click', () => { closeFileMenu(); clearAutosave(); });
-  document.getElementById('miClearDiagram').addEventListener('click', () => { closeFileMenu(); clearDiagram(); });
+document.getElementById('miSave').addEventListener('click', () => { closeAllMenus(); saveProject(false); });
+  document.getElementById('miSaveAs').addEventListener('click', () => { closeAllMenus(); saveProject(true); });
+  document.getElementById('miOpen').addEventListener('click', () => { closeAllMenus(); document.getElementById('fileLoad').click(); });
+  document.getElementById('miRecover').addEventListener('click', () => { closeAllMenus(); recoverAutosave(); });
+  document.getElementById('miClearAutosave').addEventListener('click', () => { closeAllMenus(); clearAutosave(); });
+  document.getElementById('miClearDiagram').addEventListener('click', () => { closeAllMenus(); clearDiagram(); });
 
-  document.getElementById('miExportSVG').addEventListener('click', () => { closeFileMenu(); exportSVG(); showToast('Exported SVG.'); });
-  document.getElementById('miExportPNG').addEventListener('click', () => { closeFileMenu(); exportRaster('png'); showToast('Exported PNG.'); });
-  document.getElementById('miExportJPG').addEventListener('click', () => { closeFileMenu(); exportRaster('jpg'); showToast('Exported JPG.'); });
+  document.getElementById('miExportSVG').addEventListener('click', () => { closeAllMenus(); exportSVG(); showToast('Exported SVG.'); });
+  document.getElementById('miExportPNG').addEventListener('click', () => { closeAllMenus(); exportRaster('png'); showToast('Exported PNG.'); });
+  document.getElementById('miExportJPG').addEventListener('click', () => { closeAllMenus(); exportRaster('jpg'); showToast('Exported JPG.'); });
 
   // --- Style presets helpers ---
   const STYLE_FIELDS = {
@@ -890,7 +1506,9 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
   }
 
   function savePreset(type, obj){
+    console.log(`[SAVE PRESET] Function called - type: ${type}, obj:`, obj);
     const name = sanitizeBaseName(prompt(`Save ${type} style as:`, "")) || "";
+    console.log(`[SAVE PRESET] Prompt returned name: "${name}"`);
     if (!name) { showToast("Preset save cancelled."); return; }
     state.stylePresets[type][name] = pickStyle(type, obj);
     commit(); // persist in history and autosave
@@ -940,6 +1558,185 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     if (state.styleBrush) { clearBrush(); showToast("Format painter off."); return; }
     setBrushFromSelected();
   });
+
+  const btnCreateLink = document.getElementById('btnCreateLink');
+  
+  let linkMode = false;
+  let linkSourceNode = null;  // Track the source node ID
+  
+  function clearLinkMode() {
+    linkMode = false;
+    linkSourceNode = null;
+    state.connectFrom = null;
+    btnCreateLink.classList.remove('primary');
+  }
+  
+  btnCreateLink.addEventListener('click', (ev) => {
+    ev.stopPropagation();
+    linkMode = !linkMode;
+    linkSourceNode = null;
+    state.connectFrom = null;
+    btnCreateLink.classList.toggle('primary', linkMode);
+    console.log(`[LINK MODE] ${linkMode ? 'ACTIVATED' : 'DEACTIVATED'} - linkMode=${linkMode}, linkSourceNode=${linkSourceNode}`);
+    if (linkMode) {
+      // Check if a node is already selected
+      if (state.selected && state.selected.type === 'node') {
+        linkSourceNode = state.selected.id;
+        const node = findNode(linkSourceNode);
+        console.log(`[LINK MODE] Node ${linkSourceNode} already selected - using as source`);
+        showToast(`Link source: ${node?.name || `N${linkSourceNode}`} → Click target node`);
+      } else {
+        console.log(`[LINK MODE] No node selected - waiting for first click`);
+        showToast('Link mode ON - Click first node');
+      }
+    } else {
+      showToast('Link mode OFF');
+    }
+    render();
+  });
+
+  // Zoom controls
+  const btnZoomIn = document.getElementById('btnZoomIn');
+  const btnZoomOut = document.getElementById('btnZoomOut');
+  const btnZoomFit = document.getElementById('btnZoomFit');
+  const btnZoomLevel = document.getElementById('btnZoomLevel');
+  const zoomMenu = document.getElementById('zoomMenu');
+
+  if (btnZoomIn) {
+    btnZoomIn.addEventListener('click', () => {
+      setZoom(state.zoom * 1.2);
+    });
+  }
+
+  if (btnZoomOut) {
+    btnZoomOut.addEventListener('click', () => {
+      setZoom(state.zoom / 1.2);
+    });
+  }
+
+  if (btnZoomFit) {
+    btnZoomFit.addEventListener('click', () => {
+      fitToView();
+    });
+  }
+
+  // Zoom dropdown menu
+  if (btnZoomLevel && zoomMenu) {
+    btnZoomLevel.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      zoomMenu.hidden = !zoomMenu.hidden;
+      if (!zoomMenu.hidden) {
+        const r = btnZoomLevel.getBoundingClientRect();
+        zoomMenu.style.left = '0';
+        zoomMenu.style.top = '100%';
+      }
+    });
+
+    // Zoom preset items
+    zoomMenu.querySelectorAll('.zoom-preset').forEach(item => {
+      item.addEventListener('click', () => {
+        const zoom = parseFloat(item.dataset.zoom);
+        if (zoom) setZoom(zoom);
+        zoomMenu.hidden = true;
+      });
+    });
+
+    // Fit to view
+    const zoomFitView = document.getElementById('zoomFitView');
+    if (zoomFitView) {
+      zoomFitView.addEventListener('click', () => {
+        fitToView();
+        zoomMenu.hidden = true;
+      });
+    }
+
+    // Reset to 100%
+    const zoomReset = document.getElementById('zoomReset');
+    if (zoomReset) {
+      zoomReset.addEventListener('click', () => {
+        setZoom(1.0);
+        zoomMenu.hidden = true;
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      zoomMenu.hidden = true;
+    });
+    
+    zoomMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+  }
+
+  // Keyboard shortcut for reset zoom
+  window.addEventListener('keydown', (ev) => {
+    if ((ev.ctrlKey || ev.metaKey) && ev.key === '0') {
+      ev.preventDefault();
+      setZoom(1.0);
+    }
+  });
+
+  // Grid toggle and settings
+  const btnGridToggle = document.getElementById('btnGridToggle');
+  const gridMenu = document.getElementById('gridMenu');
+  const gridEnabledCheckbox = document.getElementById('gridEnabled');
+
+  if (btnGridToggle && gridMenu) {
+    btnGridToggle.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      gridMenu.hidden = !gridMenu.hidden;
+    });
+
+    // Grid enable/disable checkbox
+    if (gridEnabledCheckbox) {
+      gridEnabledCheckbox.addEventListener('change', () => {
+        state.gridEnabled = gridEnabledCheckbox.checked;
+        btnGridToggle.classList.toggle('active', state.gridEnabled);
+        render();
+      });
+    }
+
+    // Grid size options
+    gridMenu.querySelectorAll('.grid-size').forEach(item => {
+      item.addEventListener('click', () => {
+        const size = parseInt(item.dataset.size);
+        if (size) {
+          state.gridSize = size;
+          // Update active state
+          gridMenu.querySelectorAll('.grid-size').forEach(i => i.classList.remove('active'));
+          item.classList.add('active');
+          render();
+        }
+      });
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      gridMenu.hidden = true;
+    });
+    
+    gridMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+
+    // Initialize button state
+    btnGridToggle.classList.toggle('active', state.gridEnabled);
+  }
+
+  // Mouse wheel zoom (centered on mouse position)
+  svg.addEventListener('wheel', (ev) => {
+    if (ev.ctrlKey || ev.metaKey) {
+      ev.preventDefault();
+      const delta = ev.deltaY > 0 ? 0.9 : 1.1;
+      const rect = svg.getBoundingClientRect();
+      const mouseX = ev.clientX - rect.left;
+      const mouseY = ev.clientY - rect.top;
+      setZoom(state.zoom * delta, true, mouseX, mouseY);
+    }
+  }, { passive: false });
 
 
   const downloadText = (filename, text, mime="text/plain") => {
@@ -1005,7 +1802,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     return JSON.parse(JSON.stringify({
       nodes: state.nodes, edges: state.edges, groups: state.groups,
       nextNode: state.nextNode, nextEdge: state.nextEdge, nextGroup: state.nextGroup,
-      stylePresets: state.stylePresets
+      stylePresets: state.stylePresets,
+      canvasWidth: state.canvasWidth,
+      canvasHeight: state.canvasHeight,
+      showCanvasBorder: state.showCanvasBorder
     }));
   }
   function applySnapshot(snap) {
@@ -1019,6 +1819,13 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     // Restore presets if snapshot carries them; otherwise keep current
     state.stylePresets = snap.stylePresets || state.stylePresets || { node: {}, edge: {}, group: {} };
     state.styleBrush = null;
+
+    // Restore canvas dimensions
+    if (typeof snap.canvasWidth === 'number') state.canvasWidth = snap.canvasWidth;
+    if (typeof snap.canvasHeight === 'number') state.canvasHeight = snap.canvasHeight;
+    if (typeof snap.showCanvasBorder === 'boolean') state.showCanvasBorder = snap.showCanvasBorder;
+    svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
+    syncGlobalToggles();
 
     // Clear transient UI state
     state.selected = null;
@@ -1064,10 +1871,31 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     l.setAttribute('class', cls);
     return l;
   }
+  
+  function drawCanvasBorder() {
+    if (!state.showCanvasBorder) return;
+    const border = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    border.setAttribute('x', 0);
+    border.setAttribute('y', 0);
+    border.setAttribute('width', state.canvasWidth);
+    border.setAttribute('height', state.canvasHeight);
+    border.setAttribute('fill', 'none');
+    border.setAttribute('stroke', '#444');
+    border.setAttribute('stroke-width', 2);
+    border.setAttribute('stroke-dasharray', '8 4');
+    border.style.pointerEvents = 'none';
+    svg.appendChild(border);
+  }
+  
   function drawGrid() {
-    const w = 1600, h = 900, step = 80;
-    for (let x=0; x<=w; x+=step) svg.appendChild(svgLine(x,0,x,h,'grid'));
-    for (let y=0; y<=h; y+=step) svg.appendChild(svgLine(0,y,w,y,'grid'));
+    const w = state.canvasWidth, h = state.canvasHeight;
+    // Only draw grid if enabled
+    if (state.gridEnabled) {
+      const step = state.gridSize || 40;
+      for (let x=0; x<=w; x+=step) svg.appendChild(svgLine(x,0,x,h,'grid'));
+      for (let y=0; y<=h; y+=step) svg.appendChild(svgLine(0,y,w,y,'grid'));
+    }
+    drawCanvasBorder();
   }
 
 
@@ -1138,6 +1966,8 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     rect.setAttribute('fill', g.fill || "rgba(54, 76, 140, 0.12)");
     rect.setAttribute('stroke', g.stroke || "#6073b8");
     rect.setAttribute('stroke-width', (g.strokeW ?? 2));
+    rect.style.pointerEvents = "auto";  // Make clickable for selection and dragging
+    rect.style.cursor = "grab";  // Show hand cursor
 
     const label = document.createElementNS('http://www.w3.org/2000/svg','text');
     label.setAttribute('x', g.x + 14 + (g.titleDx || 0));
@@ -1158,10 +1988,41 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     rect.addEventListener('mousedown', (ev) => {
       ev.stopPropagation();
       const m = getMouse(ev);
-      select({type:'group', id:g.id});
-      state.dragging = { type:'group', id:g.id, dx: g.x - m.x, dy: g.y - m.y };
+      
+      // In link mode, don't allow group dragging
+      if (linkMode) {
+        return;
+      }
+      
+      // Shift+click without Ctrl - let mouseup/click handle multi-selection, don't set up dragging
+      if (ev.shiftKey && !(ev.ctrlKey || ev.metaKey)) {
+        console.log(`[GROUP MOUSEDOWN] Group ${g.id} - Shift+click, letting click handler handle multi-select`);
+        return;
+      }
+      
+      // Check BEFORE calling select() to preserve multi-selection if dragging
+      // If the clicked group is part of a multi-selection, drag entire selection
+      if (state.selection.groups.has(g.id) && (state.selection.groups.size > 1 || state.selection.nodes.size > 0)) {
+        console.log(`[MULTI-DRAG] Group ${g.id} is part of multi-selection (${state.selection.nodes.size} nodes, ${state.selection.groups.size} groups) - setting up multi-drag`);
+        const origNodes = [...state.selection.nodes].map(id => {
+          const nn = findNode(id); return nn ? {id, x: nn.x, y: nn.y} : null;
+        }).filter(Boolean);
+        const origGroups = [...state.selection.groups].map(id => {
+          const gg = findGroup(id); return gg ? {id, x: gg.x, y: gg.y} : null;
+        }).filter(Boolean);
+        state.dragging = { type:'selection', mx0: m.x, my0: m.y, origNodes, origGroups };
+        state.selected = null; // Clear single selection when dragging multiple
+        console.log(`[MULTI-DRAG] Dragging ${origNodes.length} nodes and ${origGroups.length} groups`);
+      } else {
+        console.log(`[SINGLE-DRAG] Group ${g.id} - single selection drag setup`);
+        // Don't call select() here - it may trigger render() which recreates DOM
+        if (!state.selection.groups.has(g.id)) {
+          setSingleSelection({type:'group', id:g.id});
+        }
+        state.dragging = { type:'group', id:g.id, dx: g.x - m.x, dy: g.y - m.y };
+      }
+      rect.style.cursor = "grabbing";
       state.connectFrom = null;
-      render();
     });
 
     label.addEventListener('mousedown', (ev) => {
@@ -1186,8 +2047,48 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
       render();
     });
 
-    rect.addEventListener('click', (ev) => { ev.stopPropagation(); select({type:'group', id:g.id}); state.connectFrom=null; render(); });
-    label.addEventListener('click', (ev) => { ev.stopPropagation(); select({type:'group', id:g.id}); state.connectFrom=null; render(); });
+    rect.addEventListener('mouseup', (ev) => {
+      // Don't stop propagation - let global handler clear dragging state
+      // Just restore cursor
+      rect.style.cursor = "grab";
+    });
+
+    rect.addEventListener('click', (ev) => { 
+      ev.stopPropagation(); 
+      if (ev.shiftKey) {
+        // Shift+click toggles multi-selection for this group
+        if (state.selection.groups.has(g.id)) {
+          state.selection.groups.delete(g.id);
+          state.selected = null;
+        } else {
+          state.selection.groups.add(g.id);
+          state.selected = null;
+        }
+        render();
+        return;
+      }
+      select({type:'group', id:g.id}); 
+      state.connectFrom=null; 
+      render(); 
+    });
+    label.addEventListener('click', (ev) => { 
+      ev.stopPropagation(); 
+      if (ev.shiftKey) {
+        // Shift+click toggles multi-selection for this group
+        if (state.selection.groups.has(g.id)) {
+          state.selection.groups.delete(g.id);
+          state.selected = null;
+        } else {
+          state.selection.groups.add(g.id);
+          state.selected = null;
+        }
+        render();
+        return;
+      }
+      select({type:'group', id:g.id}); 
+      state.connectFrom=null; 
+      render(); 
+    });
 
     grp.appendChild(rect);
     grp.appendChild(label);
@@ -1212,31 +2113,237 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     return lines;
   }
 
+  function quadraticCurvePath(x1, y1, x2, y2, arch) {
+    // Create bezier curve path
+    // arch controls how much the curve bends (0.3 = moderate, 0 = straight, 0.6 = extreme)
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const offset = dist * arch * 0.5;
+    const cpx = mx - dy/dist * offset;
+    const cpy = my + dx/dist * offset;
+    return `M ${x1} ${y1} Q ${cpx} ${cpy} ${x2} ${y2}`;
+  }
+
+  function curveBaseLabelPoint(x1, y1, x2, y2, arch) {
+    // Label position on curve (midpoint adjusted)
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const offset = dist * arch * 0.25;
+    return { x: mx - dy/dist * offset + 8, y: my + dx/dist * offset - 8 };
+  }
+
+  function getCurveControlPoint(x1, y1, x2, y2, arch) {
+    // Returns the bezier control point (used for draggable handle position)
+    const mx = (x1 + x2) / 2;
+    const my = (y1 + y2) / 2;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const offset = dist * arch * 0.5;
+    const cpx = mx - dy/dist * offset;
+    const cpy = my + dx/dist * offset;
+    return { x: cpx, y: cpy };
+  }
+
   function drawEdge(e) {
     const a = findNode(e.a), b = findNode(e.b);
-    if (!a || !b) return;
+    if (!a || !b) {
+      console.log(`[DRAW EDGE] Edge ${e.id} NOT drawn - missing nodes: a=${!!a}, b=${!!b}`);
+      return;
+    }
+    console.log(`[DRAW EDGE] Drawing edge ${e.id} from node ${e.a} to node ${e.b}, style=${e.style}`);
     const isSel = (state.selected?.type==='edge' && state.selected?.id===e.id) || state.selection.edges.has(e.id);
+
+    // Calculate offset for parallel edges between same nodes
+    // Normalize node pair to ensure consistent ordering (smaller id first)
+    const nodeA = Math.min(e.a, e.b);
+    const nodeB = Math.max(e.a, e.b);
+    const isReversed = e.a > e.b; // Track if this edge is in reverse direction
+    
+    const parallelEdges = state.edges.filter(edge => {
+      const edgeNodeA = Math.min(edge.a, edge.b);
+      const edgeNodeB = Math.max(edge.a, edge.b);
+      return edgeNodeA === nodeA && edgeNodeB === nodeB;
+    });
+    
+    // Sort parallel edges by id for consistent ordering
+    parallelEdges.sort((x, y) => x.id - y.id);
+    
+    const edgeIndex = parallelEdges.findIndex(edge => edge.id === e.id);
+    const totalParallel = parallelEdges.length;
+    
+    console.log(`[PARALLEL] Edge ${e.id}: index=${edgeIndex}, total=${totalParallel}`);
+    
+    // Calculate perpendicular offset
+    let offsetX = 0, offsetY = 0;
+    if (totalParallel > 1) {
+      // Always calculate direction from lower node id to higher node id for consistency
+      const lowNode = findNode(nodeA);
+      const highNode = findNode(nodeB);
+      const dx = highNode.x - lowNode.x;
+      const dy = highNode.y - lowNode.y;
+      const len = Math.sqrt(dx*dx + dy*dy) || 1;
+      // Perpendicular unit vector
+      const perpX = -dy / len;
+      const perpY = dx / len;
+      // Spread edges evenly: offset from center
+      const spacing = 15; // pixels between parallel edges
+      const offsetAmount = (edgeIndex - (totalParallel - 1) / 2) * spacing;
+      offsetX = perpX * offsetAmount;
+      offsetY = perpY * offsetAmount;
+      
+      console.log(`[PARALLEL] Edge ${e.id}: offsetAmount=${offsetAmount}, offsetX=${offsetX.toFixed(2)}, offsetY=${offsetY.toFixed(2)}`);
+    }
+
+    // Offset node positions for this edge
+    const ax = a.x + offsetX;
+    const ay = a.y + offsetY;
+    const bx = b.x + offsetX;
+    const by = b.y + offsetY;
 
     let baseLabel = null;
     if (e.style === 'orthogonal') {
+      // Draw the visible edge
       const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-      p.setAttribute('d', orthogonalPath(a.x,a.y,b.x,b.y, e.route || 'hv'));
+      p.setAttribute('d', orthogonalPath(ax,ay,bx,by, e.route || 'hv'));
       p.setAttribute('class', 'edge' + (isSel ? ' selected' : ''));
       p.setAttribute('stroke-width', (e.strokeW ?? 2));
       p.setAttribute('stroke', e.strokeColor || "#7f8aa6");
-      p.addEventListener('click', (ev) => { ev.stopPropagation(); select({type:'edge', id:e.id}); state.connectFrom=null; render(); });
+      p.style.pointerEvents = 'none'; // Disable clicks on visible edge
       svg.appendChild(p);
-      baseLabel = orthogonalBaseLabelPoint(a.x,a.y,b.x,b.y, e.route || 'hv');
+      
+      // Add invisible wide hit area for easier clicking
+      const hitArea = document.createElementNS('http://www.w3.org/2000/svg','path');
+      hitArea.setAttribute('d', orthogonalPath(ax,ay,bx,by, e.route || 'hv'));
+      hitArea.setAttribute('stroke', 'transparent');
+      hitArea.setAttribute('stroke-width', 20); // Wide invisible hit area
+      hitArea.setAttribute('fill', 'none');
+      hitArea.style.cursor = 'pointer';
+      hitArea.addEventListener('click', (ev) => { 
+        ev.stopPropagation(); 
+        if (ev.shiftKey) {
+          if (state.selection.edges.has(e.id)) {
+            state.selection.edges.delete(e.id);
+            state.selected = null;
+          } else {
+            state.selection.edges.add(e.id);
+            state.selected = null;
+          }
+          render();
+          return;
+        }
+        select({type:'edge', id:e.id}); 
+        state.connectFrom=null; 
+        render(); 
+      });
+      svg.appendChild(hitArea);
+      
+      baseLabel = orthogonalBaseLabelPoint(ax,ay,bx,by, e.route || 'hv');
+    } else if (e.style === 'curve') {
+      // Draw the visible edge
+      const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+      p.setAttribute('d', quadraticCurvePath(ax, ay, bx, by, e.curveArch || 0.3));
+      p.setAttribute('class', 'edge' + (isSel ? ' selected' : ''));
+      p.setAttribute('stroke-width', (e.strokeW ?? 2));
+      p.setAttribute('stroke', e.strokeColor || "#7f8aa6");
+      p.setAttribute('fill', 'none');
+      p.style.pointerEvents = 'none'; // Disable clicks on visible edge
+      svg.appendChild(p);
+      
+      // Add invisible wide hit area for easier clicking
+      const hitArea = document.createElementNS('http://www.w3.org/2000/svg','path');
+      hitArea.setAttribute('d', quadraticCurvePath(ax, ay, bx, by, e.curveArch || 0.3));
+      hitArea.setAttribute('stroke', 'transparent');
+      hitArea.setAttribute('stroke-width', 20); // Wide invisible hit area
+      hitArea.setAttribute('fill', 'none');
+      hitArea.style.cursor = 'pointer';
+      hitArea.addEventListener('click', (ev) => { 
+        ev.stopPropagation(); 
+        if (ev.shiftKey) {
+          if (state.selection.edges.has(e.id)) {
+            state.selection.edges.delete(e.id);
+            state.selected = null;
+          } else {
+            state.selection.edges.add(e.id);
+            state.selected = null;
+          }
+          render();
+          return;
+        }
+        select({type:'edge', id:e.id}); 
+        state.connectFrom=null; 
+        render(); 
+      });
+      svg.appendChild(hitArea);
+      
+      baseLabel = curveBaseLabelPoint(ax, ay, bx, by, e.curveArch || 0.3);
+      
+      // Draw draggable handle at curve midpoint when selected
+      if (isSel) {
+        const cp = getCurveControlPoint(ax, ay, bx, by, e.curveArch || 0.3);
+        const handle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        handle.setAttribute('cx', cp.x);
+        handle.setAttribute('cy', cp.y);
+        handle.setAttribute('r', 6);
+        handle.setAttribute('fill', '#ff6b6b');
+        handle.setAttribute('stroke', '#ffffff');
+        handle.setAttribute('stroke-width', 2);
+        handle.style.cursor = 'grab';
+        handle.addEventListener('mousedown', (ev) => {
+          ev.stopPropagation();
+          state.dragging = {type: 'curveHandle', edgeId: e.id, startX: ev.clientX, startY: ev.clientY, baseArch: e.curveArch || 0.3};
+          handle.style.cursor = 'grabbing';
+        });
+        svg.appendChild(handle);
+      }
     } else {
+      console.log(`[DRAW EDGE] Creating STRAIGHT line from (${ax}, ${ay}) to (${bx}, ${by}), color: ${e.strokeColor || "#7f8aa6"}, strokeW: ${e.strokeW ?? 2}`);
+      
+      // Draw the visible edge
       const line = document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1', a.x); line.setAttribute('y1', a.y);
-      line.setAttribute('x2', b.x); line.setAttribute('y2', b.y);
+      line.setAttribute('x1', ax); line.setAttribute('y1', ay);
+      line.setAttribute('x2', bx); line.setAttribute('y2', by);
       line.setAttribute('class', 'edge' + (isSel ? ' selected' : ''));
       line.setAttribute('stroke-width', (e.strokeW ?? 2));
       line.setAttribute('stroke', e.strokeColor || "#7f8aa6");
-      line.addEventListener('click', (ev) => { ev.stopPropagation(); select({type:'edge', id:e.id}); state.connectFrom=null; render(); });
+      line.style.pointerEvents = 'none'; // Disable clicks on visible edge
+      console.log(`[DRAW EDGE] Line element created and appending to SVG`);
       svg.appendChild(line);
-      baseLabel = { x:(a.x+b.x)/2, y:(a.y+b.y)/2 };
+      
+      // Add invisible wide hit area for easier clicking
+      const hitArea = document.createElementNS('http://www.w3.org/2000/svg','line');
+      hitArea.setAttribute('x1', ax); hitArea.setAttribute('y1', ay);
+      hitArea.setAttribute('x2', bx); hitArea.setAttribute('y2', by);
+      hitArea.setAttribute('stroke', 'transparent');
+      hitArea.setAttribute('stroke-width', 20); // Wide invisible hit area
+      hitArea.style.cursor = 'pointer';
+      hitArea.addEventListener('click', (ev) => { 
+        ev.stopPropagation(); 
+        if (ev.shiftKey) {
+          if (state.selection.edges.has(e.id)) {
+            state.selection.edges.delete(e.id);
+            state.selected = null;
+          } else {
+            state.selection.edges.add(e.id);
+            state.selected = null;
+          }
+          render();
+          return;
+        }
+        select({type:'edge', id:e.id}); 
+        state.connectFrom=null; 
+        render(); 
+      });
+      svg.appendChild(hitArea);
+      
+      console.log(`[DRAW EDGE] Line appended to SVG`);
+      baseLabel = { x:(ax+bx)/2, y:(ay+by)/2 };
     }
 
     const lx = baseLabel.x + (e.labelDx || 0);
@@ -1251,7 +2358,23 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     label.style.pointerEvents = "auto";
     setMultilineText(label, getEdgeLabelLines(e), (e.labelFont || 12));
 
-    label.addEventListener('click', (ev) => { ev.stopPropagation(); select({type:'edge', id:e.id}); state.connectFrom=null; render(); });
+    label.addEventListener('click', (ev) => { 
+      ev.stopPropagation(); 
+      if (ev.shiftKey) {
+        if (state.selection.edges.has(e.id)) {
+          state.selection.edges.delete(e.id);
+          state.selected = null;
+        } else {
+          state.selection.edges.add(e.id);
+          state.selected = null;
+        }
+        render();
+        return;
+      }
+      select({type:'edge', id:e.id}); 
+      state.connectFrom=null; 
+      render(); 
+    });
     label.addEventListener('mousedown', (ev) => {
       if (!(ev.ctrlKey || ev.metaKey)) return;
       ev.stopPropagation();
@@ -1266,8 +2389,22 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
   }
 
   function drawNode(n) {
+    // console.log(`[DRAW] Creating node ${n.id} at (${n.x}, ${n.y})`);
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class', 'node' + (((state.selected?.type==='node' && state.selected.id===n.id) || state.selection.nodes.has(n.id)) ? ' selected' : ''));
+    const isSelected = (state.selected?.type==='node' && state.selected.id===n.id) || state.selection.nodes.has(n.id);
+    const isLinkSource = linkMode && linkSourceNode === n.id;
+    const isInLinkMode = linkMode && isSelected; // In link mode, all selected nodes show as potential sources
+    
+    let classes = 'node';
+    // In link mode, show orange for source (pulsing) or any selected node (ready to be source)
+    if (isLinkSource) {
+      classes += ' link-source'; // Orange pulsing
+    } else if (isInLinkMode) {
+      classes += ' link-source'; // Orange (same style, shows it's ready to be selected as source)
+    } else if (isSelected) {
+      classes += ' selected'; // Normal cyan selection (when not in link mode)
+    }
+    g.setAttribute('class', classes);
 
     const r = (n.r ?? 24);
     const sw = (n.strokeW ?? 2);
@@ -1311,6 +2448,13 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     c.setAttribute('fill', n.fill || "#1b2030");
     c.setAttribute('stroke', n.stroke || "#9fb3ff");
     c.setAttribute('stroke-width', sw);
+    c.style.pointerEvents = "auto";
+    c.style.cursor = "pointer";
+    
+    // Attach click listener directly to circle for better event capture
+    // This is now handled by the group click listener above
+    // console.log(`[DRAW] Attaching click listener to node ${n.id}`, {tagName: c.tagName, class: c.getAttribute('class'), r, x: n.x, y: n.y});
+    // (old click listener code removed - now using group click handler)
 
     const nameX = n.x + (n.nameDx || 0);
     const nameY = n.y + (n.nameDy || 0);
@@ -1325,7 +2469,8 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     if (state.ui.showNodeCode && n.showCode && n.code && n.code.trim()) nameLines.push(n.code.trim());
     nameLines.push(n.name || `N${n.id}`);
     setMultilineText(t, nameLines, (n.nameFont || 13));
-    t.style.pointerEvents = "auto";
+    t.style.pointerEvents = "auto";  // Enable pointer events for Ctrl+drag
+    t.style.cursor = "default";
 
     const tagX = n.x + (n.tagDx || 0);
     const tagY = n.y + 26 + (n.tagDy || 0);
@@ -1337,13 +2482,100 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
     tags.setAttribute('fill', n.tagColor || "#b7c0df");
     tags.style.fontSize = (n.tagFont || 11) + "px";
     tags.textContent = (n.tags?.length) ? n.tags.join(', ') : '';
-    tags.style.pointerEvents = "auto";
+    tags.style.pointerEvents = "auto";  // Enable pointer events for Ctrl+drag
+    tags.style.cursor = "default";
 
     g.appendChild(c); g.appendChild(t); g.appendChild(tags);
 
+    // Handle clicks on the node group (for link mode and regular selection)
+    // Use mouseup instead of click to ensure it fires even after mousedown's stopPropagation
+    console.log(`[NODE LISTENER] Attaching mouseup listener to node ${n.id}`);
+    g.addEventListener('mouseup', (ev) => {
+      const isWithinGroup = g.contains(ev.target);
+      const isCircle = ev.target === c;
+      const isGroup = ev.target === g;
+      console.log(`[NODE CLICK] Node ${n.id} - mouseup target: ${ev.target.tagName}/${ev.target.getAttribute?.('class') ?? 'none'}, isCircle: ${isCircle}, isGroup: ${isGroup}, withinGroup: ${isWithinGroup}, linkMode: ${linkMode}, dragging: ${!!state.dragging}`);
+      
+      // Process if clicked on circle, group, or any child within the group
+      if (isCircle || isGroup || isWithinGroup) {
+        console.log(`[NODE CLICK] Node ${n.id} clicked (mouseup) - linkMode: ${linkMode}, linkSourceNode: ${linkSourceNode}`);
+        
+        // Handle link mode clicks - these take priority over drag detection
+        if (linkMode) {
+          ev.stopPropagation(); // Only stop propagation in link mode
+          if (linkSourceNode === null) {
+            // First click - set source node
+            linkSourceNode = n.id;
+            console.log(`[LINK MODE] Node ${n.id} set as SOURCE - waiting for target click`);
+            select({type:'node', id:n.id});
+            render(); // Show the orange highlight for the source node
+            showToast(`Link source selected: ${n.name || `N${n.id}`} → Now click target node`);
+            return;
+          } else {
+            // Second click - create link
+            if (linkSourceNode === n.id) {
+              console.log(`[LINK MODE] Node ${n.id} - ERROR: Cannot link to itself`);
+              showToast('❌ Cannot link node to itself - click a different target node');
+              return;
+            }
+            console.log(`[LINK MODE] Node ${n.id} set as TARGET - Creating link from ${linkSourceNode} to ${n.id}`);
+            const sourceId = linkSourceNode;
+            linkSourceNode = null;  // Reset for next link - ready to select new source
+            createEdge(sourceId, n.id, true); // Skip edge selection in link mode
+            clearSelection(); // Clear any selection to show we're ready for next source
+            render(); // Update display to show cleared selection
+            showToast(`✓ Link created! Click a node to be the source for the next link`);
+            return;
+          }
+        }
+        
+        // Check if this was actually a drag operation (only matters outside link mode)
+        if (state.dragging) {
+          console.log(`[NODE CLICK] Node ${n.id} - Was dragging, letting global handler clear state`);
+          // Don't stop propagation - let the global mouseup handler clear state.dragging
+          return;
+        }
+        
+        // Not in link mode and not dragging - regular selection click
+        console.log(`[NODE CLICK] Node ${n.id} - Normal selection`);
+        ev.stopPropagation();
+        
+        // Handle shift-click for multi-selection
+        if (ev.shiftKey) {
+          if (state.selection.nodes.has(n.id)) {
+            state.selection.nodes.delete(n.id);
+            state.selected = null;
+          } else {
+            state.selection.nodes.add(n.id);
+            state.selected = null;
+          }
+          render();
+          return;
+        }
+        
+        // Normal click - select this node
+        select({type:'node', id:n.id});
+        render();
+      }
+    });
+
     g.addEventListener('mousedown', (ev) => {
+      // In link mode, don't set up dragging or select - let mouseup handle everything
+      if (linkMode) {
+        ev.stopPropagation();
+        console.log(`[NODE MOUSEDOWN] Node ${n.id} - in link mode, skipping drag setup`);
+        return;
+      }
+
+      // Shift+click without Ctrl - let mouseup handle multi-selection, don't set up dragging
+      if (ev.shiftKey && !(ev.ctrlKey || ev.metaKey)) {
+        ev.stopPropagation();
+        console.log(`[NODE MOUSEDOWN] Node ${n.id} - Shift+click, letting mouseup handle multi-select`);
+        return;
+      }
+
+      // Normal mode - set up dragging
       ev.stopPropagation();
-      if (ev.shiftKey) return;
       const m = getMouse(ev);
       state.lastMouse = { x: m.x, y: m.y };
 
@@ -1367,60 +2599,81 @@ document.getElementById('miSave').addEventListener('click', () => { closeFileMen
         return;
       }
 
-      select({type:'node', id:n.id});
-      state.dragging = { type:'node', id:n.id, dx: n.x - m.x, dy: n.y - m.y };
-      state.connectFrom = null;
-      render();
-    });
-
-    g.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      if (ev.shiftKey) {
-        if (!state.connectFrom) {
-          state.connectFrom = n.id;
-          select({type:'node', id:n.id});
-          showToast(`Connecting: source ${n.name || `N${n.id}`}. Shift+click target.`);
-        } else if (state.connectFrom === n.id) {
-          state.connectFrom = null;
-          showToast('Cancelled connect.');
-        } else {
-          createEdge(state.connectFrom, n.id);
-          state.connectFrom = null;
+      // Check BEFORE calling select() to preserve multi-selection if dragging
+      // If the clicked node is part of a multi-selection, drag entire selection
+      if (state.selection.nodes.has(n.id) && (state.selection.nodes.size > 1 || state.selection.groups.size > 0)) {
+        console.log(`[MULTI-DRAG] Node ${n.id} is part of multi-selection (${state.selection.nodes.size} nodes, ${state.selection.groups.size} groups) - setting up multi-drag`);
+        const origNodes = [...state.selection.nodes].map(id => {
+          const nn = findNode(id); return nn ? {id, x: nn.x, y: nn.y} : null;
+        }).filter(Boolean);
+        const origGroups = [...state.selection.groups].map(id => {
+          const gg = findGroup(id); return gg ? {id, x: gg.x, y: gg.y} : null;
+        }).filter(Boolean);
+        state.dragging = { type:'selection', mx0: m.x, my0: m.y, origNodes, origGroups };
+        state.selected = null; // Clear single selection when dragging multiple
+        console.log(`[MULTI-DRAG] Dragging ${origNodes.length} nodes and ${origGroups.length} groups`);
+      } else {
+        console.log(`[SINGLE-DRAG] Node ${n.id} - single selection drag setup`);
+        // Don't call select() here - it triggers render() which recreates DOM and breaks drag
+        // Just add to selection set for visual feedback
+        if (!state.selection.nodes.has(n.id)) {
+          setSingleSelection({type:'node', id:n.id});
         }
-        render();
-        return;
+        state.dragging = { type:'node', id:n.id, dx: n.x - m.x, dy: n.y - m.y };
       }
-      select({type:'node', id:n.id});
       state.connectFrom = null;
-      render();
     });
 
     t.addEventListener('mousedown', (ev) => {
-      if (!(ev.ctrlKey || ev.metaKey)) return;
-      ev.stopPropagation();
-      const m = getMouse(ev);
-      state.dragging = { type:'nodeNameLabel', id:n.id, dx: nameX - m.x, dy: nameY - m.y };
-      select({type:'node', id:n.id});
-      state.connectFrom = null;
-      render();
+      console.log(`[TEXT MOUSEDOWN] Node ${n.id} name label - Ctrl: ${ev.ctrlKey}, Meta: ${ev.metaKey}`);
+      // Ctrl+drag to move the label
+      if (ev.ctrlKey || ev.metaKey) {
+        console.log(`[TEXT MOUSEDOWN] Node ${n.id} - Setting up name label drag`);
+        ev.stopPropagation();
+        const m = getMouse(ev);
+        state.dragging = { type:'nodeNameLabel', id:n.id, dx: nameX - m.x, dy: nameY - m.y };
+        select({type:'node', id:n.id});
+        state.connectFrom = null;
+        render();
+        return;
+      }
+      // Normal click - don't handle it here, let it bubble to parent group
     });
+    
     tags.addEventListener('mousedown', (ev) => {
-      if (!(ev.ctrlKey || ev.metaKey)) return;
-      ev.stopPropagation();
-      const m = getMouse(ev);
-      state.dragging = { type:'nodeTagLabel', id:n.id, dx: tagX - m.x, dy: tagY - m.y };
-      select({type:'node', id:n.id});
-      state.connectFrom = null;
-      render();
+      console.log(`[TAGS MOUSEDOWN] Node ${n.id} tags - Ctrl: ${ev.ctrlKey}, Meta: ${ev.metaKey}`);
+      // Ctrl+drag to move the tags
+      if (ev.ctrlKey || ev.metaKey) {
+        console.log(`[TAGS MOUSEDOWN] Node ${n.id} - Setting up tags drag`);
+        ev.stopPropagation();
+        const m = getMouse(ev);
+        state.dragging = { type:'nodeTagLabel', id:n.id, dx: tagX - m.x, dy: tagY - m.y };
+        select({type:'node', id:n.id});
+        state.connectFrom = null;
+        render();
+        return;
+      }
+      // Normal click - don't handle it here, let it bubble to parent group
     });
 
+    // console.log(`[DRAW] Node ${n.id} fully created, appending to SVG`);
     svg.appendChild(g);
+    // Verify circle is in DOM and has proper bounds
+    const circles = g.querySelectorAll('circle, polygon');
+    // console.log(`[DRAW] Node ${n.id} appended - found ${circles.length} circle(s) in group`, circles[0] ? {cx: circles[0].getAttribute('cx'), cy: circles[0].getAttribute('cy'), r: circles[0].getAttribute('r')} : 'none');
   }
 
   const noSel = document.getElementById('noSelection');
   const nodeIns = document.getElementById('nodeInspector');
   const edgeIns = document.getElementById('edgeInspector');
   const groupIns = document.getElementById('groupInspector');
+
+  // UUID fields (read-only)
+  const nodeUUID = document.getElementById('nodeUUID');
+  const edgeUUID = document.getElementById('edgeUUID');
+  const edgeSourceUUID = document.getElementById('edgeSourceUUID');
+  const edgeTargetUUID = document.getElementById('edgeTargetUUID');
+  const groupUUID = document.getElementById('groupUUID');
 
   const nodeName = document.getElementById('nodeName');
   const nodeTags = document.getElementById('nodeTags');
@@ -1488,6 +2741,9 @@ const groupTitle = document.getElementById('groupTitle');
   function setSingleSelection(sel) {
     clearSelection(true);
     state.selected = sel;
+    if (sel) {
+      console.log(`[SELECTION] ${sel.type.toUpperCase()} selected: id=${sel.id}`);
+    }
     if (!sel) return;
 
     // Apply format painter if armed (single-click targets)
@@ -1564,6 +2820,9 @@ const groupTitle = document.getElementById('groupTitle');
     if (state.selected.type === 'node') {
       const n = findNode(state.selected.id); if (!n) return;
       nodeIns.style.display='block';
+      // Show UUID (generate if missing for legacy data)
+      if (!n.uuid) n.uuid = generateUUID();
+      if (nodeUUID) nodeUUID.value = n.uuid;
       nodeName.value = n.name || '';
       nodeTags.value = (n.tags||[]).join(', ');
       nodeExtraTags.value = n.extraTags || '';
@@ -1571,21 +2830,45 @@ const groupTitle = document.getElementById('groupTitle');
       nodeShowCode.value = (n.showCode !== false) ? '1' : '0';
       nodeNameFont.value = n.nameFont ?? 13;
       nodeTagFont.value = n.tagFont ?? 11;
-      nodeNameColor.value = n.nameColor || "#eaeaea";
-      nodeTagColor.value = n.tagColor || "#b7c0df";
-      nodeFill.value = n.fill || "#1b2030";
-      nodeStroke.value = n.stroke || "#9fb3ff";
+      nodeNameColor.value = n.nameColor || "#333333";
+      nodeTagColor.value = n.tagColor || "#666666";
+      nodeFill.value = n.fill || "#dae8fc";
+      nodeStroke.value = n.stroke || "#6c8ebf";
       if (nodeStrokeW) nodeStrokeW.value = n.strokeW ?? 2;
       if (nodeSize) nodeSize.value = n.r ?? 24;
       if (nodeStrokeW) nodeStrokeW.value = n.strokeW ?? 2;
       const g = n.groupId ? findGroup(n.groupId) : null;
       nodeGroup.value = g ? g.title : '(none)';
+      // Update color pickers
+      if (window.updateColorPickers) window.updateColorPickers();
       return;
     }
 
     if (state.selected.type === 'edge') {
       const e = findEdge(state.selected.id); if (!e) return;
       edgeIns.style.display='block';
+      // Show UUIDs (generate if missing for legacy data)
+      if (!e.uuid) e.uuid = generateUUID();
+      if (edgeUUID) edgeUUID.value = e.uuid;
+      // Show source and target node UUIDs
+      const sourceNode = findNode(e.a);
+      const targetNode = findNode(e.b);
+      if (edgeSourceUUID) {
+        if (sourceNode) {
+          if (!sourceNode.uuid) sourceNode.uuid = generateUUID();
+          edgeSourceUUID.value = sourceNode.uuid;
+        } else {
+          edgeSourceUUID.value = '(unknown)';
+        }
+      }
+      if (edgeTargetUUID) {
+        if (targetNode) {
+          if (!targetNode.uuid) targetNode.uuid = generateUUID();
+          edgeTargetUUID.value = targetNode.uuid;
+        } else {
+          edgeTargetUUID.value = '(unknown)';
+        }
+      }
       edgeTag.value = e.tag || '';
       edgeLatency.value = (typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : '';
       edgeExtraTags.value = e.extraTags || '';
@@ -1594,15 +2877,29 @@ const groupTitle = document.getElementById('groupTitle');
       edgeStyle.value = e.style || 'straight';
       edgeRoute.value = e.route || 'hv';
       edgeLabelFont.value = e.labelFont ?? 12;
-      edgeLabelColor.value = e.labelColor || "#eaeaea";
+      edgeLabelColor.value = e.labelColor || "#333333";
       if (edgeStrokeW) edgeStrokeW.value = e.strokeW ?? 2;
-      if (edgeStrokeColor) edgeStrokeColor.value = e.strokeColor || "#7f8aa6";
+      if (edgeStrokeColor) edgeStrokeColor.value = e.strokeColor || "#666666";
+      // Update color pickers
+      if (window.updateColorPickers) window.updateColorPickers();
+      // Show/hide curve arch control based on style
+      const curveArchControl = document.getElementById('curveArchControl');
+      if (e.style === 'curve') {
+        curveArchControl.style.display = 'block';
+        edgeCurveArch.value = (e.curveArch || 0.3);
+        document.getElementById('curveArchValue').textContent = (e.curveArch || 0.3).toFixed(2);
+      } else {
+        curveArchControl.style.display = 'none';
+      }
       return;
     }
 
     if (state.selected.type === 'group') {
       const g = findGroup(state.selected.id); if (!g) return;
       groupIns.style.display='block';
+      // Show UUID (generate if missing for legacy data)
+      if (!g.uuid) g.uuid = generateUUID();
+      if (groupUUID) groupUUID.value = g.uuid;
       groupTitle.value = g.title || '';
       groupType.value = g.type || 'country';
       // Parent Region dropdown
@@ -1624,10 +2921,12 @@ const groupTitle = document.getElementById('groupTitle');
       groupW.value = Math.round(g.w);
       groupH.value = Math.round(g.h);
       groupTitleFont.value = g.titleFont ?? 14;
-      groupTitleColor.value = g.titleColor || "#eaeaea";
-      groupFill.value = g.fill || "rgba(54, 76, 140, 0.12)";
-      groupStroke.value = g.stroke || "#6073b8";
-      if (groupStrokeW) groupStrokeW.value = g.strokeW ?? 2;
+      groupTitleColor.value = g.titleColor || "#333333";
+      groupFill.value = g.fill || "#ffffff";
+      groupStroke.value = g.stroke || "#666666";
+      if (groupStrokeW) groupStrokeW.value = g.strokeW ?? 1;
+      // Update color pickers
+      if (window.updateColorPickers) window.updateColorPickers();
     }
   }
 
@@ -1739,13 +3038,22 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     const e = findEdge(state.selected.id); if (!e) return;
     e.tag = edgeTag.value; commit(); render();
   });
-  edgeLatency.addEventListener('input', () => {
+  edgeLatency.addEventListener('change', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
     const raw = String(edgeLatency.value ?? '').trim();
-    if (raw === '' || raw === '.' || raw === '-' ) { e.latencyMs = null; commit(); render(); return; }
+    if (raw === '') { e.latencyMs = null; commit(); render(); return; }
+    // Replace comma with period for locales that use comma as decimal separator
     const v = parseFloat(raw.replace(',', '.'));
-    if (Number.isFinite(v)) { e.latencyMs = v; commit(); render(); }
+    if (Number.isFinite(v) && v >= 0) { 
+      e.latencyMs = v; 
+      edgeLatency.value = v; // Normalize the display
+      commit(); 
+      render(); 
+    } else {
+      // Invalid input - revert to previous value
+      edgeLatency.value = (typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : '';
+    }
   });
   edgeExtraTags.addEventListener('input', () => {
     if (state.selected?.type!=='edge') return;
@@ -1766,12 +3074,30 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
   edgeStyle.addEventListener('change', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
-    e.style = edgeStyle.value; commit(); render();
+    e.style = edgeStyle.value; 
+    // Show/hide curve arch control
+    const curveArchControl = document.getElementById('curveArchControl');
+    if (e.style === 'curve') {
+      curveArchControl.style.display = 'block';
+      if (!e.curveArch) e.curveArch = 0.3;
+      edgeCurveArch.value = e.curveArch;
+      document.getElementById('curveArchValue').textContent = e.curveArch.toFixed(2);
+    } else {
+      curveArchControl.style.display = 'none';
+    }
+    commit(); render();
   });
   edgeRoute.addEventListener('change', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
     e.route = edgeRoute.value; commit(); render();
+  });
+  edgeCurveArch.addEventListener('input', () => {
+    if (state.selected?.type!=='edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.curveArch = clamp(Number(edgeCurveArch.value||0.3), 0, 0.6);
+    document.getElementById('curveArchValue').textContent = e.curveArch.toFixed(2);
+    commit(); render();
   });
   edgeLabelFont.addEventListener('input', () => {
     if (state.selected?.type!=='edge') return;
@@ -1857,8 +3183,16 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
 
   // Preset buttons
   btnNodePresetSave.addEventListener('click', () => {
-    if (state.selected?.type!=='node') { showToast("Select a node first."); return; }
-    const n = findNode(state.selected.id); if (!n) return;
+    console.log(`[PRESET SAVE] Button clicked - state.selected:`, state.selected);
+    console.log(`[PRESET SAVE] state.selected?.type:`, state.selected?.type);
+    if (state.selected?.type!=='node') { 
+      showToast("Select a node first."); 
+      console.log(`[PRESET SAVE] FAILED - not a node or no selection`);
+      return; 
+    }
+    const n = findNode(state.selected.id); 
+    console.log(`[PRESET SAVE] Found node:`, n);
+    if (!n) return;
     savePreset('node', n);
   });
   btnNodePresetApply.addEventListener('click', () => {
@@ -1895,7 +3229,9 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
   function makeNode(id, x, y) {
     return {
       id,
-      x: clamp(x,30,1570), y: clamp(y,30,870),
+      uuid: generateUUID(),
+      x: x,
+      y: y,
       shape: state.defaultNodeShape || 'circle', r:24, strokeW:2,
       address:'', city:'', country:'',
       name: `Node${id}`,
@@ -1904,8 +3240,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       tags: [],
       extraTags:"",
       groupId:null,
-      fill:"#1b2030", stroke:"#9fb3ff",
-      nameColor:"#eaeaea", tagColor:"#b7c0df",
+      fill:"#dae8fc", stroke:"#6c8ebf",
+      nameColor:"#333333", tagColor:"#666666",
       nameFont:13, tagFont:11,
       nameDx:0, nameDy:0, tagDx:0, tagDy:0
     };
@@ -1914,17 +3250,19 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
   function makeEdge(id, a, b) {
     return {
       id, a, b,
+      uuid: generateUUID(),
       tag:'',
       latencyMs:null,
       strokeW:2,
-      strokeColor:"#7f8aa6",
+      strokeColor:"#666666",
       capacity:'Up to 10G WL',
       code: `L-${id}`,
       showCode: true,
       extraTags:"",
       style:'straight',
       route:'hv',
-      labelDx:0, labelDy:0, labelFont:12, labelColor:"#eaeaea"
+      curveArch:0.3,
+      labelDx:0, labelDy:0, labelFont:12, labelColor:"#333333"
     };
   }
 
@@ -1932,6 +3270,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     const isRegion = type === 'region';
     return {
       id,
+      uuid: generateUUID(),
       type: isRegion ? 'region' : 'country',
       parentId: null,
       x: clamp(x,20,1400),
@@ -1940,9 +3279,10 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       h: isRegion ? 320 : 220,
       title: isRegion ? `Region${id}` : "Country",
       extraTags:"",
-      fill: isRegion ? "rgba(120, 140, 180, 0.10)" : "rgba(54, 76, 140, 0.12)",
-      stroke: isRegion ? "#7f8aa6" : "#6073b8",
-      titleColor:"#eaeaea",
+      fill: isRegion ? "rgba(245, 245, 245, 0.9)" : "rgba(255, 255, 255, 0.95)",
+      stroke: isRegion ? "#999999" : "#666666",
+      strokeW: 1,
+      titleColor:"#333333",
       titleFont: isRegion ? 15 : 14,
       titleDx:0, titleDy:0
     };
@@ -1958,14 +3298,20 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     showToast(`Created node ${node.name}.`);
   }
 
-  function createEdge(a, b) {
-    const exists = state.edges.some(e => (e.a===a && e.b===b) || (e.a===b && e.b===a));
-    if (exists) { showToast('Link already exists.'); return; }
+  function createEdge(a, b, skipSelection = false) {
+    // Allow multiple links between same nodes - no uniqueness check
+    console.log(`[CREATE EDGE] Creating edge from node ${a} to node ${b}`);
     const id = state.nextEdge++;
-    state.edges.push(makeEdge(id, a, b));
-    select({type:'edge', id});
+    const newEdge = makeEdge(id, a, b);
+    console.log(`[CREATE EDGE] Edge ${id} created, adding to state.edges. Total edges: ${state.edges.length + 1}`);
+    state.edges.push(newEdge);
+    if (!skipSelection) {
+      select({type:'edge', id});
+    }
     commit(); render();
-    showToast('Created link. Edit fields in Inspector.');
+    if (!skipSelection) {
+      showToast('Created link. Edit fields in Inspector.');
+    }
   }
 
   function createGroup(x, y, type='country') {
@@ -2023,16 +3369,48 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
 
 
   svg.addEventListener('mousedown', (ev) => {
-    // Marquee selection on empty canvas
+    // Middle mouse button for panning
+    if (ev.button === 1) {
+      ev.preventDefault();
+      const wrap = document.getElementById('wrap');
+      state.dragging = { 
+        type: 'canvasPan', 
+        startScrollX: wrap.scrollLeft, 
+        startScrollY: wrap.scrollTop,
+        startMouseX: ev.clientX,
+        startMouseY: ev.clientY
+      };
+      svg.style.cursor = 'grabbing';
+      return;
+    }
+
+    // Only left button from here on
     if (ev.button !== 0) return;
     if (state.placingGroup) return;
     if (ev.target !== svg) return; // only empty space
+
     const m = getMouse(ev);
     state.lastMouse = { x: m.x, y: m.y };
-    state.marquee = { x0: m.x, y0: m.y, x: m.x, y: m.y, w: 0, h: 0, additive: ev.shiftKey };
-    if (!state.marquee.additive) clearSelection();
-    state.connectFrom = null;
-    render();
+
+    // Alt+drag for marquee selection
+    if (ev.altKey) {
+      state.marquee = { x0: m.x, y0: m.y, x: m.x, y: m.y, w: 0, h: 0, additive: ev.shiftKey };
+      if (!state.marquee.additive) clearSelection();
+      state.connectFrom = null;
+      render();
+      return;
+    }
+
+    // Default: click and drag to pan the canvas
+    const wrap = document.getElementById('wrap');
+    state.dragging = { 
+      type: 'canvasPan', 
+      startScrollX: wrap.scrollLeft, 
+      startScrollY: wrap.scrollTop,
+      startMouseX: ev.clientX,
+      startMouseY: ev.clientY
+    };
+    svg.style.cursor = 'grabbing';
   });
 
   svg.addEventListener('dblclick', (ev) => {
@@ -2041,34 +3419,54 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     createNode(m.x, m.y);
   });
 
-  // Debug: Alt+click on canvas shows coordinates (helps confirm handlers are active)
+  // Consolidated SVG canvas click handler: group placement + selection clearing + debug alt+click
   svg.addEventListener('click', (ev) => {
-    if (ev.altKey) {
-      const m = getMouse(ev);
-      showToast(`Canvas click @ ${Math.round(m.x)}, ${Math.round(m.y)}`);
-    }
-  });
-
-
-  svg.addEventListener('click', (ev) => {
+    const target = ev.target;
+    const tagName = target?.tagName ?? 'unknown';
+    const className = target?.getAttribute?.('class') ?? 'none';
+    const isDirectSvg = ev.target === svg;
+    console.log(`[CANVAS CLICK] target: ${tagName}/${className}, directSVG: ${isDirectSvg}, linkMode: ${linkMode}`);
+    
+    // Handle group placement
     if (state.placingGroup) {
       const m = getMouse(ev);
       createGroup(m.x, m.y, state.placingGroupType || 'country');
       state.placingGroup = false;
-    state.placingGroupType = 'country';
-    state.stylePresets = state.stylePresets || { node: {}, edge: {}, group: {} };
-    state.styleBrush = null;
+      state.placingGroupType = 'country';
+      state.stylePresets = state.stylePresets || { node: {}, edge: {}, group: {} };
+      state.styleBrush = null;
       document.getElementById('btnAddGroup').classList.remove('primary');
       document.getElementById('btnAddRegion').classList.remove('primary');
-      document.getElementById('btnAddRegion').classList.remove('primary');
+      render();
       return;
     }
-    clearSelection(); state.connectFrom=null; render();
+    
+    // Debug: Alt+click on canvas shows coordinates (helps confirm handlers are active)
+    if (ev.altKey) {
+      const m = getMouse(ev);
+      showToast(`Canvas click @ ${Math.round(m.x)}, ${Math.round(m.y)}`);
+    }
+    
+    // Only clear selection if clicking directly on the SVG background, not on child elements
+    if (ev.target === svg) {
+      console.log(`[CANVAS CLICK] Clearing selection (clicked empty canvas)`);
+      clearSelection(); state.connectFrom=null; render();
+    }
   });
 
   svg.addEventListener('mousemove', (ev) => {
     const m = getMouse(ev);
     state.lastMouse = { x: m.x, y: m.y };
+
+    // Handle canvas panning
+    if (state.dragging && state.dragging.type === 'canvasPan') {
+      const wrap = document.getElementById('wrap');
+      const dx = ev.clientX - state.dragging.startMouseX;
+      const dy = ev.clientY - state.dragging.startMouseY;
+      wrap.scrollLeft = state.dragging.startScrollX - dx;
+      wrap.scrollTop = state.dragging.startScrollY - dy;
+      return;
+    }
 
     if (state.marquee) {
       const x1 = state.marquee.x0, y1 = state.marquee.y0;
@@ -2088,8 +3486,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       if (!g) return;
       const dx = m.x - state.resizingGroup.mx0;
       const dy = m.y - state.resizingGroup.my0;
-      g.w = clamp(state.resizingGroup.startW + dx, 120, 1600 - g.x);
-      g.h = clamp(state.resizingGroup.startH + dy, 90, 900 - g.y);
+      g.w = Math.max(120, state.resizingGroup.startW + dx);
+      g.h = Math.max(90, state.resizingGroup.startH + dy);
       refreshAllMemberships();
       render();
       return;
@@ -2102,13 +3500,13 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       const dy = m.y - state.dragging.my0;
       state.dragging.origGroups.forEach(o => {
         const g = findGroup(o.id); if (!g) return;
-        g.x = clamp(o.x + dx, 10, 1600 - g.w - 10);
-        g.y = clamp(o.y + dy, 10, 900 - g.h - 10);
+        g.x = o.x + dx;
+        g.y = o.y + dy;
       });
       state.dragging.origNodes.forEach(o => {
         const n = findNode(o.id); if (!n) return;
-        n.x = clamp(o.x + dx, 30, 1570);
-        n.y = clamp(o.y + dy, 30, 870);
+        n.x = o.x + dx;
+        n.y = o.y + dy;
       });
       refreshAllMemberships();
       render();
@@ -2123,6 +3521,29 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       const targetY = m.y + state.dragging.dy;
       e.labelDx = targetX - base.x;
       e.labelDy = targetY - base.y;
+      render();
+      return;
+    }
+
+    if (state.dragging.type === 'curveHandle') {
+      const e = findEdge(state.dragging.edgeId); if (!e) return;
+      const a = findNode(e.a), b = findNode(e.b); if (!a || !b) return;
+      // Calculate perpendicular distance from line AB
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist === 0) return;
+      // Vector from A to current mouse
+      const mx = m.x - a.x;
+      const my = m.y - a.y;
+      // Project onto perpendicular to AB
+      const perpDist = (mx * (-dy) + my * dx) / dist;
+      // Convert perpendicular distance to arch value
+      // arch = perpDist / (dist * 0.5)
+      e.curveArch = clamp(perpDist / (dist * 0.5), -0.6, 0.6);
+      // Update slider to match
+      edgeCurveArch.value = e.curveArch;
+      document.getElementById('curveArchValue').textContent = e.curveArch.toFixed(2);
       render();
       return;
     }
@@ -2159,8 +3580,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
 
     if (state.dragging.type === 'node') {
       const n = findNode(state.dragging.id); if (!n) return;
-      n.x = clamp(m.x + state.dragging.dx, 30, 1570);
-      n.y = clamp(m.y + state.dragging.dy, 30, 870);
+      n.x = m.x + state.dragging.dx;
+      n.y = m.y + state.dragging.dy;
       updateNodeGroupMembership(n);
       render();
       return;
@@ -2169,8 +3590,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     if (state.dragging.type === 'group') {
       const g = findGroup(state.dragging.id); if (!g) return;
       const oldX = g.x, oldY = g.y;
-      g.x = clamp(m.x + state.dragging.dx, 10, 1600 - g.w - 10);
-      g.y = clamp(m.y + state.dragging.dy, 10, 900 - g.h - 10);
+      g.x = m.x + state.dragging.dx;
+      g.y = m.y + state.dragging.dy;
       const dx = g.x - oldX;
       const dy = g.y - oldY;
 
@@ -2178,23 +3599,23 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
         // Move all child countries (and their nodes) along with the region
         state.groups.forEach(c => {
           if (c.type === 'country' && c.parentId === g.id) {
-            c.x = clamp(c.x + dx, 10, 1600 - c.w - 10);
-            c.y = clamp(c.y + dy, 10, 900 - c.h - 10);
+            c.x = c.x + dx;
+            c.y = c.y + dy;
           }
         });
         state.nodes.forEach(n => {
           const country = n.groupId ? findGroup(n.groupId) : null;
           if (country && country.type === 'country' && country.parentId === g.id) {
-            n.x = clamp(n.x + dx, 30, 1570);
-            n.y = clamp(n.y + dy, 30, 870);
+            n.x = n.x + dx;
+            n.y = n.y + dy;
           }
         });
       } else {
         // Move nodes inside the country box along with it
         state.nodes.forEach(n => {
           if (n.groupId === g.id) {
-            n.x = clamp(n.x + dx, 30, 1570);
-            n.y = clamp(n.y + dy, 30, 870);
+            n.x = n.x + dx;
+            n.y = n.y + dy;
           }
         });
       }
@@ -2234,8 +3655,26 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       return;
     }
 
-    state.dragging=null;
-    state.resizingGroup=null;
+    // Commit changes if we were dragging
+    const wasDragging = state.dragging !== null;
+    
+    // Restore cursor after canvas panning
+    if (state.dragging?.type === 'canvasPan') {
+      svg.style.cursor = '';
+    }
+    
+    // Commit changes if we were dragging curve handle
+    if (state.dragging?.type === 'curveHandle') {
+      commit();
+    }
+    
+    state.dragging = null;
+    state.resizingGroup = null;
+    
+    // Render if we were dragging to update cursor/state
+    if (wasDragging) {
+      render();
+    }
   });
 
   window.addEventListener('keydown', (ev) => {
@@ -2270,7 +3709,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     }
     if (ev.key === 'Escape') {
       clearBrush();
-      state.connectFrom=null; state.placingGroup=false;
+      clearLinkMode();
+      state.placingGroup=false;
       document.getElementById('btnAddGroup').classList.remove('primary');
       document.getElementById('btnAddRegion').classList.remove('primary');
       render();
@@ -2299,11 +3739,15 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
 document.getElementById('btnExportLinks').addEventListener('click', () => {
   // Create header row
   const headers = [
+    'Link UUID',
+    'A-End Node UUID',
     'A-End Node tag',
     'A-End node code',
+    'B-End Node UUID',
     'B-End Node tag',
     'B-End Node code',
     'Link tag',
+    'Link code',
     'Link latency',
     'Link Capacity Options',
     'Link Additional tags/Notes'
@@ -2318,12 +3762,21 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
     
     if (!a || !b) continue; // Skip if nodes don't exist
     
+    // Ensure UUIDs exist
+    if (!e.uuid) e.uuid = generateUUID();
+    if (!a.uuid) a.uuid = generateUUID();
+    if (!b.uuid) b.uuid = generateUUID();
+    
     const row = [
+      escapeCSV(e.uuid || ''),
+      escapeCSV(a.uuid || ''),
       escapeCSV(a.name || ''),
       escapeCSV(a.code || ''),
+      escapeCSV(b.uuid || ''),
       escapeCSV(b.name || ''),
       escapeCSV(b.code || ''),
       escapeCSV(e.tag || ''),
+      escapeCSV(e.code || ''),
       escapeCSV((typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : ''),
       escapeCSV(e.capacity || ''),
       escapeCSV(e.extraTags || '')
@@ -2338,6 +3791,7 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
 
   document.getElementById('btnExportNodes').addEventListener('click', () => {
   const headers = [
+    'Node UUID',
     'Node Name',
     'Node Code',
     'Tags',
@@ -2345,6 +3799,7 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
     'Address',
     'City',
     'Country Box',
+    'Country Box UUID',
     'X',
     'Y'
   ];
@@ -2352,8 +3807,14 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
   let csv = headers.join(',') + '\r\n';
   
   for (const n of state.nodes) {
+    // Ensure UUID exists
+    if (!n.uuid) n.uuid = generateUUID();
+    
     const g = n.groupId ? findGroup(n.groupId) : null;
+    if (g && !g.uuid) g.uuid = generateUUID();
+    
     const row = [
+      escapeCSV(n.uuid || ''),
       escapeCSV(n.name || ''),
       escapeCSV(n.code || ''),
       escapeCSV((n.tags||[]).join('|')),
@@ -2361,6 +3822,7 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       escapeCSV(n.address || ''),
       escapeCSV(n.city || ''),
       escapeCSV(g?.title || ''),
+      escapeCSV(g?.uuid || ''),
       escapeCSV(Math.round(n.x)),
       escapeCSV(Math.round(n.y))
     ];
@@ -2389,7 +3851,12 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       nextNode: state.nextNode,
       nextEdge: state.nextEdge,
       nextGroup: state.nextGroup,
-      stylePresets: state.stylePresets
+      stylePresets: state.stylePresets,
+      canvasWidth: state.canvasWidth,
+      canvasHeight: state.canvasHeight,
+      showCanvasBorder: state.showCanvasBorder,
+      gridEnabled: state.gridEnabled,
+      gridSize: state.gridSize
     };
   }
 
@@ -2476,7 +3943,9 @@ function loadProjectObject(obj) {
     labelFont: (typeof e.labelFont === 'number') ? e.labelFont : 12,
     labelColor: e.labelColor || '#eaeaea',
     strokeW: (typeof e.strokeW === 'number') ? e.strokeW : 2,
-    capacity: e.capacity || 'Up to 10G WL'
+    strokeColor: e.strokeColor || '#7f8aa6',
+    capacity: e.capacity || 'Up to 10G WL',
+    curveArch: (typeof e.curveArch === 'number') ? e.curveArch : 0.3
   }));
 
   state.groups = gg.map(g => ({
@@ -2499,6 +3968,28 @@ function loadProjectObject(obj) {
   state.nextEdge = (typeof obj.nextEdge === 'number') ? obj.nextEdge : (Math.max(0, ...state.edges.map(e=>e.id)) + 1);
   state.nextGroup = (typeof obj.nextGroup === 'number') ? obj.nextGroup : (Math.max(0, ...state.groups.map(g=>g.id)) + 1);
   
+  // Restore canvas dimensions
+  if (typeof obj.canvasWidth === 'number') state.canvasWidth = obj.canvasWidth;
+  if (typeof obj.canvasHeight === 'number') state.canvasHeight = obj.canvasHeight;
+  if (typeof obj.showCanvasBorder === 'boolean') state.showCanvasBorder = obj.showCanvasBorder;
+  
+  // Restore grid settings
+  if (typeof obj.gridEnabled === 'boolean') state.gridEnabled = obj.gridEnabled;
+  if (typeof obj.gridSize === 'number') state.gridSize = obj.gridSize;
+  // Update grid UI
+  const gridEnabledCb = document.getElementById('gridEnabled');
+  const btnGridToggle = document.getElementById('btnGridToggle');
+  const gridMenu = document.getElementById('gridMenu');
+  if (gridEnabledCb) gridEnabledCb.checked = state.gridEnabled;
+  if (btnGridToggle) btnGridToggle.classList.toggle('active', state.gridEnabled);
+  if (gridMenu) {
+    gridMenu.querySelectorAll('.grid-size').forEach(item => {
+      item.classList.toggle('active', parseInt(item.dataset.size) === state.gridSize);
+    });
+  }
+  
+  svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
+  
   // Restore style presets
   state.stylePresets = obj.stylePresets || { node:{}, edge:{}, group:{} };
   
@@ -2519,6 +4010,9 @@ function loadProjectObject(obj) {
   history.stack = [];
   history.index = -1;
   pushHistory();
+  
+  // Sync UI toggles
+  syncGlobalToggles();
   
   // Render and update UI
   render();
@@ -2574,9 +4068,128 @@ function loadProjectObject(obj) {
     if (raw) showToast("Autosave available — click “Recover Autosave” if needed.");
   })();
 
+  // Inspector panel controls (draggable, minimizable, closeable)
+  const inspector = document.getElementById('inspector');
+  const inspectorHeader = document.getElementById('inspectorHeader');
+  const btnMinimizeInspector = document.getElementById('btnMinimizeInspector');
+  const btnCloseInspector = document.getElementById('btnCloseInspector');
+  const btnToggleInspector = document.getElementById('btnToggleInspector');
+
+  let inspectorDragging = false;
+  let inspectorDragOffset = { x: 0, y: 0 };
+  let inspectorMinimized = false;
+
+  // Toggle inspector from header button
+  if (btnToggleInspector) {
+    btnToggleInspector.addEventListener('click', () => {
+      if (inspector.style.display === 'none') {
+        inspector.style.display = 'flex';
+        btnToggleInspector.classList.add('primary');
+      } else {
+        inspector.style.display = 'none';
+        btnToggleInspector.classList.remove('primary');
+      }
+    });
+  }
+
+  // Make inspector draggable
+  inspectorHeader.addEventListener('mousedown', (ev) => {
+    if (ev.target.tagName === 'BUTTON' || ev.target.closest('button')) return;
+    inspectorDragging = true;
+    const rect = inspector.getBoundingClientRect();
+    inspectorDragOffset.x = ev.clientX - rect.left;
+    inspectorDragOffset.y = ev.clientY - rect.top;
+    inspector.style.cursor = 'grabbing';
+    ev.preventDefault();
+  });
+
+  window.addEventListener('mousemove', (ev) => {
+    if (!inspectorDragging) return;
+    const layout = document.getElementById('layout');
+    const layoutRect = layout.getBoundingClientRect();
+    
+    let newLeft = ev.clientX - layoutRect.left - inspectorDragOffset.x;
+    let newTop = ev.clientY - layoutRect.top - inspectorDragOffset.y;
+    
+    // Keep inspector within bounds
+    const maxLeft = layoutRect.width - inspector.offsetWidth;
+    const maxTop = layoutRect.height - 44; // At least show header
+    
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+    
+    inspector.style.left = newLeft + 'px';
+    inspector.style.top = newTop + 'px';
+    inspector.style.right = 'auto'; // Remove right positioning
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (inspectorDragging) {
+      inspectorDragging = false;
+      inspector.style.cursor = '';
+    }
+  });
+
+  // Minimize/Maximize toggle
+  btnMinimizeInspector.addEventListener('click', () => {
+    inspectorMinimized = !inspectorMinimized;
+    inspector.classList.toggle('minimized', inspectorMinimized);
+    btnMinimizeInspector.textContent = inspectorMinimized ? '+' : '−';
+    btnMinimizeInspector.title = inspectorMinimized ? 'Maximize' : 'Minimize';
+  });
+
+  // Close inspector
+  btnCloseInspector.addEventListener('click', () => {
+    inspector.style.display = 'none';
+    if (btnToggleInspector) btnToggleInspector.classList.remove('primary');
+    showToast('Inspector hidden. Press "I" to show it again.');
+  });
+
+  // Keyboard shortcut to toggle inspector visibility
+  window.addEventListener('keydown', (ev) => {
+    if (ev.key.toLowerCase() === 'i' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+      if (inspector.style.display === 'none') {
+        inspector.style.display = 'flex';
+        if (btnToggleInspector) btnToggleInspector.classList.add('primary');
+        showToast('Inspector shown.');
+      } else {
+        inspector.style.display = 'none';
+        if (btnToggleInspector) btnToggleInspector.classList.remove('primary');
+        showToast('Inspector hidden. Press "I" to show it again.');
+      }
+    }
+  });
+
   refreshPresetSelects();
+  syncGlobalToggles();
   pushHistory();
+  updateViewBox(); // Initialize pan and zoom
   render();
+
+  // Initialize color pickers with palette
+  const colorInputs = [
+    'nodeFill', 'nodeStroke', 'nodeNameColor', 'nodeTagColor',
+    'edgeStrokeColor', 'edgeLabelColor',
+    'groupFill', 'groupStroke', 'groupTitleColor'
+  ];
+  const colorPickers = {};
+  colorInputs.forEach(id => {
+    const input = document.getElementById(id);
+    if (input && input.type === 'color') {
+      colorPickers[id] = createColorPicker(input);
+    }
+  });
+
+  // Update color pickers when inspector is populated
+  const originalSyncInspector = window.syncInspector || (() => {});
+  window.updateColorPickers = function() {
+    Object.values(colorPickers).forEach(cp => {
+      if (cp && cp.update) cp.update();
+    });
+  };
+
+  // Initialize inspector button state
+  if (btnToggleInspector) btnToggleInspector.classList.add('primary');
 
   showToast('Ready — double-click to create a node.');
 })();
