@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Diagram Builder (Nodes/Links/Country Boxes) → CSV + NDG</title>
+  <title>Diagram Builder (Nodes/Links/Containers) → CSV + NDG</title>
   <style>
     :root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
     body { margin: 0; background:#ffffff; color:#333; }
@@ -40,8 +40,20 @@
       justify-content: center;
     }
     .tool-btn:hover { background: #e8e8e8; border-color: #d0d0d0; }
-    .tool-btn.active, .tool-btn.primary { background: #0096D6; color: #fff; border-color: #0096D6; }
-    .tool-btn.shape-tool.active { background: #0096D6; color: #fff; }
+    .tool-btn.active, .tool-btn.primary { 
+      background: #d0e8f5; 
+      color: #0066a0; 
+      border-color: #0096D6; 
+    }
+    .tool-btn.shape-tool.active { 
+      background: #d0e8f5; 
+      color: #0066a0; 
+      border-color: #0096D6;
+    }
+    .tool-btn.active svg, .tool-btn.primary svg,
+    .tool-btn.shape-tool.active svg {
+      stroke: #0066a0;
+    }
     
     .tool-sep { width: 1px; height: 24px; background: #d0d0d0; margin: 0 6px; }
     
@@ -60,14 +72,14 @@
     .hint { opacity:.7; font-size: 12px; color:#666; }
     input[type="file"]{ display:none; }
 
-    #layout { display: flex; height: calc(100vh - 72px); position: relative; }
-    #wrap { flex: 1; position: relative; overflow: auto; background: #f0f0f0; }
+    #layout { display: flex; height: calc(100vh - 110px); position: relative; }
+    #wrap { flex: 1; position: relative; overflow: scroll; background: #f0f0f0; min-width: 0; }
     #inspector {
       position: absolute;
       right: 20px;
       top: 20px;
       width: 340px;
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 160px);
       background: #ffffff;
       border: 1px solid #d0d0d0;
       border-radius: 8px;
@@ -85,6 +97,160 @@
       max-height: 40px;
       resize: none;
     }
+    
+    /* Cable System Navigator Panel */
+    #cableNavigator {
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      width: 280px;
+      max-height: calc(100vh - 160px);
+      background: #ffffff;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      resize: both;
+      min-width: 220px;
+      max-width: 400px;
+      min-height: 200px;
+    }
+    #cableNavigator.minimized {
+      height: 40px !important;
+      max-height: 40px;
+      resize: none;
+    }
+    
+    /* Cable System Inspector Panel */
+    #cableSystemInspectorPanel {
+      position: absolute;
+      left: 320px;
+      top: 20px;
+      width: 340px;
+      max-height: calc(100vh - 160px);
+      background: #ffffff;
+      border: 1px solid #d0d0d0;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      resize: both;
+      min-width: 280px;
+      max-width: 500px;
+      min-height: 200px;
+    }
+    #cableSystemInspectorPanel.minimized {
+      height: 40px !important;
+      max-height: 40px;
+      resize: none;
+    }
+    #cableInspectorHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #e8f4e8;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: move;
+      user-select: none;
+    }
+    #cableInspectorHeader h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    #cableInspectorControls {
+      display: flex;
+      gap: 4px;
+    }
+    #cableInspectorControls button {
+      background: transparent;
+      border: 1px solid #d0d0d0;
+      color: #666;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #cableInspectorControls button:hover { background: #e8e8e8; }
+    #cableInspectorContent {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+    }
+    #cableInspectorContent .row { margin-bottom: 10px; }
+    #cableInspectorContent label { display: block; font-size: 11px; color: #555; margin-bottom: 4px; font-weight: 500; }
+    #cableInspectorContent input, #cableInspectorContent select, #cableInspectorContent textarea {
+      width: 100%; box-sizing: border-box;
+      padding: 6px 8px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 12px;
+    }
+    #cableInspectorContent .inline { display: flex; gap: 8px; }
+    #cableInspectorContent .inline > div { flex: 1; }
+    
+    #cableNavigatorHeader {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #f0f4f8;
+      border-bottom: 1px solid #e0e0e0;
+      cursor: move;
+      user-select: none;
+    }
+    #cableNavigatorHeader h3 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+    #cableNavigatorControls {
+      display: flex;
+      gap: 4px;
+    }
+    #cableNavigatorControls button {
+      background: transparent;
+      border: 1px solid #d0d0d0;
+      color: #666;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #cableNavigatorControls button:hover { background: #e8e8e8; }
+    #cableNavigatorContent {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .cable-system-item {
+      padding: 8px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cable-system-item:hover { background: #f5f5f5; }
+    .cable-system-item.selected { background: #e3f2fd; border-left: 3px solid #0096D6; }
+    .cable-system-item .cs-name { font-weight: 500; font-size: 12px; }
+    .cable-system-item .cs-fullname { font-size: 10px; color: #666; }
+    .cable-system-item .cs-count { font-size: 10px; color: #888; }
+    
     #inspectorHeader {
       display: flex;
       align-items: center;
@@ -156,7 +322,7 @@
     .muted kbd { background:#f0f0f0; padding:2px 5px; border-radius:3px; font-size:10px; border:1px solid #d0d0d0; }
 
     svg { display:block; user-select:none; background:#fff; }
-    #svgContainer { display: inline-block; }
+    #svgContainer { display: block; min-width: max-content; min-height: max-content; }
     .grid { stroke:#e8e8e8; stroke-width:1; }
 
     .group-rect { rx:8; ry:8; }
@@ -261,6 +427,31 @@
       border-color: #0096D6;
     }
 
+    /* Toolbar color grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 20px);
+      gap: 3px;
+    }
+    .color-grid-item {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #ccc;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .color-grid-item:hover {
+      border-color: #0096D6;
+      transform: scale(1.1);
+    }
+    .color-grid-item.selected {
+      border: 2px solid #0096D6;
+    }
+    .link-style-item.active, .link-route-item.active {
+      background: #e8f4fc;
+      color: #0096D6;
+    }
+
     .marquee { fill: rgba(0,150,214,0.1); stroke:#0096D6; stroke-width:1; stroke-dasharray:4 2; }
   
     /* Color Palette Picker */
@@ -349,15 +540,76 @@
     .shape-btn:hover{ background:#f0f0f0; }
     .shape-btn.active{ background:#0096D6; border-color:#0096D6; color:#fff; }
 
+    /* Print Preview Modal */
+    #printPreviewModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 10000;
+      justify-content: center;
+      align-items: center;
+    }
+    #printPreviewModal.show { display: flex; }
+    #printPreviewContent {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    #printPreviewHeader {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      border-bottom: 1px solid #e0e0e0;
+      background: #fafafa;
+    }
+    #printPreviewHeader h3 { margin: 0; font-size: 16px; }
+    #printPreviewControls { display: flex; gap: 8px; align-items: center; }
+    #printPreviewBody {
+      flex: 1;
+      overflow: auto;
+      padding: 20px;
+      background: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    #printPreviewPage {
+      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      padding: 20px;
+    }
+    #printPreviewPage svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
   
-    @media print{
-      body{ background:#ffffff !important; color:#000000 !important; }
-      header, .toast{ display:none !important; }
-      svg{ background:#ffffff !important; }
-      .edge{ stroke:#000000 !important; }
-      .edge-label, .node-label, .group-title{ fill:#000000 !important; }
-      .node-circle{ stroke:#000000 !important; fill:#ffffff !important; }
-      .group-rect{ stroke:#000000 !important; fill:rgba(0,0,0,0.04) !important; }
+    @media print {
+      body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+      header, .toast, #inspector, #printPreviewModal { display: none !important; }
+      #layout { height: auto !important; }
+      #wrap { overflow: visible !important; background: #fff !important; }
+      #svgContainer { 
+        width: 100% !important; 
+        height: auto !important;
+      }
+      svg { 
+        background: #fff !important; 
+        width: 100% !important;
+        height: auto !important;
+        max-width: 100%;
+      }
+      .grid { display: none !important; }
     }
   </style>
 </head>
@@ -380,6 +632,10 @@
       <div class="item" id="miClearAutosave">Clear Autosave</div>
       <div class="sep"></div>
       <div class="item" id="miClearDiagram">Clear Diagram</div>
+      <div class="item" id="miTrimCanvas">Trim Canvas to Content</div>
+      <div class="sep"></div>
+      <div class="item" id="miPrintPreview">Print Preview…</div>
+      <div class="item" id="miPrint">Print… <span style="opacity:0.5;float:right">Ctrl+P</span></div>
       <div class="sep"></div>
       <div class="item" id="miExportSVG">Export as SVG…</div>
       <div class="item" id="miExportPNG">Export as PNG…</div>
@@ -438,11 +694,32 @@
         <div class="item" id="zoomReset">Reset to 100% <span style="opacity:0.5;float:right">Ctrl+0</span></div>
       </div>
     </div>
-    <button class="tool-btn" id="btnZoomIn" type="button" title="Zoom In">⊕</button>
-    <button class="tool-btn" id="btnZoomOut" type="button" title="Zoom Out">⊖</button>
-    <button class="tool-btn" id="btnZoomFit" type="button" title="Fit to View">⊡</button>
+    <!-- Zoom In -->
+    <button class="tool-btn" id="btnZoomIn" type="button" title="Zoom In">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+    </button>
+    <!-- Zoom Out -->
+    <button class="tool-btn" id="btnZoomOut" type="button" title="Zoom Out">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/>
+      </svg>
+    </button>
+    <!-- Fit to View -->
+    <button class="tool-btn" id="btnZoomFit" type="button" title="Fit to View">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    </button>
+    <!-- Grid Toggle -->
     <div style="position:relative;">
-      <button class="tool-btn" id="btnGridToggle" type="button" title="Toggle Grid">▦</button>
+      <button class="tool-btn" id="btnGridToggle" type="button" title="Toggle Grid">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+          <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          <line x1="6" y1="3" x2="6" y2="21"/><line x1="12" y1="3" x2="12" y2="21"/><line x1="18" y1="3" x2="18" y2="21"/>
+        </svg>
+      </button>
       <div class="menu" id="gridMenu" hidden style="min-width:150px;">
         <label class="item toggle-item"><input type="checkbox" id="gridEnabled" checked /> Show Grid</label>
         <div class="sep"></div>
@@ -456,51 +733,215 @@
     
     <div class="tool-sep"></div>
     
-    <!-- Undo/Redo -->
-    <button class="tool-btn" id="btnUndo" type="button" title="Undo (Ctrl+Z)">↶</button>
-    <button class="tool-btn" id="btnRedo" type="button" title="Redo (Ctrl+Shift+Z)">↷</button>
+    <!-- Undo -->
+    <button class="tool-btn" id="btnUndo" type="button" title="Undo (Ctrl+Z)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 7v6h6"/><path d="M3 13c0-4.97 4.03-9 9-9s9 4.03 9 9-4.03 9-9 9c-2.12 0-4.07-.74-5.61-1.97"/>
+      </svg>
+    </button>
+    <!-- Redo -->
+    <button class="tool-btn" id="btnRedo" type="button" title="Redo (Ctrl+Shift+Z)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 7v6h-6"/><path d="M21 13c0-4.97-4.03-9-9-9s-9 4.03-9 9 4.03 9 9 9c2.12 0 4.07-.74 5.61-1.97"/>
+      </svg>
+    </button>
     
     <div class="tool-sep"></div>
     
     <!-- Delete -->
-    <button class="tool-btn" id="btnDelete" type="button" title="Delete Selected">⌫</button>
+    <button class="tool-btn" id="btnDelete" type="button" title="Delete Selected">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+      </svg>
+    </button>
     
     <div class="tool-sep"></div>
     
-    <!-- Containers -->
-    <button class="tool-btn" id="btnAddGroup" type="button" title="Add Country/Organization Box">▢</button>
-    <button class="tool-btn" id="btnAddRegion" type="button" title="Add Region Container">⊞</button>
+    <!-- Container Box -->
+    <button class="tool-btn" id="btnAddGroup" type="button" title="Add Container Box">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+      </svg>
+    </button>
+    <!-- Group Box -->
+    <button class="tool-btn" id="btnAddRegion" type="button" title="Add Group Box (Container of Containers)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/>
+      </svg>
+    </button>
     
     <div class="tool-sep"></div>
     
     <!-- Shape Tools -->
-    <button class="tool-btn shape-tool active" data-shape="circle" type="button" title="Circle">○</button>
-    <button class="tool-btn shape-tool" data-shape="square" type="button" title="Square">□</button>
-    <button class="tool-btn shape-tool" data-shape="triangle" type="button" title="Triangle">△</button>
-    <button class="tool-btn shape-tool" data-shape="rectangle" type="button" title="Rectangle">▭</button>
-    <button class="tool-btn shape-tool" data-shape="ellipse" type="button" title="Ellipse">⬭</button>
-    <button class="tool-btn shape-tool" data-shape="hexagon" type="button" title="Hexagon">⎔</button>
+    <button class="tool-btn shape-tool active" data-shape="circle" type="button" title="Circle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+    </button>
+    <button class="tool-btn shape-tool" data-shape="square" type="button" title="Square">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16"/></svg>
+    </button>
+    <button class="tool-btn shape-tool" data-shape="triangle" type="button" title="Triangle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12,3 22,21 2,21"/></svg>
+    </button>
+    <button class="tool-btn shape-tool" data-shape="rectangle" type="button" title="Rectangle">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12"/></svg>
+    </button>
+    <button class="tool-btn shape-tool" data-shape="ellipse" type="button" title="Ellipse">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="6"/></svg>
+    </button>
+    <button class="tool-btn shape-tool" data-shape="hexagon" type="button" title="Hexagon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="12,2 21,7 21,17 12,22 3,17 3,7"/></svg>
+    </button>
     
     <div class="tool-sep"></div>
     
     <!-- Link Tool -->
-    <button class="tool-btn" id="btnCreateLink" type="button" title="Create Link (click two nodes)">↗</button>
+    <button class="tool-btn" id="btnCreateLink" type="button" title="Create Link (click two nodes)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      </svg>
+    </button>
     
     <div class="tool-sep"></div>
     
-    <!-- Brush (Format Painter) -->
-    <button class="tool-btn" id="btnBrush" type="button" title="Brush - Copy and apply formatting">⌘</button>
+    <!-- Fill Color -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnFillColor" type="button" title="Fill Color">
+        <span style="display:flex; flex-direction:column; align-items:center; line-height:1;">
+          <svg width="18" height="14" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 9l-6-6-7.4 7.4a2 2 0 0 0 0 2.8l4.2 4.2a2 2 0 0 0 2.8 0L17 9z"/>
+            <path d="M4 2l4 4"/>
+            <path d="M20 12c0 1.5-1.2 2.5-2.5 2.5S15 14 15 14s1.2-2.5 2.5-2.5S20 10.5 20 12z" fill="currentColor"/>
+          </svg>
+          <span id="fillColorIndicator" style="width:18px; height:4px; background:#dae8fc; border:1px solid #999; margin-top:2px; border-radius:1px;"></span>
+        </span>
+      </button>
+      <div class="menu color-menu" id="fillColorMenu" hidden style="min-width:180px; padding:8px;">
+        <div style="font-size:11px; color:#666; margin-bottom:6px;">Fill Color</div>
+        <div class="color-grid" id="fillColorGrid"></div>
+        <div style="margin-top:8px; display:flex; gap:4px; align-items:center;">
+          <input type="color" id="fillColorCustom" style="width:28px; height:28px; border:none; padding:0; cursor:pointer;" />
+          <span style="font-size:11px; color:#666;">Custom</span>
+        </div>
+      </div>
+    </div>
+    
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnStrokeColor" type="button" title="Stroke/Line Color">
+        <span style="display:flex; flex-direction:column; align-items:center; line-height:1;">
+          <svg width="18" height="14" viewBox="0 0 24 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 2a2.5 2.5 0 1 1 3.5 3.5L6 18l-4 1 1-4L15 2z"/>
+          </svg>
+          <span id="strokeColorIndicator" style="width:18px; height:4px; background:#6c8ebf; border:1px solid #999; margin-top:2px; border-radius:1px;"></span>
+        </span>
+      </button>
+      <div class="menu color-menu" id="strokeColorMenu" hidden style="min-width:180px; padding:8px;">
+        <div style="font-size:11px; color:#666; margin-bottom:6px;">Stroke/Line Color</div>
+        <div class="color-grid" id="strokeColorGrid"></div>
+        <div style="margin-top:8px; display:flex; gap:4px; align-items:center;">
+          <input type="color" id="strokeColorCustom" style="width:28px; height:28px; border:none; padding:0; cursor:pointer;" />
+          <span style="font-size:11px; color:#666;">Custom</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Line Width -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnLineWidth" type="button" title="Line Width">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <rect x="2" y="4" width="20" height="2" rx="1"/>
+          <rect x="2" y="11" width="20" height="3" rx="1.5"/>
+          <rect x="2" y="18" width="20" height="4" rx="2"/>
+        </svg>
+      </button>
+      <div class="menu" id="lineWidthMenu" hidden style="min-width:140px;">
+        <div style="padding:6px 12px; font-size:11px; color:#666; border-bottom:1px solid #e0e0e0;">Line Width</div>
+        <div class="item line-width-item" data-width="1">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="1"/></svg> 1px
+        </div>
+        <div class="item line-width-item" data-width="2">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="2"/></svg> 2px
+        </div>
+        <div class="item line-width-item" data-width="3">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="3"/></svg> 3px
+        </div>
+        <div class="item line-width-item" data-width="4">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="4"/></svg> 4px
+        </div>
+        <div class="item line-width-item" data-width="5">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="5"/></svg> 5px
+        </div>
+        <div class="item line-width-item" data-width="6">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="6"/></svg> 6px
+        </div>
+      </div>
+    </div>
+    
+    <!-- Link Style -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnLinkStyle" type="button" title="Link Style">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M5 19 Q 5 5, 19 5"/>
+        </svg>
+      </button>
+      <div class="menu" id="linkStyleMenu" hidden style="min-width:160px;">
+        <div style="padding:6px 12px; font-size:11px; color:#666; border-bottom:1px solid #e0e0e0;">Link Style</div>
+        <div class="item link-style-item" data-style="straight">― Straight</div>
+        <div class="item link-style-item" data-style="orthogonal">┌ Orthogonal (90°)</div>
+        <div class="item link-style-item" data-style="curve">∿ Curved</div>
+        <div class="sep"></div>
+        <div style="padding:6px 12px; font-size:11px; color:#666;">Orthogonal Direction</div>
+        <div class="item link-route-item" data-route="hv">→↓ Horizontal first</div>
+        <div class="item link-route-item" data-route="vh">↓→ Vertical first</div>
+      </div>
+    </div>
     
     <div class="tool-sep"></div>
     
+    <!-- Brush (Format Painter) - Tilted brush like reference -->
+    <button class="tool-btn" id="btnBrush" type="button" title="Format Painter - Copy and apply formatting">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Handle -->
+        <path d="M5 19 Q 7 17, 9 15"/>
+        <circle cx="4" cy="20" r="1.5" fill="currentColor"/>
+        <!-- Ferrule -->
+        <rect x="8" y="8" width="8" height="4" rx="1" transform="rotate(-45 12 10)"/>
+        <!-- Bristles -->
+        <path d="M13 7 L19 1 L23 5 L17 11 Z"/>
+        <path d="M15 5 L17 7" stroke-width="1.5"/>
+        <path d="M17 3 L19 5" stroke-width="1.5"/>
+        <path d="M19 5 L21 7" stroke-width="1.5"/>
+      </svg>
+    </button>
+    
+    <div style="flex:1;"></div>
+    
+    <!-- Compact Help -->
+    <span style="font-size:10px; color:#888; padding:0 8px;">
+      Dbl-click: add node • Alt+drag: select • Drag: pan • Ctrl+wheel: zoom
+    </span>
+  </div>
+  
+  <!-- Toolbar Line 2: Filters and Panels -->
+  <div style="display:flex; align-items:center; gap:2px; padding:4px 12px; background:#f5f5f5; border-top:1px solid #e8e8e8;">
     <!-- Tag Filter -->
     <div style="position:relative;">
-      <button class="tool-btn" id="btnTagFilter" type="button" title="Filter by Tags">🏷</button>
-      <div class="menu" id="tagFilterMenu" hidden style="min-width:220px; max-height:400px; overflow-y:auto;">
+      <button class="tool-btn" id="btnTagFilter" type="button" title="Filter by Tags">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12.5l-6 6a2 2 0 0 1-2.8 0L3 11.5V4h7.5l8.5 8.5z"/>
+          <circle cx="7" cy="8" r="1.5" fill="currentColor"/>
+        </svg>
+        <span style="font-size:11px; margin-left:4px;">Tags</span>
+      </button>
+      <div class="menu" id="tagFilterMenu" hidden style="min-width:250px; max-height:450px; overflow-y:auto;">
         <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Filter by Tags</div>
+        <div style="padding:8px 12px;">
+          <input type="text" id="tagFilterSearch" placeholder="Search tags..." style="width:100%; padding:6px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
+        </div>
         <label class="item toggle-item"><input type="radio" name="filterMode" value="all" checked /> Show All (no filter)</label>
         <label class="item toggle-item"><input type="radio" name="filterMode" value="include" /> Show only selected tags</label>
         <label class="item toggle-item"><input type="radio" name="filterMode" value="exclude" /> Hide selected tags</label>
+        <div class="sep"></div>
+        <label class="item toggle-item"><input type="checkbox" id="tagFilterExclusive" /> Exclusive (ignore Cable System filter)</label>
         <div class="sep"></div>
         <div style="padding:4px 12px; font-size:11px; color:#666;">Tags:</div>
         <div id="tagFilterList" style="max-height:200px; overflow-y:auto;"></div>
@@ -514,15 +955,143 @@
     
     <div class="tool-sep"></div>
     
-    <!-- Inspector Toggle -->
-    <button class="tool-btn" id="btnToggleInspector" type="button" title="Toggle Inspector (I)">☰</button>
+    <!-- Inspector Toggle (for nodes, links, groups) -->
+    <button class="tool-btn" id="btnToggleInspector" type="button" title="Toggle Inspector (I)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="4" y1="7" x2="20" y2="7"/><circle cx="8" cy="7" r="2" fill="currentColor"/>
+        <line x1="4" y1="12" x2="20" y2="12"/><circle cx="14" cy="12" r="2" fill="currentColor"/>
+        <line x1="4" y1="17" x2="20" y2="17"/><circle cx="10" cy="17" r="2" fill="currentColor"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">Inspector</span>
+    </button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Cable System List Toggle -->
+    <button class="tool-btn" id="btnToggleCableNavigator" type="button" title="Toggle Cable System List">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z"/>
+        <line x1="17" y1="14" x2="17" y2="20"/>
+        <line x1="14" y1="17" x2="20" y2="17"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">CS List</span>
+    </button>
+    
+    <!-- Cable System Details Toggle -->
+    <button class="tool-btn" id="btnToggleCableInspector" type="button" title="Toggle Cable System Details">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <line x1="3" y1="9" x2="21" y2="9"/>
+        <line x1="9" y1="21" x2="9" y2="9"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">CS Details</span>
+    </button>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Cable System Filter -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnCableSystemFilter" type="button" title="Filter by Cable System">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+        </svg>
+        <span style="font-size:11px; margin-left:4px;">System Filter</span>
+      </button>
+      <div class="menu" id="cableSystemFilterMenu" hidden style="min-width:280px; max-height:450px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Filter by Cable System</div>
+        <div style="padding:8px 12px;">
+          <input type="text" id="cableSystemFilterSearch" placeholder="Search cable systems..." style="width:100%; padding:6px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
+        </div>
+        <label class="item toggle-item"><input type="radio" name="cableFilterMode" value="all" checked /> Show All</label>
+        <label class="item toggle-item"><input type="radio" name="cableFilterMode" value="selected" /> Show selected systems only</label>
+        <div class="sep"></div>
+        <label class="item toggle-item"><input type="checkbox" id="cableFilterShowUnmapped" checked /> Include unmapped items</label>
+        <label class="item toggle-item"><input type="checkbox" id="cableFilterExclusive" /> Exclusive (ignore Tag filter)</label>
+        <div class="sep"></div>
+        <div style="padding:4px 12px; font-size:11px; color:#666;">Cable Systems:</div>
+        <div id="cableSystemFilterList" style="max-height:200px; overflow-y:auto;"></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:8px; padding:8px 12px;">
+          <button class="mini-btn" id="btnCableSelectAll" type="button">Select All</button>
+          <button class="mini-btn" id="btnCableClearAll" type="button">Clear All</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Node Filter -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnNodeFilter" type="button" title="Filter by Node">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="8"/>
+          <line x1="12" y1="2" x2="12" y2="6"/>
+          <line x1="12" y1="18" x2="12" y2="22"/>
+          <line x1="2" y1="12" x2="6" y2="12"/>
+          <line x1="18" y1="12" x2="22" y2="12"/>
+        </svg>
+        <span style="font-size:11px; margin-left:4px;">Node Filter</span>
+      </button>
+      <div class="menu" id="nodeFilterMenu" hidden style="min-width:280px; max-height:450px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Filter by Node</div>
+        <div style="padding:8px 12px;">
+          <input type="text" id="nodeFilterSearch" placeholder="Search nodes..." style="width:100%; padding:6px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
+        </div>
+        <label class="item toggle-item"><input type="radio" name="nodeFilterMode" value="all" checked /> Show All</label>
+        <label class="item toggle-item"><input type="radio" name="nodeFilterMode" value="selected" /> Show selected nodes only</label>
+        <div class="sep"></div>
+        <div style="padding:4px 12px; font-size:11px; color:#666;">Display as:</div>
+        <label class="item toggle-item"><input type="radio" name="nodeDisplayMode" value="name" checked /> Node Name</label>
+        <label class="item toggle-item"><input type="radio" name="nodeDisplayMode" value="code" /> Node Code</label>
+        <div class="sep"></div>
+        <label class="item toggle-item"><input type="checkbox" id="nodeFilterExclusive" /> Exclusive (ignore other filters)</label>
+        <div class="sep"></div>
+        <div style="padding:4px 12px; font-size:11px; color:#666;">Nodes:</div>
+        <div id="nodeFilterList" style="max-height:200px; overflow-y:auto;"></div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:8px; padding:8px 12px;">
+          <button class="mini-btn" id="btnNodeSelectAll" type="button">Select All</button>
+          <button class="mini-btn" id="btnNodeClearAll" type="button">Clear All</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tool-sep"></div>
+    
+    <!-- Container Filter -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnContainerFilter" type="button" title="Filter by Container">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"/>
+          <rect x="7" y="7" width="10" height="10" rx="1"/>
+        </svg>
+        <span style="font-size:11px; margin-left:4px;">Container</span>
+      </button>
+      <div class="menu" id="containerFilterMenu" hidden style="min-width:300px; max-height:500px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Filter by Container</div>
+        <div style="padding:8px 12px;">
+          <input type="text" id="containerFilterSearch" placeholder="Search containers..." style="width:100%; padding:6px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
+        </div>
+        <label class="item toggle-item"><input type="radio" name="containerFilterMode" value="all" checked /> Show All</label>
+        <label class="item toggle-item"><input type="radio" name="containerFilterMode" value="selected" /> Show selected containers only</label>
+        <div class="sep"></div>
+        <label class="item toggle-item"><input type="checkbox" id="containerFilterExclusive" /> Exclusive (ignore other filters)</label>
+        <div class="sep"></div>
+        <div id="containerFilterSections">
+          <div style="padding:4px 12px; font-size:11px; color:#666; background:#f5f5f5; border-top:1px solid #e0e0e0;">▢ Container Boxes:</div>
+          <div id="containerFilterListBoxes" style="max-height:150px; overflow-y:auto;"></div>
+          <div style="padding:4px 12px; font-size:11px; color:#666; background:#f5f5f5; border-top:1px solid #e0e0e0;">▣ Groups (Container of Containers):</div>
+          <div id="containerFilterListGroups" style="max-height:150px; overflow-y:auto;"></div>
+        </div>
+        <div class="sep"></div>
+        <div style="display:flex; gap:8px; padding:8px 12px;">
+          <button class="mini-btn" id="btnContainerSelectAll" type="button">Select All</button>
+          <button class="mini-btn" id="btnContainerClearAll" type="button">Clear All</button>
+        </div>
+      </div>
+    </div>
     
     <div style="flex:1;"></div>
-    
-    <!-- Compact Help -->
-    <span style="font-size:10px; color:#888; padding:0 8px;">
-      Dbl-click: add node • Alt+drag: select • Drag: pan • Ctrl+wheel: zoom
-    </span>
   </div>
 </header>
 
@@ -545,7 +1114,7 @@
     </div>
     <div id="inspectorContent">
       <div class="muted" id="inspectorHelp">
-        Select a node, link, or country box to edit it. Use Delete/Backspace to remove selected.
+        Select a node, link, or container box to edit it. Use Delete/Backspace to remove selected.
         <br/>Move any label only with <kbd>Ctrl</kbd>+drag (so normal dragging moves nodes/boxes).
       </div>
 
@@ -670,7 +1239,15 @@
   </div>
 
   <div class="row">
-    <label>Assigned Country Box (auto if inside)</label>
+    <label>Cable Systems</label>
+    <div id="nodeCableSystems" style="max-height:120px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa;">
+      <div class="muted" style="font-size:11px;">No cable systems defined</div>
+    </div>
+    <div class="muted" style="margin-top:4px;">Check the systems this node belongs to.</div>
+  </div>
+
+  <div class="row">
+    <label>Assigned Container Box (auto if inside)</label>
     <input id="nodeGroup" disabled />
   </div>
 </div>
@@ -703,6 +1280,14 @@
       </div>
 
       <div class="row">
+        <label>Cable System</label>
+        <select id="edgeCableSystem" style="width:100%;">
+          <option value="">(None)</option>
+        </select>
+        <div id="edgeCableSystemInfo" class="muted" style="margin-top:4px; font-size:11px;"></div>
+      </div>
+
+      <div class="row">
         <label>Link Tag</label>
         <input id="edgeTag" />
       </div>
@@ -721,6 +1306,12 @@
       <div class="row">
         <label>Capacity Options</label>
         <input id="edgeCapacity" placeholder="e.g. Up to 100G" />
+      </div>
+      
+      <div class="row">
+        <label>Priority</label>
+        <input id="edgePriority" type="number" min="0" max="9999" step="0.01" placeholder="100" />
+        <div class="muted">Numeric value for link priority (default: 100)</div>
       </div>
       
       <div class="row">
@@ -818,19 +1409,19 @@
         <div>
           <label>Box Type</label>
           <select id="groupType">
-            <option value="country">Country</option>
-            <option value="region">Region</option>
+            <option value="country">Container</option>
+            <option value="region">Group (Container of Containers)</option>
           </select>
         </div>
         <div>
-          <label>Parent Region</label>
+          <label>Parent Group</label>
           <select id="groupParent"></select>
         </div>
       </div>
 
       <div class="row">
         <label>Additional Tags (free text)</label>
-        <input id="groupExtraTags" placeholder="e.g. region=APAC" />
+        <input id="groupExtraTags" placeholder="e.g. area=APAC" />
       </div>
 
       <div class="row inline">
@@ -872,6 +1463,141 @@
       </div>
     </div>
     </div><!-- end inspectorContent -->
+  </aside>
+
+  <!-- Cable System Details Panel -->
+  <aside id="cableSystemInspectorPanel" style="display:none;">
+    <div id="cableInspectorHeader">
+      <h3>Cable System Details</h3>
+      <div id="cableInspectorControls">
+        <button id="btnMinimizeCableInspector" title="Minimize/Maximize">−</button>
+        <button id="btnCloseCableInspector" title="Hide">✕</button>
+      </div>
+    </div>
+    <div id="cableInspectorContent">
+      <div id="cableSystemInspector">
+        <div id="csNoSelection" class="muted" style="padding:12px;">Select a cable system from the Systems List to view/edit details.</div>
+        
+        <div id="csDetails" style="display:none;">
+          <div class="row">
+            <label>Unique ID</label>
+            <input id="csUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
+          </div>
+
+          <div class="row">
+            <label>Short Name</label>
+            <input id="csShortName" placeholder="e.g. SMW6" maxlength="20" />
+          </div>
+
+          <div class="row">
+            <label>Full Name</label>
+            <input id="csName" placeholder="e.g. SEA-ME-WE 6" />
+          </div>
+
+          <div class="row inline">
+            <div>
+              <label>Type</label>
+              <select id="csType">
+                <option value="wet">Submarine (Wet)</option>
+                <option value="terrestrial">Terrestrial</option>
+              </select>
+            </div>
+            <div>
+              <label>Status</label>
+              <select id="csStatus">
+                <option value="planned">Planned</option>
+                <option value="operational">In Operation</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row inline">
+            <div>
+              <label>RFS Year</label>
+              <input id="csRfsYear" type="number" min="1980" max="2100" placeholder="2025" />
+            </div>
+            <div>
+              <label>Fiber Pairs</label>
+              <input id="csFiberPairs" type="number" min="1" max="100" placeholder="8" />
+            </div>
+          </div>
+
+          <div class="row">
+            <label>Total Capacity (Tbps)</label>
+            <input id="csCapacity" type="number" min="0" step="0.1" placeholder="100" />
+          </div>
+
+          <div class="row">
+            <label>Owners (comma-separated)</label>
+            <input id="csOwners" placeholder="e.g. Google, Meta, Orange" />
+          </div>
+
+          <div class="row">
+            <label>Filter Tags (comma-separated)</label>
+            <textarea id="csFilterTags" placeholder="default, submarine, Asia" style="height:40px;"></textarea>
+          </div>
+
+          <div class="row">
+            <label>Notes</label>
+            <textarea id="csNotes" placeholder="Additional notes..." style="height:60px;"></textarea>
+          </div>
+
+          <div class="sep" style="margin:12px 0;"></div>
+
+          <div class="row">
+            <label style="font-weight:600;">Member Links (<span id="csMemberLinksCount">0</span>)
+              <button class="mini-btn" id="btnAddLinksToCS" style="margin-left:8px;" title="Click links on canvas to add">+ Add</button>
+            </label>
+            <div id="csMemberLinks" style="max-height:100px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa; font-size:11px;">
+              <div class="muted">No links assigned</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <label style="font-weight:600;">Member Nodes (<span id="csMemberNodesCount">0</span>)
+              <button class="mini-btn" id="btnAddNodesToCS" style="margin-left:8px;" title="Click nodes on canvas to add">+ Add</button>
+            </label>
+            <div id="csMemberNodes" style="max-height:100px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa; font-size:11px;">
+              <div class="muted">No nodes assigned</div>
+            </div>
+          </div>
+          
+          <!-- Add mode indicator bar (hidden by default) -->
+          <div id="csAddModeBar" style="display:none; position:sticky; bottom:0; background:#fff3cd; border:1px solid #ffc107; border-radius:4px; padding:8px; margin-top:12px;">
+            <div style="font-size:12px; font-weight:500; color:#856404;">
+              <span id="csAddModeText">Click links on canvas to add them...</span>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="btn primary" id="btnAcceptAddToCS" style="flex:1;">Accept</button>
+              <button class="btn" id="btnCancelAddToCS" style="flex:1;">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Cable System List Panel -->
+  <aside id="cableNavigator" style="display:none;">
+    <div id="cableNavigatorHeader">
+      <h3>Cable System List</h3>
+      <div id="cableNavigatorControls">
+        <button id="btnMinimizeCableNav" title="Minimize/Maximize">−</button>
+        <button id="btnCloseCableNav" title="Hide Navigator">✕</button>
+      </div>
+    </div>
+    <div id="cableNavigatorContent">
+      <div style="padding:8px 12px; border-bottom:1px solid #e0e0e0;">
+        <input type="text" id="cableNavSearch" placeholder="Search cable systems..." style="width:100%; padding:6px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
+      </div>
+      <div id="cableSystemList" style="flex:1; overflow-y:auto; padding:4px;">
+        <div class="muted" style="padding:12px; text-align:center;">No cable systems defined.<br/>Click "New" to create one.</div>
+      </div>
+      <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; gap:8px;">
+        <button class="btn primary" id="btnNewCableSystem" style="flex:1;">+ New</button>
+        <button class="btn" id="btnDeleteCableSystem" style="flex:1;">Delete</button>
+      </div>
+    </div>
   </aside>
 </div>
 
@@ -1075,10 +1801,13 @@
     nodes: [],
     edges: [],
     groups: [],
+    cableSystems: [],  // Cable system objects
     nextNode: 1,
     nextEdge: 1,
     nextGroup: 1,
+    nextCableSystem: 1,
     selected: null,
+    selectedCableSystem: null,  // Currently selected cable system ID
     connectFrom: null,
     dragging: null,
     resizingGroup: null,
@@ -1098,7 +1827,32 @@
     // Tag filter settings
     tagFilter: {
       mode: 'all',  // 'all', 'include', 'exclude'
-      selectedTags: new Set()
+      selectedTags: new Set(),
+      exclusive: false  // If true, ignore other filters
+    },
+
+    // Cable system filter settings
+    cableSystemFilter: {
+      mode: 'all',  // 'all', 'selected'
+      selectedSystems: new Set(),
+      showUnmapped: true,
+      exclusive: false  // If true, ignore other filters
+    },
+
+    // Node filter settings
+    nodeFilter: {
+      mode: 'all',  // 'all', 'selected'
+      selectedNodes: new Set(),
+      displayMode: 'name',  // 'name' or 'code'
+      exclusive: false  // If true, ignore other filters
+    },
+
+    // Container filter settings
+    containerFilter: {
+      mode: 'all',  // 'all', 'selected'
+      selectedBoxes: new Set(),    // Container boxes (country type)
+      selectedGroups: new Set(),   // Groups/regions (container of containers)
+      exclusive: false  // If true, ignore other filters
     },
 
     // Zoom level (CSS transform based)
@@ -1127,13 +1881,20 @@
     // Keep the viewBox matching canvas dimensions
     svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
     
-    // Update SVG size and container transform for zoom
-    const svgContainer = document.getElementById('svgContainer');
+    // Update SVG size based on zoom - always use the full canvas size
+    // This ensures the entire canvas is always scrollable
     const scaledWidth = state.canvasWidth * state.zoom;
     const scaledHeight = state.canvasHeight * state.zoom;
     
     svg.setAttribute('width', scaledWidth);
     svg.setAttribute('height', scaledHeight);
+    
+    // Also set the container size explicitly to ensure scroll works
+    const svgContainer = document.getElementById('svgContainer');
+    if (svgContainer) {
+      svgContainer.style.width = scaledWidth + 'px';
+      svgContainer.style.height = scaledHeight + 'px';
+    }
     
     // Update zoom level display
     const zoomPct = Math.round(state.zoom * 100);
@@ -1204,18 +1965,106 @@
     const wrapWidth = wrap.clientWidth;
     const wrapHeight = wrap.clientHeight;
     
+    // Calculate scale to fit content
     const scaleX = wrapWidth / contentWidth;
     const scaleY = wrapHeight / contentHeight;
-    const scale = Math.min(scaleX, scaleY) * 0.9; // 90% to add padding
+    let scale = Math.min(scaleX, scaleY) * 0.9; // 90% to add padding
+    
+    // Ensure zoom doesn't make canvas smaller than viewport (so scrollbars remain)
+    // The canvas at this zoom level should be larger than the viewport
+    const minZoomForScrollX = (wrapWidth + 50) / state.canvasWidth;
+    const minZoomForScrollY = (wrapHeight + 50) / state.canvasHeight;
+    const minZoomForScroll = Math.max(minZoomForScrollX, minZoomForScrollY);
+    
+    // Use the larger of: content fit zoom, or minimum zoom for scrolling
+    scale = Math.max(scale, minZoomForScroll);
     
     state.zoom = Math.max(0.1, Math.min(5, scale));
     updateViewBox();
     
-    // Scroll to show the content
+    // Calculate scroll position to center the content
     if (wrap) {
-      wrap.scrollLeft = minX * state.zoom;
-      wrap.scrollTop = minY * state.zoom;
+      // Center the content in the viewport
+      const contentCenterX = (minX + maxX) / 2;
+      const contentCenterY = (minY + maxY) / 2;
+      
+      // Scroll to position content center in the middle of viewport
+      const scrollX = (contentCenterX * state.zoom) - (wrapWidth / 2);
+      const scrollY = (contentCenterY * state.zoom) - (wrapHeight / 2);
+      
+      wrap.scrollLeft = Math.max(0, scrollX);
+      wrap.scrollTop = Math.max(0, scrollY);
     }
+  }
+
+  function trimCanvasToContent() {
+    if (state.nodes.length === 0 && state.groups.length === 0) {
+      showToast('No content to trim to.');
+      return;
+    }
+
+    // Calculate bounding box of all content
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    
+    state.nodes.forEach(n => {
+      const r = n.r || 24;
+      minX = Math.min(minX, n.x - r);
+      minY = Math.min(minY, n.y - r);
+      maxX = Math.max(maxX, n.x + r);
+      maxY = Math.max(maxY, n.y + r);
+    });
+    
+    state.groups.forEach(g => {
+      minX = Math.min(minX, g.x);
+      minY = Math.min(minY, g.y);
+      maxX = Math.max(maxX, g.x + g.w);
+      maxY = Math.max(maxY, g.y + g.h);
+    });
+
+    // Add padding around content
+    const padding = 50;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = maxX + padding;
+    maxY = maxY + padding;
+
+    // Calculate offset to move all objects
+    const offsetX = -minX;
+    const offsetY = -minY;
+
+    // Move all nodes
+    state.nodes.forEach(n => {
+      n.x += offsetX;
+      n.y += offsetY;
+    });
+
+    // Move all groups
+    state.groups.forEach(g => {
+      g.x += offsetX;
+      g.y += offsetY;
+    });
+
+    // Update canvas size to fit content
+    const newWidth = Math.max(400, maxX - minX);
+    const newHeight = Math.max(300, maxY - minY);
+    
+    state.canvasWidth = Math.ceil(newWidth);
+    state.canvasHeight = Math.ceil(newHeight);
+
+    // Reset zoom to 100% and update
+    state.zoom = 1;
+    updateViewBox();
+    
+    // Scroll to top-left
+    const wrap = document.getElementById('wrap');
+    if (wrap) {
+      wrap.scrollLeft = 0;
+      wrap.scrollTop = 0;
+    }
+
+    commit();
+    render();
+    showToast(`Canvas trimmed to ${state.canvasWidth} × ${state.canvasHeight} pixels.`);
   }
 
   // In-app clipboard (for copy/paste)
@@ -1530,6 +2379,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   document.getElementById('miRecover').addEventListener('click', () => { closeAllMenus(); recoverAutosave(); });
   document.getElementById('miClearAutosave').addEventListener('click', () => { closeAllMenus(); clearAutosave(); });
   document.getElementById('miClearDiagram').addEventListener('click', () => { closeAllMenus(); clearDiagram(); });
+  document.getElementById('miTrimCanvas').addEventListener('click', () => { closeAllMenus(); trimCanvasToContent(); });
 
   document.getElementById('miExportSVG').addEventListener('click', () => { closeAllMenus(); exportSVG(); showToast('Exported SVG.'); });
   document.getElementById('miExportPNG').addEventListener('click', () => { closeAllMenus(); exportRaster('png'); showToast('Exported PNG.'); });
@@ -1810,6 +2660,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     const nodeTags = new Map();
     const edgeTags = new Map();
     const groupTags = new Map();
+    const cableSystemTags = new Map();
     const allTags = new Set();
     
     // Count from nodes
@@ -1836,7 +2687,28 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
         allTags.add(tag);
       }
     }
-    return { nodeTags, edgeTags, groupTags, allTags };
+    // Count from cable systems
+    for (const cs of state.cableSystems) {
+      const tags = getCableSystemTags(cs);
+      for (const tag of tags) {
+        cableSystemTags.set(tag, (cableSystemTags.get(tag) || 0) + 1);
+        allTags.add(tag);
+      }
+    }
+    return { nodeTags, edgeTags, groupTags, cableSystemTags, allTags };
+  }
+
+  // Get all tags for a cable system
+  function getCableSystemTags(cs) {
+    const tags = new Set();
+    tags.add('default');
+    if (Array.isArray(cs.filterTags)) {
+      cs.filterTags.forEach(t => {
+        const trimmed = t.trim().toLowerCase();
+        if (trimmed) tags.add(trimmed);
+      });
+    }
+    return tags;
   }
 
   // Get all tags for a node (from tags array + extraTags)
@@ -1907,7 +2779,84 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
 
   // Check if a node should be visible based on current filter
   function isNodeVisible(node) {
+    // Check Container Filter first (if exclusive, this is the only filter that matters)
+    if (state.containerFilter.mode === 'selected' && 
+        (state.containerFilter.selectedBoxes.size > 0 || state.containerFilter.selectedGroups.size > 0)) {
+      
+      let passesContainerFilter = false;
+      
+      // Check if node is in a selected box
+      if (node.groupId && state.containerFilter.selectedBoxes.has(node.groupId)) {
+        passesContainerFilter = true;
+      }
+      
+      // Check if node is in a box that belongs to a selected group
+      if (!passesContainerFilter && node.groupId) {
+        const nodeBox = findGroup(node.groupId);
+        if (nodeBox && nodeBox.parentId && state.containerFilter.selectedGroups.has(nodeBox.parentId)) {
+          passesContainerFilter = true;
+        }
+      }
+      
+      if (state.containerFilter.exclusive) {
+        return passesContainerFilter;
+      }
+      if (!passesContainerFilter) return false;
+    }
+    
+    // Check Node Filter (if exclusive, this is the only filter that matters)
+    if (state.nodeFilter.mode === 'selected' && state.nodeFilter.selectedNodes.size > 0) {
+      const passesNodeFilter = state.nodeFilter.selectedNodes.has(node.id);
+      if (state.nodeFilter.exclusive) {
+        return passesNodeFilter;
+      }
+      if (!passesNodeFilter) return false;
+    }
+    
+    // Check Cable System Filter (if exclusive, this is the only filter that matters)
+    if (state.cableSystemFilter.mode === 'selected' && state.cableSystemFilter.selectedSystems.size > 0) {
+      const nodeCSIds = node.cableSystemIds || [];
+      const isUnmapped = nodeCSIds.length === 0;
+      
+      let passesCSFilter = false;
+      if (isUnmapped && state.cableSystemFilter.showUnmapped) {
+        passesCSFilter = true;
+      } else {
+        // Check if node belongs to any selected cable system
+        for (const csId of nodeCSIds) {
+          if (state.cableSystemFilter.selectedSystems.has(csId)) {
+            passesCSFilter = true;
+            break;
+          }
+        }
+      }
+      
+      if (state.cableSystemFilter.exclusive) {
+        return passesCSFilter;
+      }
+      if (!passesCSFilter) return false;
+    }
+    
+    // Check Tag Filter
     if (state.tagFilter.mode === 'all') return true;
+    if (state.tagFilter.exclusive) {
+      // Only apply tag filter
+      const nodeTags = getNodeTags(node);
+      const selectedTags = state.tagFilter.selectedTags;
+      if (selectedTags.size === 0) return true;
+      
+      let hasSelectedTag = false;
+      for (const tag of nodeTags) {
+        if (selectedTags.has(tag)) {
+          hasSelectedTag = true;
+          break;
+        }
+      }
+      
+      if (state.tagFilter.mode === 'include') return hasSelectedTag;
+      if (state.tagFilter.mode === 'exclude') return !hasSelectedTag;
+      return true;
+    }
     
     const nodeTags = getNodeTags(node);
     const selectedTags = state.tagFilter.selectedTags;
@@ -1933,11 +2882,67 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   }
 
   // Check if an edge should be visible
-  // Hierarchy: First check if both connected nodes are visible, then apply edge's own tag filter
+  // Hierarchy: Check container filter, node filter, cable system filter, then tag filter
   function isEdgeVisible(edge) {
     const nodeA = findNode(edge.a);
     const nodeB = findNode(edge.b);
     if (!nodeA || !nodeB) return false;
+    
+    // Check Container Filter (both nodes must be in selected containers)
+    if (state.containerFilter.mode === 'selected' && 
+        (state.containerFilter.selectedBoxes.size > 0 || state.containerFilter.selectedGroups.size > 0)) {
+      
+      // Helper to check if a node is in a selected container
+      const nodeInSelectedContainer = (node) => {
+        // Check if node is in a selected box
+        if (node.groupId && state.containerFilter.selectedBoxes.has(node.groupId)) {
+          return true;
+        }
+        // Check if node is in a box that belongs to a selected group
+        if (node.groupId) {
+          const nodeBox = findGroup(node.groupId);
+          if (nodeBox && nodeBox.parentId && state.containerFilter.selectedGroups.has(nodeBox.parentId)) {
+            return true;
+          }
+        }
+        return false;
+      };
+      
+      const bothNodesInContainer = nodeInSelectedContainer(nodeA) && nodeInSelectedContainer(nodeB);
+      
+      if (state.containerFilter.exclusive) {
+        return bothNodesInContainer;
+      }
+      if (!bothNodesInContainer) return false;
+    }
+    
+    // Check Node Filter (show edges connecting to selected nodes)
+    if (state.nodeFilter.mode === 'selected' && state.nodeFilter.selectedNodes.size > 0) {
+      const connectedToSelectedNode = state.nodeFilter.selectedNodes.has(edge.a) || 
+                                       state.nodeFilter.selectedNodes.has(edge.b);
+      if (state.nodeFilter.exclusive) {
+        return connectedToSelectedNode;
+      }
+      if (!connectedToSelectedNode) return false;
+    }
+    
+    // Check Cable System Filter
+    if (state.cableSystemFilter.mode === 'selected' && state.cableSystemFilter.selectedSystems.size > 0) {
+      const edgeCSId = edge.cableSystemId;
+      const isUnmapped = edgeCSId === null || edgeCSId === undefined;
+      
+      let passesCSFilter = false;
+      if (isUnmapped && state.cableSystemFilter.showUnmapped) {
+        passesCSFilter = true;
+      } else if (edgeCSId && state.cableSystemFilter.selectedSystems.has(edgeCSId)) {
+        passesCSFilter = true;
+      }
+      
+      if (state.cableSystemFilter.exclusive) {
+        return passesCSFilter;
+      }
+      if (!passesCSFilter) return false;
+    }
     
     // FIRST: Both nodes must be visible (node filtering takes priority)
     if (!isNodeVisible(nodeA) || !isNodeVisible(nodeB)) return false;
@@ -2049,7 +3054,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   function updateTagFilterList() {
     if (!tagFilterList) return;
     
-    const { nodeTags, edgeTags, groupTags, allTags } = collectAllTags();
+    const { nodeTags, edgeTags, groupTags, cableSystemTags, allTags } = collectAllTags();
     tagFilterList.innerHTML = '';
     
     // Helper function to sort tags (default first, then alphabetically)
@@ -2121,10 +3126,19 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     
     // Box Tags Section
     if (groupTags.size > 0) {
-      tagFilterList.appendChild(createSectionHeader('Box Tags', '▢'));
+      tagFilterList.appendChild(createSectionHeader('Container Box Tags', '▢'));
       const sortedGroupTags = sortTags(groupTags);
       for (const tag of sortedGroupTags) {
         tagFilterList.appendChild(createTagItem(tag, groupTags.get(tag)));
+      }
+    }
+    
+    // Cable System Tags Section
+    if (cableSystemTags.size > 0) {
+      tagFilterList.appendChild(createSectionHeader('Cable System Tags', '⚡'));
+      const sortedCSTags = sortTags(cableSystemTags);
+      for (const tag of sortedCSTags) {
+        tagFilterList.appendChild(createTagItem(tag, cableSystemTags.get(tag)));
       }
     }
   }
@@ -2153,6 +3167,15 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
         render();
       });
     });
+
+    // Exclusive checkbox
+    const tagFilterExclusive = document.getElementById('tagFilterExclusive');
+    if (tagFilterExclusive) {
+      tagFilterExclusive.addEventListener('change', () => {
+        state.tagFilter.exclusive = tagFilterExclusive.checked;
+        render();
+      });
+    }
 
     // Select All button
     if (btnTagSelectAll) {
@@ -2232,7 +3255,863 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   closeAllMenus = function() {
     originalCloseAllMenus();
     if (tagFilterMenu) tagFilterMenu.hidden = true;
+    const nodeFilterMenu = document.getElementById('nodeFilterMenu');
+    const cableSystemFilterMenu = document.getElementById('cableSystemFilterMenu');
+    const containerFilterMenu = document.getElementById('containerFilterMenu');
+    const fillColorMenu = document.getElementById('fillColorMenu');
+    const strokeColorMenu = document.getElementById('strokeColorMenu');
+    const linkStyleMenu = document.getElementById('linkStyleMenu');
+    const lineWidthMenu = document.getElementById('lineWidthMenu');
+    if (nodeFilterMenu) nodeFilterMenu.hidden = true;
+    if (cableSystemFilterMenu) cableSystemFilterMenu.hidden = true;
+    if (containerFilterMenu) containerFilterMenu.hidden = true;
+    if (fillColorMenu) fillColorMenu.hidden = true;
+    if (strokeColorMenu) strokeColorMenu.hidden = true;
+    if (linkStyleMenu) linkStyleMenu.hidden = true;
+    if (lineWidthMenu) lineWidthMenu.hidden = true;
   };
+
+  // ============== NODE FILTER ==============
+  const btnNodeFilter = document.getElementById('btnNodeFilter');
+  const nodeFilterMenu = document.getElementById('nodeFilterMenu');
+  const nodeFilterList = document.getElementById('nodeFilterList');
+  const nodeFilterSearch = document.getElementById('nodeFilterSearch');
+  const btnNodeSelectAll = document.getElementById('btnNodeSelectAll');
+  const btnNodeClearAll = document.getElementById('btnNodeClearAll');
+
+  function updateNodeFilterList() {
+    if (!nodeFilterList) return;
+    
+    const searchTerm = (nodeFilterSearch?.value || '').toLowerCase();
+    const displayMode = state.nodeFilter.displayMode || 'name';
+    
+    nodeFilterList.innerHTML = '';
+    
+    // Sort nodes by display value
+    const sortedNodes = [...state.nodes].sort((a, b) => {
+      const aVal = displayMode === 'name' ? (a.name || '') : (a.code || '');
+      const bVal = displayMode === 'name' ? (b.name || '') : (b.code || '');
+      return aVal.localeCompare(bVal);
+    });
+    
+    // Filter by search
+    const filteredNodes = sortedNodes.filter(n => {
+      if (!searchTerm) return true;
+      const name = (n.name || '').toLowerCase();
+      const code = (n.code || '').toLowerCase();
+      return name.includes(searchTerm) || code.includes(searchTerm);
+    });
+    
+    if (filteredNodes.length === 0) {
+      nodeFilterList.innerHTML = '<div class="muted" style="padding:8px 12px;">No nodes found.</div>';
+      return;
+    }
+    
+    filteredNodes.forEach(n => {
+      const label = document.createElement('label');
+      label.className = 'tag-filter-item';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = state.nodeFilter.selectedNodes.has(n.id);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          state.nodeFilter.selectedNodes.add(n.id);
+        } else {
+          state.nodeFilter.selectedNodes.delete(n.id);
+        }
+        updateNodeFilterButtonState();
+        render();
+      });
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'tag-name';
+      const displayVal = displayMode === 'name' ? (n.name || `Node${n.id}`) : (n.code || `N-${n.id}`);
+      const secondary = displayMode === 'name' ? (n.code || '') : (n.name || '');
+      nameSpan.innerHTML = `${displayVal} <span style="color:#999; font-size:10px;">${secondary}</span>`;
+      
+      // Count connected links
+      const linkCount = state.edges.filter(e => e.a === n.id || e.b === n.id).length;
+      const countSpan = document.createElement('span');
+      countSpan.className = 'tag-count';
+      countSpan.textContent = `${linkCount}L`;
+      countSpan.title = `${linkCount} connected links`;
+      
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+      label.appendChild(countSpan);
+      nodeFilterList.appendChild(label);
+    });
+  }
+
+  function updateNodeFilterButtonState() {
+    if (!btnNodeFilter) return;
+    const isFiltering = state.nodeFilter.mode !== 'all' && state.nodeFilter.selectedNodes.size > 0;
+    btnNodeFilter.classList.toggle('filtering', isFiltering);
+  }
+
+  if (btnNodeFilter && nodeFilterMenu) {
+    btnNodeFilter.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateNodeFilterList();
+      nodeFilterMenu.hidden = !nodeFilterMenu.hidden;
+    });
+
+    // Filter mode radio buttons
+    nodeFilterMenu.querySelectorAll('input[name="nodeFilterMode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        state.nodeFilter.mode = radio.value;
+        updateNodeFilterButtonState();
+        render();
+      });
+    });
+
+    // Display mode radio buttons
+    nodeFilterMenu.querySelectorAll('input[name="nodeDisplayMode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        state.nodeFilter.displayMode = radio.value;
+        updateNodeFilterList();
+      });
+    });
+
+    // Exclusive checkbox
+    const nodeFilterExclusive = document.getElementById('nodeFilterExclusive');
+    if (nodeFilterExclusive) {
+      nodeFilterExclusive.addEventListener('change', () => {
+        state.nodeFilter.exclusive = nodeFilterExclusive.checked;
+        render();
+      });
+    }
+
+    // Select All button
+    if (btnNodeSelectAll) {
+      btnNodeSelectAll.addEventListener('click', () => {
+        state.nodes.forEach(n => state.nodeFilter.selectedNodes.add(n.id));
+        updateNodeFilterList();
+        updateNodeFilterButtonState();
+        render();
+      });
+    }
+
+    // Clear All button
+    if (btnNodeClearAll) {
+      btnNodeClearAll.addEventListener('click', () => {
+        state.nodeFilter.selectedNodes.clear();
+        updateNodeFilterList();
+        updateNodeFilterButtonState();
+        render();
+      });
+    }
+
+    // Search input
+    if (nodeFilterSearch) {
+      nodeFilterSearch.addEventListener('input', () => {
+        updateNodeFilterList();
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      nodeFilterMenu.hidden = true;
+    });
+    
+    nodeFilterMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+  }
+
+  // ============== CABLE SYSTEM FILTER ==============
+  const btnCableSystemFilter = document.getElementById('btnCableSystemFilter');
+  const cableSystemFilterMenu = document.getElementById('cableSystemFilterMenu');
+  const cableSystemFilterList = document.getElementById('cableSystemFilterList');
+  const cableSystemFilterSearch = document.getElementById('cableSystemFilterSearch');
+  const btnCableSelectAll = document.getElementById('btnCableSelectAll');
+  const btnCableClearAll = document.getElementById('btnCableClearAll');
+
+  function updateCableSystemFilterList() {
+    if (!cableSystemFilterList) return;
+    
+    const searchTerm = (cableSystemFilterSearch?.value || '').toLowerCase();
+    
+    cableSystemFilterList.innerHTML = '';
+    
+    const filtered = state.cableSystems.filter(cs => {
+      if (!searchTerm) return true;
+      return cs.shortName.toLowerCase().includes(searchTerm) ||
+             cs.name.toLowerCase().includes(searchTerm);
+    });
+    
+    if (filtered.length === 0) {
+      cableSystemFilterList.innerHTML = '<div class="muted" style="padding:8px 12px;">No cable systems found.</div>';
+      return;
+    }
+    
+    filtered.forEach(cs => {
+      const label = document.createElement('label');
+      label.className = 'tag-filter-item';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = state.cableSystemFilter.selectedSystems.has(cs.id);
+      checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+          state.cableSystemFilter.selectedSystems.add(cs.id);
+        } else {
+          state.cableSystemFilter.selectedSystems.delete(cs.id);
+        }
+        updateCableSystemFilterButtonState();
+        render();
+      });
+      
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'tag-name';
+      nameSpan.innerHTML = `<strong>${cs.shortName}</strong> <span style="color:#999; font-size:10px;">${cs.name}</span>`;
+      
+      const linkCount = getCableSystemLinks(cs.id).length;
+      const countSpan = document.createElement('span');
+      countSpan.className = 'tag-count';
+      countSpan.textContent = `${linkCount}L`;
+      
+      label.appendChild(checkbox);
+      label.appendChild(nameSpan);
+      label.appendChild(countSpan);
+      cableSystemFilterList.appendChild(label);
+    });
+  }
+
+  function updateCableSystemFilterButtonState() {
+    if (!btnCableSystemFilter) return;
+    const isFiltering = state.cableSystemFilter.mode !== 'all' && state.cableSystemFilter.selectedSystems.size > 0;
+    btnCableSystemFilter.classList.toggle('filtering', isFiltering);
+  }
+
+  if (btnCableSystemFilter && cableSystemFilterMenu) {
+    btnCableSystemFilter.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateCableSystemFilterList();
+      cableSystemFilterMenu.hidden = !cableSystemFilterMenu.hidden;
+    });
+
+    // Filter mode radio buttons
+    cableSystemFilterMenu.querySelectorAll('input[name="cableFilterMode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        state.cableSystemFilter.mode = radio.value;
+        updateCableSystemFilterButtonState();
+        render();
+      });
+    });
+
+    // Unmapped checkbox
+    const cableFilterShowUnmapped = document.getElementById('cableFilterShowUnmapped');
+    if (cableFilterShowUnmapped) {
+      cableFilterShowUnmapped.addEventListener('change', () => {
+        state.cableSystemFilter.showUnmapped = cableFilterShowUnmapped.checked;
+        render();
+      });
+    }
+
+    // Exclusive checkbox
+    const cableFilterExclusive = document.getElementById('cableFilterExclusive');
+    if (cableFilterExclusive) {
+      cableFilterExclusive.addEventListener('change', () => {
+        state.cableSystemFilter.exclusive = cableFilterExclusive.checked;
+        render();
+      });
+    }
+
+    // Select All button
+    if (btnCableSelectAll) {
+      btnCableSelectAll.addEventListener('click', () => {
+        state.cableSystems.forEach(cs => state.cableSystemFilter.selectedSystems.add(cs.id));
+        updateCableSystemFilterList();
+        updateCableSystemFilterButtonState();
+        render();
+      });
+    }
+
+    // Clear All button
+    if (btnCableClearAll) {
+      btnCableClearAll.addEventListener('click', () => {
+        state.cableSystemFilter.selectedSystems.clear();
+        updateCableSystemFilterList();
+        updateCableSystemFilterButtonState();
+        render();
+      });
+    }
+
+    // Search input
+    if (cableSystemFilterSearch) {
+      cableSystemFilterSearch.addEventListener('input', () => {
+        updateCableSystemFilterList();
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      cableSystemFilterMenu.hidden = true;
+    });
+    
+    cableSystemFilterMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+  }
+
+  // ============== CONTAINER FILTER ==============
+  const btnContainerFilter = document.getElementById('btnContainerFilter');
+  const containerFilterMenu = document.getElementById('containerFilterMenu');
+  const containerFilterListBoxes = document.getElementById('containerFilterListBoxes');
+  const containerFilterListGroups = document.getElementById('containerFilterListGroups');
+  const containerFilterSearch = document.getElementById('containerFilterSearch');
+  const btnContainerSelectAll = document.getElementById('btnContainerSelectAll');
+  const btnContainerClearAll = document.getElementById('btnContainerClearAll');
+
+  function updateContainerFilterList() {
+    if (!containerFilterListBoxes || !containerFilterListGroups) return;
+    
+    const searchTerm = (containerFilterSearch?.value || '').toLowerCase();
+    
+    // Separate boxes (country) and groups (region)
+    const boxes = state.groups.filter(g => g.type === 'country' || !g.type);
+    const groups = state.groups.filter(g => g.type === 'region');
+    
+    // Filter by search
+    const filteredBoxes = boxes.filter(g => {
+      if (!searchTerm) return true;
+      return (g.title || '').toLowerCase().includes(searchTerm);
+    });
+    
+    const filteredGroups = groups.filter(g => {
+      if (!searchTerm) return true;
+      return (g.title || '').toLowerCase().includes(searchTerm);
+    });
+    
+    // Render boxes
+    if (filteredBoxes.length === 0) {
+      containerFilterListBoxes.innerHTML = '<div class="muted" style="padding:8px 12px; font-size:11px;">No container boxes found.</div>';
+    } else {
+      containerFilterListBoxes.innerHTML = '';
+      filteredBoxes.forEach(g => {
+        const label = document.createElement('label');
+        label.className = 'tag-filter-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = state.containerFilter.selectedBoxes.has(g.id);
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            state.containerFilter.selectedBoxes.add(g.id);
+          } else {
+            state.containerFilter.selectedBoxes.delete(g.id);
+          }
+          updateContainerFilterButtonState();
+          render();
+        });
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'tag-name';
+        nameSpan.textContent = g.title || `Container ${g.id}`;
+        
+        // Count nodes in this box
+        const nodeCount = state.nodes.filter(n => n.groupId === g.id).length;
+        const countSpan = document.createElement('span');
+        countSpan.className = 'tag-count';
+        countSpan.textContent = `${nodeCount}N`;
+        countSpan.title = `${nodeCount} nodes`;
+        
+        label.appendChild(checkbox);
+        label.appendChild(nameSpan);
+        label.appendChild(countSpan);
+        containerFilterListBoxes.appendChild(label);
+      });
+    }
+    
+    // Render groups
+    if (filteredGroups.length === 0) {
+      containerFilterListGroups.innerHTML = '<div class="muted" style="padding:8px 12px; font-size:11px;">No groups found.</div>';
+    } else {
+      containerFilterListGroups.innerHTML = '';
+      filteredGroups.forEach(g => {
+        const label = document.createElement('label');
+        label.className = 'tag-filter-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = state.containerFilter.selectedGroups.has(g.id);
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            state.containerFilter.selectedGroups.add(g.id);
+          } else {
+            state.containerFilter.selectedGroups.delete(g.id);
+          }
+          updateContainerFilterButtonState();
+          render();
+        });
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'tag-name';
+        nameSpan.textContent = g.title || `Group ${g.id}`;
+        
+        // Count child boxes in this group
+        const boxCount = state.groups.filter(b => b.parentId === g.id).length;
+        const countSpan = document.createElement('span');
+        countSpan.className = 'tag-count';
+        countSpan.textContent = `${boxCount}B`;
+        countSpan.title = `${boxCount} container boxes`;
+        
+        label.appendChild(checkbox);
+        label.appendChild(nameSpan);
+        label.appendChild(countSpan);
+        containerFilterListGroups.appendChild(label);
+      });
+    }
+  }
+
+  function updateContainerFilterButtonState() {
+    if (!btnContainerFilter) return;
+    const isFiltering = state.containerFilter.mode !== 'all' && 
+      (state.containerFilter.selectedBoxes.size > 0 || state.containerFilter.selectedGroups.size > 0);
+    btnContainerFilter.classList.toggle('filtering', isFiltering);
+  }
+
+  if (btnContainerFilter && containerFilterMenu) {
+    btnContainerFilter.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateContainerFilterList();
+      containerFilterMenu.hidden = !containerFilterMenu.hidden;
+    });
+
+    // Filter mode radio buttons
+    containerFilterMenu.querySelectorAll('input[name="containerFilterMode"]').forEach(radio => {
+      radio.addEventListener('change', () => {
+        state.containerFilter.mode = radio.value;
+        updateContainerFilterButtonState();
+        render();
+      });
+    });
+
+    // Exclusive checkbox
+    const containerFilterExclusive = document.getElementById('containerFilterExclusive');
+    if (containerFilterExclusive) {
+      containerFilterExclusive.addEventListener('change', () => {
+        state.containerFilter.exclusive = containerFilterExclusive.checked;
+        render();
+      });
+    }
+
+    // Select All button
+    if (btnContainerSelectAll) {
+      btnContainerSelectAll.addEventListener('click', () => {
+        state.groups.forEach(g => {
+          if (g.type === 'region') {
+            state.containerFilter.selectedGroups.add(g.id);
+          } else {
+            state.containerFilter.selectedBoxes.add(g.id);
+          }
+        });
+        updateContainerFilterList();
+        updateContainerFilterButtonState();
+        render();
+      });
+    }
+
+    // Clear All button
+    if (btnContainerClearAll) {
+      btnContainerClearAll.addEventListener('click', () => {
+        state.containerFilter.selectedBoxes.clear();
+        state.containerFilter.selectedGroups.clear();
+        updateContainerFilterList();
+        updateContainerFilterButtonState();
+        render();
+      });
+    }
+
+    // Search input
+    if (containerFilterSearch) {
+      containerFilterSearch.addEventListener('input', () => {
+        updateContainerFilterList();
+      });
+    }
+
+    // Close menu when clicking outside
+    document.addEventListener('click', () => {
+      containerFilterMenu.hidden = true;
+    });
+    
+    containerFilterMenu.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+    });
+  }
+
+  // ============== QUICK FORMAT TOOLBAR ==============
+  
+  // Standard color palette (Draw.io style) for toolbar
+  const toolbarColorPalette = [
+    // Row 1 - Basic
+    '#ffffff', '#f5f5f5', '#e0e0e0', '#bdbdbd', '#9e9e9e', '#757575', '#424242', '#000000',
+    // Row 2 - Blues
+    '#e3f2fd', '#90caf9', '#42a5f5', '#1e88e5', '#1565c0', '#0d47a1', '#002171', '#000051',
+    // Row 3 - Greens
+    '#e8f5e9', '#a5d6a7', '#66bb6a', '#43a047', '#2e7d32', '#1b5e20', '#003300', '#001a00',
+    // Row 4 - Oranges/Yellows
+    '#fff3e0', '#ffcc80', '#ffa726', '#fb8c00', '#ef6c00', '#e65100', '#bf360c', '#8c2703',
+    // Row 5 - Reds/Pinks
+    '#ffebee', '#ef9a9a', '#ef5350', '#e53935', '#c62828', '#b71c1c', '#7f0000', '#4a0000',
+    // Row 6 - Purples
+    '#f3e5f5', '#ce93d8', '#ab47bc', '#8e24aa', '#6a1b9a', '#4a148c', '#2a0050', '#12002a',
+    // Row 7 - Cyans
+    '#e0f7fa', '#80deea', '#26c6da', '#00acc1', '#00838f', '#006064', '#003d40', '#002020',
+    // Row 8 - Draw.io defaults
+    '#dae8fc', '#d5e8d4', '#ffe6cc', '#fff2cc', '#f8cecc', '#e1d5e7', '#60a917', '#6c8ebf'
+  ];
+  
+  // Initialize color grids
+  function initColorGrid(gridId, onColorSelect) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    grid.innerHTML = '';
+    toolbarColorPalette.forEach(color => {
+      const item = document.createElement('div');
+      item.className = 'color-grid-item';
+      item.style.backgroundColor = color;
+      item.dataset.color = color;
+      item.addEventListener('click', () => onColorSelect(color));
+      grid.appendChild(item);
+    });
+  }
+  
+  // Fill Color Button
+  const btnFillColor = document.getElementById('btnFillColor');
+  const fillColorMenu = document.getElementById('fillColorMenu');
+  const fillColorIndicator = document.getElementById('fillColorIndicator');
+  const fillColorCustom = document.getElementById('fillColorCustom');
+  
+  if (btnFillColor && fillColorMenu) {
+    initColorGrid('fillColorGrid', (color) => {
+      applyFillColor(color);
+      fillColorMenu.hidden = true;
+    });
+    
+    btnFillColor.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      fillColorMenu.hidden = !fillColorMenu.hidden;
+    });
+    
+    if (fillColorCustom) {
+      fillColorCustom.addEventListener('input', (ev) => {
+        applyFillColor(ev.target.value);
+      });
+      fillColorCustom.addEventListener('change', () => {
+        fillColorMenu.hidden = true;
+      });
+    }
+    
+    fillColorMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function applyFillColor(color) {
+    if (fillColorIndicator) fillColorIndicator.style.backgroundColor = color;
+    
+    // Apply to selected elements
+    if (state.selected) {
+      if (state.selected.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.fill = color; commit(); render(); }
+      } else if (state.selected.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) { g.fill = color; commit(); render(); }
+      }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.nodes.size > 0) {
+      state.selection.nodes.forEach(id => {
+        const n = findNode(id);
+        if (n) n.fill = color;
+      });
+      commit(); render();
+    }
+    if (state.selection.groups.size > 0) {
+      state.selection.groups.forEach(id => {
+        const g = findGroup(id);
+        if (g) g.fill = color;
+      });
+      commit(); render();
+    }
+  }
+  
+  // Stroke Color Button
+  const btnStrokeColor = document.getElementById('btnStrokeColor');
+  const strokeColorMenu = document.getElementById('strokeColorMenu');
+  const strokeColorIndicator = document.getElementById('strokeColorIndicator');
+  const strokeColorCustom = document.getElementById('strokeColorCustom');
+  
+  if (btnStrokeColor && strokeColorMenu) {
+    initColorGrid('strokeColorGrid', (color) => {
+      applyStrokeColor(color);
+      strokeColorMenu.hidden = true;
+    });
+    
+    btnStrokeColor.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      strokeColorMenu.hidden = !strokeColorMenu.hidden;
+    });
+    
+    if (strokeColorCustom) {
+      strokeColorCustom.addEventListener('input', (ev) => {
+        applyStrokeColor(ev.target.value);
+      });
+      strokeColorCustom.addEventListener('change', () => {
+        strokeColorMenu.hidden = true;
+      });
+    }
+    
+    strokeColorMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function applyStrokeColor(color) {
+    if (strokeColorIndicator) strokeColorIndicator.style.backgroundColor = color;
+    
+    // Apply to selected elements
+    if (state.selected) {
+      if (state.selected.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.stroke = color; commit(); render(); }
+      } else if (state.selected.type === 'edge') {
+        const e = findEdge(state.selected.id);
+        if (e) { e.strokeColor = color; commit(); render(); }
+      } else if (state.selected.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) { g.stroke = color; commit(); render(); }
+      }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.nodes.size > 0) {
+      state.selection.nodes.forEach(id => {
+        const n = findNode(id);
+        if (n) n.stroke = color;
+      });
+      commit(); render();
+    }
+    if (state.selection.edges.size > 0) {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) e.strokeColor = color;
+      });
+      commit(); render();
+    }
+    if (state.selection.groups.size > 0) {
+      state.selection.groups.forEach(id => {
+        const g = findGroup(id);
+        if (g) g.stroke = color;
+      });
+      commit(); render();
+    }
+  }
+  
+  // Link Style Button
+  const btnLinkStyle = document.getElementById('btnLinkStyle');
+  const linkStyleMenu = document.getElementById('linkStyleMenu');
+  
+  if (btnLinkStyle && linkStyleMenu) {
+    btnLinkStyle.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateLinkStyleMenu();
+      linkStyleMenu.hidden = !linkStyleMenu.hidden;
+    });
+    
+    // Link style items
+    linkStyleMenu.querySelectorAll('.link-style-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const style = item.dataset.style;
+        applyLinkStyle(style);
+        updateLinkStyleMenu();
+      });
+    });
+    
+    // Link route items
+    linkStyleMenu.querySelectorAll('.link-route-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const route = item.dataset.route;
+        applyLinkRoute(route);
+        updateLinkStyleMenu();
+      });
+    });
+    
+    linkStyleMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function updateLinkStyleMenu() {
+    if (!linkStyleMenu) return;
+    
+    // Get current selected edge style
+    let currentStyle = 'straight';
+    let currentRoute = 'hv';
+    
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) {
+        currentStyle = e.style || 'straight';
+        currentRoute = e.route || 'hv';
+      }
+    }
+    
+    // Update active states
+    linkStyleMenu.querySelectorAll('.link-style-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.style === currentStyle);
+    });
+    linkStyleMenu.querySelectorAll('.link-route-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.route === currentRoute);
+    });
+  }
+  
+  function applyLinkStyle(style) {
+    // Apply to selected edge
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) { e.style = style; commit(); render(); }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.edges.size > 0) {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) e.style = style;
+      });
+      commit(); render();
+    }
+  }
+  
+  function applyLinkRoute(route) {
+    // Apply to selected edge
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) { e.route = route; commit(); render(); }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.edges.size > 0) {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) e.route = route;
+      });
+      commit(); render();
+    }
+  }
+  
+  // Line Width Button
+  const btnLineWidth = document.getElementById('btnLineWidth');
+  const lineWidthMenu = document.getElementById('lineWidthMenu');
+  
+  if (btnLineWidth && lineWidthMenu) {
+    btnLineWidth.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateLineWidthMenu();
+      lineWidthMenu.hidden = !lineWidthMenu.hidden;
+    });
+    
+    lineWidthMenu.querySelectorAll('.line-width-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const width = parseInt(item.dataset.width);
+        applyLineWidth(width);
+        updateLineWidthMenu();
+        lineWidthMenu.hidden = true;
+      });
+    });
+    
+    lineWidthMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function updateLineWidthMenu() {
+    if (!lineWidthMenu) return;
+    
+    let currentWidth = 2;
+    
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) currentWidth = e.strokeW || 2;
+    } else if (state.selected?.type === 'node') {
+      const n = findNode(state.selected.id);
+      if (n) currentWidth = n.strokeW || 2;
+    } else if (state.selected?.type === 'group') {
+      const g = findGroup(state.selected.id);
+      if (g) currentWidth = g.strokeW || 1;
+    }
+    
+    lineWidthMenu.querySelectorAll('.line-width-item').forEach(item => {
+      item.classList.toggle('active', parseInt(item.dataset.width) === currentWidth);
+    });
+  }
+  
+  function applyLineWidth(width) {
+    // Apply to selected element
+    if (state.selected) {
+      if (state.selected.type === 'edge') {
+        const e = findEdge(state.selected.id);
+        if (e) { e.strokeW = width; commit(); render(); }
+      } else if (state.selected.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.strokeW = width; commit(); render(); }
+      } else if (state.selected.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) { g.strokeW = width; commit(); render(); }
+      }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.edges.size > 0) {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) e.strokeW = width;
+      });
+      commit(); render();
+    }
+    if (state.selection.nodes.size > 0) {
+      state.selection.nodes.forEach(id => {
+        const n = findNode(id);
+        if (n) n.strokeW = width;
+      });
+      commit(); render();
+    }
+    if (state.selection.groups.size > 0) {
+      state.selection.groups.forEach(id => {
+        const g = findGroup(id);
+        if (g) g.strokeW = width;
+      });
+      commit(); render();
+    }
+  }
+  
+  // Update color indicators when selection changes
+  function updateFormatIndicators() {
+    if (state.selected) {
+      if (state.selected.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) {
+          if (fillColorIndicator) fillColorIndicator.style.backgroundColor = n.fill || '#dae8fc';
+          if (strokeColorIndicator) strokeColorIndicator.style.backgroundColor = n.stroke || '#6c8ebf';
+        }
+      } else if (state.selected.type === 'edge') {
+        const e = findEdge(state.selected.id);
+        if (e) {
+          if (strokeColorIndicator) strokeColorIndicator.style.backgroundColor = e.strokeColor || '#666666';
+        }
+      } else if (state.selected.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) {
+          if (fillColorIndicator) fillColorIndicator.style.backgroundColor = g.fill || '#ffffff';
+          if (strokeColorIndicator) strokeColorIndicator.style.backgroundColor = g.stroke || '#666666';
+        }
+      }
+    }
+  }
 
   // Mouse wheel zoom (centered on mouse position)
   svg.addEventListener('wheel', (ev) => {
@@ -2309,7 +4188,9 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   function projectSnapshot() {
     return JSON.parse(JSON.stringify({
       nodes: state.nodes, edges: state.edges, groups: state.groups,
+      cableSystems: state.cableSystems,
       nextNode: state.nextNode, nextEdge: state.nextEdge, nextGroup: state.nextGroup,
+      nextCableSystem: state.nextCableSystem,
       stylePresets: state.stylePresets,
       canvasWidth: state.canvasWidth,
       canvasHeight: state.canvasHeight,
@@ -2320,9 +4201,20 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     state.nodes = snap.nodes || [];
     state.edges = snap.edges || [];
     state.groups = snap.groups || [];
+    state.cableSystems = snap.cableSystems || [];
     state.nextNode = snap.nextNode || (Math.max(0, ...state.nodes.map(n=>n.id)) + 1);
     state.nextEdge = snap.nextEdge || (Math.max(0, ...state.edges.map(e=>e.id)) + 1);
     state.nextGroup = snap.nextGroup || (Math.max(0, ...state.groups.map(g=>g.id)) + 1);
+    state.nextCableSystem = snap.nextCableSystem || (Math.max(0, ...state.cableSystems.map(cs=>cs.id)) + 1);
+
+    // Backward compatibility: ensure cableSystemId exists on edges
+    state.edges.forEach(e => {
+      if (e.cableSystemId === undefined) e.cableSystemId = null;
+    });
+    // Backward compatibility: ensure cableSystemIds exists on nodes
+    state.nodes.forEach(n => {
+      if (!Array.isArray(n.cableSystemIds)) n.cableSystemIds = [];
+    });
 
     // Restore presets if snapshot carries them; otherwise keep current
     state.stylePresets = snap.stylePresets || state.stylePresets || { node: {}, edge: {}, group: {} };
@@ -2346,6 +4238,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     refreshAllMemberships();
     render();
     updateInspector();
+    updateCableSystemNavigator && updateCableSystemNavigator();
   }
   function pushHistory() {
     const snap = projectSnapshot();
@@ -2501,7 +4394,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     label.setAttribute('class', 'group-label');
     label.setAttribute('fill', g.titleColor || "#eaeaea");
     label.style.fontSize = (g.titleFont || 14) + "px";
-    label.textContent = g.title || (g.type==='region' ? `Region${g.id}` : `Country${g.id}`);
+    label.textContent = g.title || (g.type==='region' ? `Group${g.id}` : `Container${g.id}`);
     label.style.pointerEvents = "auto";
 
     const handle = document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -2685,6 +4578,11 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     }
     console.log(`[DRAW EDGE] Drawing edge ${e.id} from node ${e.a} to node ${e.b}, style=${e.style}`);
     const isSel = (state.selected?.type==='edge' && state.selected?.id===e.id) || state.selection.edges.has(e.id);
+    
+    // Check if this edge should be highlighted (cable system selection or temporary highlight)
+    const isCSHighlighted = state.selectedCableSystem && e.cableSystemId === state.selectedCableSystem;
+    const isTempHighlighted = state._highlightedLinks && state._highlightedLinks.has(e.id);
+    const isHighlighted = isCSHighlighted || isTempHighlighted;
 
     // Calculate offset for parallel edges between same nodes
     // Normalize node pair to ensure consistent ordering (smaller id first)
@@ -2733,6 +4631,24 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     const bx = b.x + offsetX;
     const by = b.y + offsetY;
 
+    // Draw highlight glow behind edge if highlighted
+    if (isHighlighted) {
+      const glowPath = document.createElementNS('http://www.w3.org/2000/svg','path');
+      if (e.style === 'orthogonal') {
+        glowPath.setAttribute('d', orthogonalPath(ax,ay,bx,by, e.route || 'hv'));
+      } else if (e.style === 'curve') {
+        glowPath.setAttribute('d', quadraticCurvePath(ax, ay, bx, by, e.curveArch || 0.3));
+      } else {
+        glowPath.setAttribute('d', `M${ax},${ay} L${bx},${by}`);
+      }
+      glowPath.setAttribute('stroke', '#00d4ff');
+      glowPath.setAttribute('stroke-width', (e.strokeW ?? 2) + 8);
+      glowPath.setAttribute('fill', 'none');
+      glowPath.setAttribute('opacity', '0.5');
+      glowPath.style.pointerEvents = 'none';
+      svg.appendChild(glowPath);
+    }
+
     let baseLabel = null;
     if (e.style === 'orthogonal') {
       // Draw the visible edge
@@ -2753,6 +4669,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
+        // Handle cable system add mode
+        if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
+          return;
+        }
         if (ev.shiftKey) {
           if (state.selection.edges.has(e.id)) {
             state.selection.edges.delete(e.id);
@@ -2791,6 +4711,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
+        // Handle cable system add mode
+        if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
+          return;
+        }
         if (ev.shiftKey) {
           if (state.selection.edges.has(e.id)) {
             state.selection.edges.delete(e.id);
@@ -2851,6 +4775,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
+        // Handle cable system add mode
+        if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
+          return;
+        }
         if (ev.shiftKey) {
           if (state.selection.edges.has(e.id)) {
             state.selection.edges.delete(e.id);
@@ -2921,6 +4849,12 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     const isLinkSource = linkMode && linkSourceNode === n.id;
     const isInLinkMode = linkMode && isSelected; // In link mode, all selected nodes show as potential sources
     
+    // Check if this node should be highlighted (cable system selection or temporary highlight)
+    const nodeCSIds = n.cableSystemIds || [];
+    const isCSHighlighted = state.selectedCableSystem && nodeCSIds.includes(state.selectedCableSystem);
+    const isTempHighlighted = state._highlightedNodes && state._highlightedNodes.has(n.id);
+    const isHighlighted = isCSHighlighted || isTempHighlighted;
+    
     let classes = 'node';
     // In link mode, show orange for source (pulsing) or any selected node (ready to be source)
     if (isLinkSource) {
@@ -2934,6 +4868,47 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
 
     const r = (n.r ?? 24);
     const sw = (n.strokeW ?? 2);
+    
+    // Draw highlight glow behind node if highlighted
+    if (isHighlighted) {
+      const shape = (n.shape || 'circle');
+      let glow = null;
+      if (shape === 'square') {
+        glow = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        glow.setAttribute('x', n.x - r - 4);
+        glow.setAttribute('y', n.y - r - 4);
+        glow.setAttribute('width', r*2 + 8);
+        glow.setAttribute('height', r*2 + 8);
+        glow.setAttribute('rx', 6);
+        glow.setAttribute('ry', 6);
+      } else if (shape === 'rectangle') {
+        glow = document.createElementNS('http://www.w3.org/2000/svg','rect');
+        glow.setAttribute('x', n.x - r*1.35 - 4);
+        glow.setAttribute('y', n.y - r*0.85 - 4);
+        glow.setAttribute('width', r*2.7 + 8);
+        glow.setAttribute('height', r*1.7 + 8);
+        glow.setAttribute('rx', 8);
+        glow.setAttribute('ry', 8);
+      } else if (shape === 'ellipse') {
+        glow = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+        glow.setAttribute('cx', n.x);
+        glow.setAttribute('cy', n.y);
+        glow.setAttribute('rx', r*1.35 + 4);
+        glow.setAttribute('ry', r*0.9 + 4);
+      } else {
+        glow = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        glow.setAttribute('cx', n.x);
+        glow.setAttribute('cy', n.y);
+        glow.setAttribute('r', r + 4);
+      }
+      glow.setAttribute('fill', 'none');
+      glow.setAttribute('stroke', '#00d4ff');
+      glow.setAttribute('stroke-width', 6);
+      glow.setAttribute('opacity', '0.6');
+      glow.style.pointerEvents = 'none';
+      g.appendChild(glow);
+    }
+    
     let c = null;
     const shape = (n.shape || 'circle');
     if (shape === 'square') {
@@ -3063,6 +5038,12 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
             showToast(`✓ Link created! Click a node to be the source for the next link`);
             return;
           }
+        }
+        
+        // Handle cable system add mode
+        if (typeof handleAddModeClick === 'function' && handleAddModeClick('node', n.id)) {
+          ev.stopPropagation();
+          return;
         }
         
         // Check if this was actually a drag operation (only matters outside link mode)
@@ -3240,6 +5221,7 @@ const edgeTag = document.getElementById('edgeTag');
   const edgeLabelColor = document.getElementById('edgeLabelColor');
   const edgeStrokeW = document.getElementById('edgeStrokeW');
   const edgeCapacity = document.getElementById('edgeCapacity');
+  const edgePriority = document.getElementById('edgePriority');
   const edgeStrokeColor = document.getElementById('edgeStrokeColor');
 const groupTitle = document.getElementById('groupTitle');
   const groupFilterTags = document.getElementById('groupFilterTags');
@@ -3347,6 +5329,10 @@ const groupTitle = document.getElementById('groupTitle');
     refreshPresetSelects();
     noSel.style.display='none'; nodeIns.style.display='none'; edgeIns.style.display='none'; groupIns.style.display='none';
     noSel.textContent = 'Nothing selected.';
+    
+    // Update format toolbar indicators
+    if (typeof updateFormatIndicators === 'function') updateFormatIndicators();
+    
     if (!state.selected) {
       const c = state.selection.nodes.size + state.selection.edges.size + state.selection.groups.size;
       if (c === 0) { noSel.style.display='block'; return; }
@@ -3382,6 +5368,8 @@ const groupTitle = document.getElementById('groupTitle');
       if (nodeStrokeW) nodeStrokeW.value = n.strokeW ?? 2;
       const g = n.groupId ? findGroup(n.groupId) : null;
       nodeGroup.value = g ? g.title : '(none)';
+      // Update cable systems checkboxes
+      updateNodeCableSystemsCheckboxes(n.id);
       // Update color pickers
       if (window.updateColorPickers) window.updateColorPickers();
       return;
@@ -3412,6 +5400,23 @@ const groupTitle = document.getElementById('groupTitle');
           edgeTargetUUID.value = '(unknown)';
         }
       }
+      
+      // Update cable system dropdown
+      updateEdgeCableSystemDropdown();
+      const edgeCableSystemEl = document.getElementById('edgeCableSystem');
+      if (edgeCableSystemEl) {
+        edgeCableSystemEl.value = e.cableSystemId || '';
+        const infoEl = document.getElementById('edgeCableSystemInfo');
+        if (infoEl) {
+          if (e.cableSystemId) {
+            const cs = findCableSystem(e.cableSystemId);
+            infoEl.textContent = cs ? cs.name : '';
+          } else {
+            infoEl.textContent = '';
+          }
+        }
+      }
+      
       edgeTag.value = e.tag || '';
       // Ensure 'default' tag is shown in filter tags field
       let edgeTagsArray = e.filterTags || [];
@@ -3420,6 +5425,7 @@ const groupTitle = document.getElementById('groupTitle');
       }
       if (edgeFilterTags) edgeFilterTags.value = edgeTagsArray.join(', ');
       edgeLatency.value = (typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : '';
+      if (edgePriority) edgePriority.value = (typeof e.priority === "number" && isFinite(e.priority)) ? e.priority : 100;
       edgeExtraTags.value = e.extraTags || '';
       edgeCode.value = e.code || '';
       edgeShowCode.value = (e.showCode !== false) ? '1' : '0';
@@ -3466,7 +5472,7 @@ const groupTitle = document.getElementById('groupTitle');
       state.groups.filter(r => r.type === 'region').forEach(r => {
         const opt = document.createElement('option');
         opt.value = String(r.id);
-        opt.textContent = r.title || `Region${r.id}`;
+        opt.textContent = r.title || `Group${r.id}`;
         groupParent.appendChild(opt);
       });
       groupParent.value = g.parentId ? String(g.parentId) : '';
@@ -3592,6 +5598,15 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
   if (state.selected?.type!=='edge') return;
   const e = findEdge(state.selected.id); if (!e) return;
   e.capacity = edgeCapacity.value; commit(); render();
+});
+
+// Edge priority listener
+if (edgePriority) edgePriority.addEventListener('input', () => {
+  if (state.selected?.type!=='edge') return;
+  const e = findEdge(state.selected.id); if (!e) return;
+  const val = parseFloat(edgePriority.value);
+  e.priority = isNaN(val) ? 100 : val;
+  commit(); render();
 });
 
   edgeTag.addEventListener('input', () => {
@@ -3827,11 +5842,37 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       tags: ['default'],
       extraTags:"",
       groupId:null,
+      cableSystemIds: [],  // Array of cable system IDs (node can belong to multiple)
       fill:"#dae8fc", stroke:"#6c8ebf",
       nameColor:"#333333", tagColor:"#666666",
       nameFont:13, tagFont:11,
       nameDx:0, nameDy:0, tagDx:0, tagDy:0
     };
+  }
+
+  function makeCableSystem(id) {
+    return {
+      id,
+      uuid: generateUUID(),
+      shortName: `CS${id}`,
+      name: `Cable System ${id}`,
+      type: 'wet',              // 'wet' | 'terrestrial'
+      rfsYear: new Date().getFullYear(),
+      fiberPairs: 1,
+      status: 'planned',        // 'planned' | 'operational'
+      capacityTbps: 0,
+      owners: '',
+      notes: '',
+      filterTags: ['default']
+    };
+  }
+
+  function findCableSystem(id) {
+    return state.cableSystems.find(cs => cs.id === id);
+  }
+
+  function getCableSystemByUUID(uuid) {
+    return state.cableSystems.find(cs => cs.uuid === uuid);
   }
 
   function makeEdge(id, a, b) {
@@ -3844,6 +5885,8 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       strokeW:2,
       strokeColor:"#666666",
       capacity:'Up to 10G WL',
+      priority: 100,
+      cableSystemId: null,  // ID of associated cable system (null = unmapped)
       code: `L-${id}`,
       showCode: true,
       extraTags:"",
@@ -3865,7 +5908,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       y: clamp(y,20,760),
       w: isRegion ? 520 : 320,
       h: isRegion ? 320 : 220,
-      title: isRegion ? `Region${id}` : "Country",
+      title: isRegion ? `Group${id}` : "Container",
       filterTags: ['default'],
       extraTags:"",
       fill: isRegion ? "rgba(245, 245, 245, 0.9)" : "rgba(255, 255, 255, 0.95)",
@@ -3875,6 +5918,94 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
       titleFont: isRegion ? 15 : 14,
       titleDx:0, titleDy:0
     };
+  }
+
+  function makeCableSystem(id) {
+    return {
+      id,
+      uuid: generateUUID(),
+      shortName: `CS${id}`,
+      name: `Cable System ${id}`,
+      type: 'wet',              // 'wet' or 'terrestrial'
+      rfsYear: new Date().getFullYear() + 1,
+      fiberPairs: 8,
+      status: 'planned',        // 'planned' or 'operational'
+      capacityTbps: 100,
+      owners: '',
+      filterTags: ['default'],
+      notes: ''
+    };
+  }
+
+  function createCableSystem() {
+    const id = state.nextCableSystem++;
+    const cs = makeCableSystem(id);
+    state.cableSystems.push(cs);
+    commit();
+    updateCableNavigatorList();
+    selectCableSystem(cs.id);
+    showToast(`Created cable system "${cs.shortName}".`);
+    return cs;
+  }
+
+  function findCableSystem(id) {
+    return state.cableSystems.find(cs => cs.id === id);
+  }
+
+  function deleteCableSystem(id, mode = 'cancel') {
+    // mode: 'deleteAll' - delete CS and all its links/nodes
+    //       'unmapOnly' - delete CS but keep links/nodes (unmapped)
+    //       'cancel' - don't delete
+    if (mode === 'cancel') return;
+    
+    const cs = findCableSystem(id);
+    if (!cs) return;
+    
+    if (mode === 'deleteAll') {
+      // Delete all links belonging to this cable system
+      state.edges = state.edges.filter(e => e.cableSystemId !== id);
+      // Remove this cable system from all nodes and delete nodes that only belonged to this system
+      state.nodes.forEach(n => {
+        if (n.cableSystemIds) {
+          n.cableSystemIds = n.cableSystemIds.filter(csId => csId !== id);
+        }
+      });
+    } else if (mode === 'unmapOnly') {
+      // Just unmap - set links' cableSystemId to null
+      state.edges.forEach(e => {
+        if (e.cableSystemId === id) e.cableSystemId = null;
+      });
+      // Remove from nodes' cableSystemIds
+      state.nodes.forEach(n => {
+        if (n.cableSystemIds) {
+          n.cableSystemIds = n.cableSystemIds.filter(csId => csId !== id);
+        }
+      });
+    }
+    
+    // Remove the cable system
+    state.cableSystems = state.cableSystems.filter(c => c.id !== id);
+    
+    // Clear selection if this was selected
+    if (state.selectedCableSystem === id) {
+      state.selectedCableSystem = null;
+    }
+    
+    commit();
+    render();
+    updateCableNavigatorList();
+    updateInspector();
+    showToast(`Deleted cable system "${cs.shortName}".`);
+  }
+
+  // Get links belonging to a cable system
+  function getCableSystemLinks(csId) {
+    return state.edges.filter(e => e.cableSystemId === csId);
+  }
+
+  // Get nodes belonging to a cable system
+  function getCableSystemNodes(csId) {
+    return state.nodes.filter(n => n.cableSystemIds && n.cableSystemIds.includes(csId));
   }
 
   function createNode(x, y) {
@@ -3913,7 +6044,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
 
     select({type:'group', id});
     commit(); render();
-    showToast(g.type === 'region' ? 'Created region box. Rename in Inspector.' : 'Created country box. Rename in Inspector.');
+    showToast(g.type === 'region' ? 'Created group box. Rename in Inspector.' : 'Created container box. Rename in Inspector.');
   }
 
     function deleteSelected() {
@@ -4314,7 +6445,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     state.placingGroup = !state.placingGroup;
     document.getElementById('btnAddGroup').classList.toggle('primary', state.placingGroup && state.placingGroupType==='country');
     document.getElementById('btnAddRegion').classList.toggle('primary', state.placingGroup && state.placingGroupType==='region');
-    showToast(state.placingGroup ? 'Click the canvas to place a country box.' : 'Placement cancelled.');
+    showToast(state.placingGroup ? 'Click the canvas to place a container box.' : 'Placement cancelled.');
   });
 
   document.getElementById('btnAddRegion').addEventListener('click', (ev) => {
@@ -4322,7 +6453,7 @@ if (edgeCapacity) edgeCapacity.addEventListener('input', () => {
     state.placingGroup = !state.placingGroup;
     document.getElementById('btnAddRegion').classList.toggle('primary', state.placingGroup && state.placingGroupType==='region');
     document.getElementById('btnAddGroup').classList.remove('primary');
-    showToast(state.placingGroup ? 'Click the canvas to place a region box.' : 'Placement cancelled.');
+    showToast(state.placingGroup ? 'Click the canvas to place a group box.' : 'Placement cancelled.');
   });
 
 document.getElementById('btnExportLinks').addEventListener('click', () => {
@@ -4339,10 +6470,12 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
     'Link code',
     'Link latency',
     'Link Capacity Options',
+    'Link Priority',
     'Link Additional tags/Notes'
   ];
   
-  let csv = headers.join(',') + '\r\n';
+  // Use semicolon as delimiter for European Excel compatibility
+  let csv = headers.join(';') + '\r\n';
   
   // Add data rows
   for (const e of state.edges) {
@@ -4368,10 +6501,11 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       escapeCSV(e.code || ''),
       escapeCSV((typeof e.latencyMs === "number" && isFinite(e.latencyMs)) ? e.latencyMs : ''),
       escapeCSV(e.capacity || ''),
+      escapeCSV((typeof e.priority === "number" && isFinite(e.priority)) ? e.priority : 100),
       escapeCSV(e.extraTags || '')
     ];
     
-    csv += row.join(',') + '\r\n';
+    csv += row.join(';') + '\r\n';
   }
   
   downloadText('links.csv', csv, 'text/csv;charset=utf-8');
@@ -4387,13 +6521,14 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
     'Additional Tags',
     'Address',
     'City',
-    'Country Box',
-    'Country Box UUID',
+    'Container Box',
+    'Container Box UUID',
     'X',
     'Y'
   ];
   
-  let csv = headers.join(',') + '\r\n';
+  // Use semicolon as delimiter for European Excel compatibility
+  let csv = headers.join(';') + '\r\n';
   
   for (const n of state.nodes) {
     // Ensure UUID exists
@@ -4416,7 +6551,7 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       escapeCSV(Math.round(n.y))
     ];
     
-    csv += row.join(',') + '\r\n';
+    csv += row.join(';') + '\r\n';
   }
   
   downloadText('nodes.csv', csv, 'text/csv;charset=utf-8');
@@ -4437,9 +6572,11 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       nodes: state.nodes,
       edges: state.edges,
       groups: state.groups,
+      cableSystems: state.cableSystems,
       nextNode: state.nextNode,
       nextEdge: state.nextEdge,
       nextGroup: state.nextGroup,
+      nextCableSystem: state.nextCableSystem,
       stylePresets: state.stylePresets,
       canvasWidth: state.canvasWidth,
       canvasHeight: state.canvasHeight,
@@ -4449,6 +6586,21 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
       tagFilter: {
         mode: state.tagFilter.mode,
         selectedTags: Array.from(state.tagFilter.selectedTags)
+      },
+      cableSystemFilter: {
+        mode: state.cableSystemFilter.mode,
+        selectedSystems: Array.from(state.cableSystemFilter.selectedSystems),
+        showUnmapped: state.cableSystemFilter.showUnmapped
+      },
+      nodeFilter: {
+        mode: state.nodeFilter.mode,
+        selectedNodes: Array.from(state.nodeFilter.selectedNodes),
+        displayMode: state.nodeFilter.displayMode
+      },
+      containerFilter: {
+        mode: state.containerFilter.mode,
+        selectedBoxes: Array.from(state.containerFilter.selectedBoxes),
+        selectedGroups: Array.from(state.containerFilter.selectedGroups)
       },
       ui: state.ui
     };
@@ -4510,6 +6662,7 @@ function loadProjectObject(obj) {
     tags: Array.isArray(n.tags) ? n.tags : [],
     extraTags: n.extraTags || '',
     groupId: (typeof n.groupId === 'number') ? n.groupId : null,
+    cableSystemIds: Array.isArray(n.cableSystemIds) ? n.cableSystemIds : [],  // Backward compatible
     fill: n.fill || '#1b2030',
     stroke: n.stroke || '#9fb3ff',
     nameColor: n.nameColor || '#eaeaea',
@@ -4519,7 +6672,8 @@ function loadProjectObject(obj) {
     nameDx: (typeof n.nameDx === 'number') ? n.nameDx : 0,
     nameDy: (typeof n.nameDy === 'number') ? n.nameDy : 0,
     tagDx: (typeof n.tagDx === 'number') ? n.tagDx : 0,
-    tagDy: (typeof n.tagDy === 'number') ? n.tagDy : 0
+    tagDy: (typeof n.tagDy === 'number') ? n.tagDy : 0,
+    uuid: n.uuid || generateUUID()
   }));
 
   state.edges = ee.map(e => ({
@@ -4539,7 +6693,28 @@ function loadProjectObject(obj) {
     strokeW: (typeof e.strokeW === 'number') ? e.strokeW : 2,
     strokeColor: e.strokeColor || '#7f8aa6',
     capacity: e.capacity || 'Up to 10G WL',
-    curveArch: (typeof e.curveArch === 'number') ? e.curveArch : 0.3
+    priority: (typeof e.priority === 'number') ? e.priority : 100,
+    cableSystemId: (e.cableSystemId !== undefined) ? e.cableSystemId : null,  // Backward compatible
+    curveArch: (typeof e.curveArch === 'number') ? e.curveArch : 0.3,
+    uuid: e.uuid || generateUUID(),
+    filterTags: Array.isArray(e.filterTags) ? e.filterTags : ['default']
+  }));
+
+  // Load cable systems (backward compatible - empty array if not present)
+  const cs = Array.isArray(obj.cableSystems) ? obj.cableSystems : [];
+  state.cableSystems = cs.map(c => ({
+    id: c.id,
+    uuid: c.uuid || generateUUID(),
+    shortName: c.shortName || `CS${c.id}`,
+    name: c.name || `Cable System ${c.id}`,
+    type: c.type || 'wet',
+    rfsYear: (typeof c.rfsYear === 'number') ? c.rfsYear : new Date().getFullYear(),
+    fiberPairs: (typeof c.fiberPairs === 'number') ? c.fiberPairs : 1,
+    status: c.status || 'planned',
+    capacityTbps: (typeof c.capacityTbps === 'number') ? c.capacityTbps : 0,
+    owners: c.owners || '',
+    notes: c.notes || '',
+    filterTags: Array.isArray(c.filterTags) ? c.filterTags : ['default']
   }));
 
   state.groups = gg.map(g => ({
@@ -4547,7 +6722,7 @@ function loadProjectObject(obj) {
     type: g.type || 'country',
     parentId: g.parentId ?? null,
     x: g.x, y: g.y, w: g.w, h: g.h,
-    title: g.title || ((g.type==='region') ? ('Region' + g.id) : 'Country'),
+    title: g.title || ((g.type==='region') ? ('Group' + g.id) : 'Container'),
     extraTags: g.extraTags || '',
     fill: g.fill || (g.type==='region' ? 'rgba(120, 140, 180, 0.10)' : 'rgba(54, 76, 140, 0.12)'),
     stroke: g.stroke || (g.type==='region' ? '#7f8aa6' : '#6073b8'),
@@ -4561,6 +6736,7 @@ function loadProjectObject(obj) {
   state.nextNode = (typeof obj.nextNode === 'number') ? obj.nextNode : (Math.max(0, ...state.nodes.map(n=>n.id)) + 1);
   state.nextEdge = (typeof obj.nextEdge === 'number') ? obj.nextEdge : (Math.max(0, ...state.edges.map(e=>e.id)) + 1);
   state.nextGroup = (typeof obj.nextGroup === 'number') ? obj.nextGroup : (Math.max(0, ...state.groups.map(g=>g.id)) + 1);
+  state.nextCableSystem = (typeof obj.nextCableSystem === 'number') ? obj.nextCableSystem : (Math.max(0, ...state.cableSystems.map(cs=>cs.id)) + 1);
   
   // Restore canvas dimensions
   if (typeof obj.canvasWidth === 'number') state.canvasWidth = obj.canvasWidth;
@@ -4818,10 +6994,905 @@ function loadProjectObject(obj) {
     });
   };
 
+  // ===== CABLE SYSTEM NAVIGATOR & INSPECTOR UI =====
+  
+  const cableNavigator = document.getElementById('cableNavigator');
+  const cableNavigatorHeader = document.getElementById('cableNavigatorHeader');
+  const cableInspectorPanel = document.getElementById('cableSystemInspectorPanel');
+  const cableInspectorHeader = document.getElementById('cableInspectorHeader');
+  const btnToggleCableNavigator = document.getElementById('btnToggleCableNavigator');
+  const btnToggleCableInspector = document.getElementById('btnToggleCableInspector');
+  const btnNewCableSystem = document.getElementById('btnNewCableSystem');
+  const btnDeleteCableSystem = document.getElementById('btnDeleteCableSystem');
+  const cableNavSearch = document.getElementById('cableNavSearch');
+  const cableSystemList = document.getElementById('cableSystemList');
+
+  // Add mode state
+  let csAddMode = null; // null, 'links', or 'nodes'
+  let csPendingItems = new Set(); // IDs of items to add
+
+  // Make cable navigator draggable
+  if (cableNavigatorHeader && cableNavigator) {
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    cableNavigatorHeader.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      isDragging = true;
+      offsetX = e.clientX - cableNavigator.offsetLeft;
+      offsetY = e.clientY - cableNavigator.offsetTop;
+      cableNavigator.style.cursor = 'move';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      cableNavigator.style.left = (e.clientX - offsetX) + 'px';
+      cableNavigator.style.top = (e.clientY - offsetY) + 'px';
+      cableNavigator.style.right = 'auto';
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      cableNavigator.style.cursor = '';
+    });
+  }
+
+  // Make cable inspector draggable
+  if (cableInspectorHeader && cableInspectorPanel) {
+    let isDragging = false;
+    let offsetX, offsetY;
+    
+    cableInspectorHeader.addEventListener('mousedown', (e) => {
+      if (e.target.tagName === 'BUTTON') return;
+      isDragging = true;
+      offsetX = e.clientX - cableInspectorPanel.offsetLeft;
+      offsetY = e.clientY - cableInspectorPanel.offsetTop;
+      cableInspectorPanel.style.cursor = 'move';
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      cableInspectorPanel.style.left = (e.clientX - offsetX) + 'px';
+      cableInspectorPanel.style.top = (e.clientY - offsetY) + 'px';
+      cableInspectorPanel.style.right = 'auto';
+    });
+    
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      cableInspectorPanel.style.cursor = '';
+    });
+  }
+
+  // Toggle cable navigator visibility
+  if (btnToggleCableNavigator) {
+    btnToggleCableNavigator.addEventListener('click', () => {
+      if (cableNavigator.style.display === 'none' || !cableNavigator.style.display) {
+        cableNavigator.style.display = 'flex';
+        btnToggleCableNavigator.classList.add('active');
+        updateCableNavigatorList();
+      } else {
+        cableNavigator.style.display = 'none';
+        btnToggleCableNavigator.classList.remove('active');
+        // Clear cable system selection when hiding the list
+        state.selectedCableSystem = null;
+        updateCableSystemInspector();
+        render();
+      }
+    });
+  }
+
+  // Toggle cable system inspector visibility
+  if (btnToggleCableInspector) {
+    btnToggleCableInspector.addEventListener('click', () => {
+      if (cableInspectorPanel.style.display === 'none' || !cableInspectorPanel.style.display) {
+        cableInspectorPanel.style.display = 'flex';
+        btnToggleCableInspector.classList.add('active');
+        updateCableSystemInspector();
+      } else {
+        cableInspectorPanel.style.display = 'none';
+        btnToggleCableInspector.classList.remove('active');
+      }
+    });
+  }
+
+  // Minimize/close cable navigator
+  const btnMinimizeCableNav = document.getElementById('btnMinimizeCableNav');
+  const btnCloseCableNav = document.getElementById('btnCloseCableNav');
+  
+  if (btnMinimizeCableNav) {
+    btnMinimizeCableNav.addEventListener('click', () => {
+      cableNavigator.classList.toggle('minimized');
+      btnMinimizeCableNav.textContent = cableNavigator.classList.contains('minimized') ? '+' : '−';
+    });
+  }
+  
+  if (btnCloseCableNav) {
+    btnCloseCableNav.addEventListener('click', () => {
+      cableNavigator.style.display = 'none';
+      btnToggleCableNavigator.classList.remove('active');
+      // Clear cable system selection when closing the list
+      state.selectedCableSystem = null;
+      updateCableSystemInspector();
+      render();
+    });
+  }
+
+  // Minimize/close cable inspector
+  const btnMinimizeCableInspector = document.getElementById('btnMinimizeCableInspector');
+  const btnCloseCableInspector = document.getElementById('btnCloseCableInspector');
+  
+  if (btnMinimizeCableInspector) {
+    btnMinimizeCableInspector.addEventListener('click', () => {
+      cableInspectorPanel.classList.toggle('minimized');
+      btnMinimizeCableInspector.textContent = cableInspectorPanel.classList.contains('minimized') ? '+' : '−';
+    });
+  }
+  
+  if (btnCloseCableInspector) {
+    btnCloseCableInspector.addEventListener('click', () => {
+      cableInspectorPanel.style.display = 'none';
+      btnToggleCableInspector.classList.remove('active');
+      cancelAddMode();
+    });
+  }
+
+  // New cable system button
+  if (btnNewCableSystem) {
+    btnNewCableSystem.addEventListener('click', () => {
+      createCableSystem();
+    });
+  }
+
+  // Delete cable system button
+  if (btnDeleteCableSystem) {
+    btnDeleteCableSystem.addEventListener('click', () => {
+      if (!state.selectedCableSystem) {
+        showToast('Select a cable system first.');
+        return;
+      }
+      showDeleteCableSystemDialog(state.selectedCableSystem);
+    });
+  }
+
+  // Search filter for cable navigator
+  if (cableNavSearch) {
+    cableNavSearch.addEventListener('input', () => {
+      updateCableNavigatorList();
+    });
+  }
+
+  function updateCableNavigatorList() {
+    if (!cableSystemList) return;
+    
+    const searchTerm = (cableNavSearch?.value || '').toLowerCase();
+    const filtered = state.cableSystems.filter(cs => {
+      if (!searchTerm) return true;
+      return cs.shortName.toLowerCase().includes(searchTerm) ||
+             cs.name.toLowerCase().includes(searchTerm);
+    });
+    
+    if (filtered.length === 0) {
+      cableSystemList.innerHTML = '<div class="muted" style="padding:12px; text-align:center;">No cable systems found.</div>';
+      return;
+    }
+    
+    cableSystemList.innerHTML = filtered.map(cs => {
+      const linkCount = getCableSystemLinks(cs.id).length;
+      const nodeCount = getCableSystemNodes(cs.id).length;
+      const isSelected = state.selectedCableSystem === cs.id;
+      return `
+        <div class="cable-system-item ${isSelected ? 'selected' : ''}" data-cs-id="${cs.id}">
+          <div>
+            <div class="cs-name">${cs.shortName}</div>
+            <div class="cs-fullname">${cs.name}</div>
+          </div>
+          <div class="cs-count">${linkCount}L / ${nodeCount}N</div>
+        </div>
+      `;
+    }).join('');
+    
+    // Add click handlers
+    cableSystemList.querySelectorAll('.cable-system-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const csId = parseInt(item.dataset.csId);
+        selectCableSystem(csId);
+      });
+    });
+  }
+
+  function selectCableSystem(csId) {
+    state.selectedCableSystem = csId;
+    updateCableNavigatorList();
+    updateCableSystemInspector();
+    render();
+  }
+
+  function showDeleteCableSystemDialog(csId) {
+    const cs = findCableSystem(csId);
+    if (!cs) return;
+    
+    const links = getCableSystemLinks(csId);
+    const nodes = getCableSystemNodes(csId);
+    
+    // Highlight associated items on canvas
+    highlightCableSystemItems(csId);
+    
+    // Create modal dialog
+    const modal = document.createElement('div');
+    modal.id = 'deleteCableSystemModal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5); z-index: 10001;
+      display: flex; justify-content: center; align-items: center;
+    `;
+    
+    modal.innerHTML = `
+      <div style="background: #fff; border-radius: 8px; padding: 24px; max-width: 400px; box-shadow: 0 8px 32px rgba(0,0,0,0.3);">
+        <h3 style="margin: 0 0 16px;">Delete Cable System "${cs.shortName}"?</h3>
+        <p style="margin: 0 0 12px; color: #666;">This cable system has:</p>
+        <ul style="margin: 0 0 16px; padding-left: 20px; color: #666;">
+          <li>${links.length} link(s)</li>
+          <li>${nodes.length} node(s)</li>
+        </ul>
+        <p style="margin: 0 0 20px; font-size: 13px; color: #888;">
+          These items are highlighted on the canvas.
+        </p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn" id="btnDeleteAll" style="background: #d32f2f; color: #fff; border-color: #d32f2f;">Delete All</button>
+          <button class="btn" id="btnUnmapOnly">Unmap Only</button>
+          <button class="btn" id="btnCancelDelete">Cancel</button>
+        </div>
+        <p style="margin: 12px 0 0; font-size: 11px; color: #888;">
+          <strong>Delete All:</strong> Remove cable system AND all its links/nodes<br/>
+          <strong>Unmap Only:</strong> Remove cable system but keep links/nodes
+        </p>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.querySelector('#btnDeleteAll').addEventListener('click', () => {
+      deleteCableSystem(csId, 'deleteAll');
+      clearHighlights();
+      modal.remove();
+    });
+    
+    modal.querySelector('#btnUnmapOnly').addEventListener('click', () => {
+      deleteCableSystem(csId, 'unmapOnly');
+      clearHighlights();
+      modal.remove();
+    });
+    
+    modal.querySelector('#btnCancelDelete').addEventListener('click', () => {
+      clearHighlights();
+      modal.remove();
+    });
+  }
+
+  function highlightCableSystemItems(csId) {
+    // Add temporary highlight class to associated items
+    const links = getCableSystemLinks(csId);
+    const nodes = getCableSystemNodes(csId);
+    
+    // Visual highlight via render - store temporarily
+    state._highlightedLinks = new Set(links.map(l => l.id));
+    state._highlightedNodes = new Set(nodes.map(n => n.id));
+    render();
+  }
+
+  function clearHighlights() {
+    state._highlightedLinks = null;
+    state._highlightedNodes = null;
+    render();
+  }
+
+  // Update inspector to show cable system details
+  function updateCableSystemInspector() {
+    const csNoSel = document.getElementById('csNoSelection');
+    const csDetails = document.getElementById('csDetails');
+    
+    if (!csNoSel || !csDetails) return;
+    
+    if (!state.selectedCableSystem) {
+      csNoSel.style.display = 'block';
+      csDetails.style.display = 'none';
+      return;
+    }
+    
+    const cs = findCableSystem(state.selectedCableSystem);
+    if (!cs) {
+      csNoSel.style.display = 'block';
+      csDetails.style.display = 'none';
+      return;
+    }
+    
+    csNoSel.style.display = 'none';
+    csDetails.style.display = 'block';
+    
+    // Populate fields
+    document.getElementById('csUUID').value = cs.uuid || '';
+    document.getElementById('csShortName').value = cs.shortName || '';
+    document.getElementById('csName').value = cs.name || '';
+    document.getElementById('csType').value = cs.type || 'wet';
+    document.getElementById('csStatus').value = cs.status || 'planned';
+    document.getElementById('csRfsYear').value = cs.rfsYear || '';
+    document.getElementById('csFiberPairs').value = cs.fiberPairs || '';
+    document.getElementById('csCapacity').value = cs.capacityTbps || '';
+    document.getElementById('csOwners').value = cs.owners || '';
+    document.getElementById('csFilterTags').value = (cs.filterTags || []).join(', ');
+    document.getElementById('csNotes').value = cs.notes || '';
+    
+    // Update member lists
+    const links = getCableSystemLinks(cs.id);
+    const nodes = getCableSystemNodes(cs.id);
+    
+    document.getElementById('csMemberLinksCount').textContent = links.length;
+    document.getElementById('csMemberNodesCount').textContent = nodes.length;
+    
+    const linksContainer = document.getElementById('csMemberLinks');
+    if (links.length === 0) {
+      linksContainer.innerHTML = '<div class="muted">No links assigned</div>';
+    } else {
+      linksContainer.innerHTML = links.map(l => {
+        const nodeA = findNode(l.a);
+        const nodeB = findNode(l.b);
+        return `<div class="member-item" data-type="edge" data-id="${l.id}" style="padding:4px; cursor:pointer; border-radius:3px; display:flex; justify-content:space-between; align-items:center;">
+          <span>${l.code || 'L-' + l.id}: ${nodeA?.name || '?'} ↔ ${nodeB?.name || '?'}</span>
+          <button class="remove-member-btn" data-type="edge" data-id="${l.id}" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:14px;" title="Remove from cable system">×</button>
+        </div>`;
+      }).join('');
+    }
+    
+    const nodesContainer = document.getElementById('csMemberNodes');
+    if (nodes.length === 0) {
+      nodesContainer.innerHTML = '<div class="muted">No nodes assigned</div>';
+    } else {
+      nodesContainer.innerHTML = nodes.map(n => {
+        return `<div class="member-item" data-type="node" data-id="${n.id}" style="padding:4px; cursor:pointer; border-radius:3px; display:flex; justify-content:space-between; align-items:center;">
+          <span>${n.code || 'N-' + n.id}: ${n.name || 'Unnamed'}</span>
+          <button class="remove-member-btn" data-type="node" data-id="${n.id}" style="background:none; border:none; color:#d32f2f; cursor:pointer; font-size:14px;" title="Remove from cable system">×</button>
+        </div>`;
+      }).join('');
+    }
+    
+    // Add click handlers for member items
+    document.querySelectorAll('#csMemberLinks .member-item, #csMemberNodes .member-item').forEach(item => {
+      let clickCount = 0;
+      let clickTimer = null;
+      
+      item.addEventListener('click', (e) => {
+        // Ignore if clicking remove button
+        if (e.target.classList.contains('remove-member-btn')) return;
+        
+        clickCount++;
+        if (clickCount === 1) {
+          clickTimer = setTimeout(() => {
+            // Single click - highlight on canvas
+            const type = item.dataset.type;
+            const id = parseInt(item.dataset.id);
+            highlightItemOnCanvas(type, id);
+            clickCount = 0;
+          }, 300);
+        } else if (clickCount === 2) {
+          // Double click - show in main inspector
+          clearTimeout(clickTimer);
+          const type = item.dataset.type;
+          const id = parseInt(item.dataset.id);
+          select({ type, id });
+          // Show main inspector if hidden
+          if (inspector.style.display === 'none') {
+            inspector.style.display = 'flex';
+            btnToggleInspector.classList.add('active');
+          }
+          clickCount = 0;
+        }
+      });
+      
+      item.addEventListener('mouseenter', () => {
+        item.style.background = '#e3f2fd';
+      });
+      item.addEventListener('mouseleave', () => {
+        item.style.background = '';
+      });
+    });
+    
+    // Add click handlers for remove buttons
+    document.querySelectorAll('.remove-member-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const type = btn.dataset.type;
+        const id = parseInt(btn.dataset.id);
+        
+        if (type === 'edge') {
+          const edge = findEdge(id);
+          if (edge) {
+            edge.cableSystemId = null;
+            commit();
+            updateCableSystemInspector();
+            updateCableNavigatorList();
+            render();
+            showToast('Link removed from cable system.');
+          }
+        } else if (type === 'node') {
+          const node = findNode(id);
+          if (node && node.cableSystemIds) {
+            node.cableSystemIds = node.cableSystemIds.filter(csId => csId !== state.selectedCableSystem);
+            commit();
+            updateCableSystemInspector();
+            updateCableNavigatorList();
+            render();
+            showToast('Node removed from cable system.');
+          }
+        }
+      });
+    });
+  }
+
+  // Add mode functions
+  function startAddMode(type) {
+    if (!state.selectedCableSystem) {
+      showToast('Select a cable system first.');
+      return;
+    }
+    
+    csAddMode = type; // 'links' or 'nodes'
+    csPendingItems = new Set();
+    
+    const addModeBar = document.getElementById('csAddModeBar');
+    const addModeText = document.getElementById('csAddModeText');
+    
+    if (addModeBar && addModeText) {
+      addModeBar.style.display = 'block';
+      addModeText.textContent = type === 'links' 
+        ? 'Click links on canvas to add them...' 
+        : 'Click nodes on canvas to add them...';
+    }
+    
+    showToast(`Click ${type} on canvas to add. Click Accept when done.`);
+    render(); // Re-render to show visual feedback
+  }
+
+  function cancelAddMode() {
+    csAddMode = null;
+    csPendingItems = new Set();
+    
+    const addModeBar = document.getElementById('csAddModeBar');
+    if (addModeBar) addModeBar.style.display = 'none';
+    
+    clearHighlights();
+    render();
+  }
+
+  function acceptAddMode() {
+    if (!csAddMode || !state.selectedCableSystem) {
+      cancelAddMode();
+      return;
+    }
+    
+    const cs = findCableSystem(state.selectedCableSystem);
+    if (!cs) {
+      cancelAddMode();
+      return;
+    }
+    
+    let count = 0;
+    
+    if (csAddMode === 'links') {
+      csPendingItems.forEach(linkId => {
+        const edge = findEdge(linkId);
+        if (edge) {
+          edge.cableSystemId = state.selectedCableSystem;
+          count++;
+        }
+      });
+    } else if (csAddMode === 'nodes') {
+      csPendingItems.forEach(nodeId => {
+        const node = findNode(nodeId);
+        if (node) {
+          if (!node.cableSystemIds) node.cableSystemIds = [];
+          if (!node.cableSystemIds.includes(state.selectedCableSystem)) {
+            node.cableSystemIds.push(state.selectedCableSystem);
+            count++;
+          }
+        }
+      });
+    }
+    
+    if (count > 0) {
+      commit();
+      showToast(`Added ${count} ${csAddMode} to "${cs.shortName}".`);
+    }
+    
+    cancelAddMode();
+    updateCableSystemInspector();
+    updateCableNavigatorList();
+    render();
+  }
+
+  // Handle canvas clicks during add mode
+  function handleAddModeClick(type, id) {
+    if (!csAddMode) return false;
+    
+    if (csAddMode === 'links' && type === 'edge') {
+      if (csPendingItems.has(id)) {
+        csPendingItems.delete(id);
+      } else {
+        csPendingItems.add(id);
+      }
+      // Update highlights
+      state._highlightedLinks = new Set(csPendingItems);
+      render();
+      return true;
+    } else if (csAddMode === 'nodes' && type === 'node') {
+      if (csPendingItems.has(id)) {
+        csPendingItems.delete(id);
+      } else {
+        csPendingItems.add(id);
+      }
+      // Update highlights
+      state._highlightedNodes = new Set(csPendingItems);
+      render();
+      return true;
+    }
+    
+    return false;
+  }
+
+  // Button handlers for add mode
+  const btnAddLinksToCS = document.getElementById('btnAddLinksToCS');
+  const btnAddNodesToCS = document.getElementById('btnAddNodesToCS');
+  const btnAcceptAddToCS = document.getElementById('btnAcceptAddToCS');
+  const btnCancelAddToCS = document.getElementById('btnCancelAddToCS');
+
+  if (btnAddLinksToCS) {
+    btnAddLinksToCS.addEventListener('click', () => startAddMode('links'));
+  }
+  if (btnAddNodesToCS) {
+    btnAddNodesToCS.addEventListener('click', () => startAddMode('nodes'));
+  }
+  if (btnAcceptAddToCS) {
+    btnAcceptAddToCS.addEventListener('click', acceptAddMode);
+  }
+  if (btnCancelAddToCS) {
+    btnCancelAddToCS.addEventListener('click', cancelAddMode);
+  }
+
+  function highlightItemOnCanvas(type, id) {
+    // Temporarily highlight an item
+    if (type === 'edge') {
+      state._highlightedLinks = new Set([id]);
+      state._highlightedNodes = null;
+    } else if (type === 'node') {
+      state._highlightedNodes = new Set([id]);
+      state._highlightedLinks = null;
+    }
+    render();
+    
+    // Clear after 2 seconds
+    setTimeout(() => {
+      clearHighlights();
+    }, 2000);
+  }
+
+  // Add event listeners for cable system inspector fields
+  const csFields = ['csShortName', 'csName', 'csType', 'csStatus', 'csRfsYear', 
+                    'csFiberPairs', 'csCapacity', 'csOwners', 'csFilterTags', 'csNotes'];
+  
+  csFields.forEach(fieldId => {
+    const el = document.getElementById(fieldId);
+    if (!el) return;
+    
+    el.addEventListener('input', () => {
+      if (!state.selectedCableSystem) return;
+      const cs = findCableSystem(state.selectedCableSystem);
+      if (!cs) return;
+      
+      switch(fieldId) {
+        case 'csShortName': cs.shortName = el.value; break;
+        case 'csName': cs.name = el.value; break;
+        case 'csType': cs.type = el.value; break;
+        case 'csStatus': cs.status = el.value; break;
+        case 'csRfsYear': cs.rfsYear = parseInt(el.value) || null; break;
+        case 'csFiberPairs': cs.fiberPairs = parseInt(el.value) || null; break;
+        case 'csCapacity': cs.capacityTbps = parseFloat(el.value) || null; break;
+        case 'csOwners': cs.owners = el.value; break;
+        case 'csFilterTags': 
+          cs.filterTags = el.value.split(',').map(t => t.trim()).filter(Boolean);
+          if (!cs.filterTags.some(t => t.toLowerCase() === 'default')) {
+            cs.filterTags.unshift('default');
+          }
+          break;
+        case 'csNotes': cs.notes = el.value; break;
+      }
+      
+      commit();
+      updateCableNavigatorList();
+    });
+  });
+
+  // Update edge cable system dropdown
+  function updateEdgeCableSystemDropdown() {
+    const dropdown = document.getElementById('edgeCableSystem');
+    if (!dropdown) return;
+    
+    const currentValue = dropdown.value;
+    dropdown.innerHTML = '<option value="">(None)</option>';
+    
+    state.cableSystems.forEach(cs => {
+      const opt = document.createElement('option');
+      opt.value = cs.id;
+      opt.textContent = cs.shortName;
+      dropdown.appendChild(opt);
+    });
+    
+    dropdown.value = currentValue;
+  }
+
+  // Update node cable systems checkboxes
+  function updateNodeCableSystemsCheckboxes(nodeId) {
+    const container = document.getElementById('nodeCableSystems');
+    if (!container) return;
+    
+    const node = findNode(nodeId);
+    if (!node) {
+      container.innerHTML = '<div class="muted" style="font-size:11px;">No node selected</div>';
+      return;
+    }
+    
+    if (state.cableSystems.length === 0) {
+      container.innerHTML = '<div class="muted" style="font-size:11px;">No cable systems defined</div>';
+      return;
+    }
+    
+    const nodeCSIds = node.cableSystemIds || [];
+    
+    container.innerHTML = state.cableSystems.map(cs => {
+      const checked = nodeCSIds.includes(cs.id) ? 'checked' : '';
+      return `
+        <label style="display:flex; align-items:center; gap:6px; padding:4px; cursor:pointer; font-size:11px;">
+          <input type="checkbox" data-cs-id="${cs.id}" ${checked} style="accent-color:#0096D6;" />
+          <span><strong>${cs.shortName}</strong> - ${cs.name}</span>
+        </label>
+      `;
+    }).join('');
+    
+    // Add change handlers
+    container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const csId = parseInt(cb.dataset.csId);
+        if (!node.cableSystemIds) node.cableSystemIds = [];
+        
+        if (cb.checked) {
+          if (!node.cableSystemIds.includes(csId)) {
+            node.cableSystemIds.push(csId);
+          }
+        } else {
+          node.cableSystemIds = node.cableSystemIds.filter(id => id !== csId);
+        }
+        
+        commit();
+        render();
+      });
+    });
+  }
+
+  // Edge cable system change handler
+  const edgeCableSystem = document.getElementById('edgeCableSystem');
+  if (edgeCableSystem) {
+    edgeCableSystem.addEventListener('change', () => {
+      if (state.selected?.type !== 'edge') return;
+      const e = findEdge(state.selected.id);
+      if (!e) return;
+      
+      const val = edgeCableSystem.value;
+      e.cableSystemId = val ? parseInt(val) : null;
+      
+      // Update info display
+      const infoEl = document.getElementById('edgeCableSystemInfo');
+      if (infoEl) {
+        if (e.cableSystemId) {
+          const cs = findCableSystem(e.cableSystemId);
+          infoEl.textContent = cs ? cs.name : '';
+        } else {
+          infoEl.textContent = '';
+        }
+      }
+      
+      commit();
+      render();
+    });
+  }
+
   // Initialize inspector button state
-  if (btnToggleInspector) btnToggleInspector.classList.add('primary');
+  if (btnToggleInspector) btnToggleInspector.classList.add('active');
 
   showToast('Ready — double-click to create a node.');
+})();
+</script>
+
+<!-- Print Preview Modal -->
+<div id="printPreviewModal">
+  <div id="printPreviewContent">
+    <div id="printPreviewHeader">
+      <h3>Print Preview</h3>
+      <div id="printPreviewControls">
+        <label style="font-size:13px;">
+          Page Size:
+          <select id="printPageSize" style="margin-left:4px; padding:4px;">
+            <option value="a4">A4</option>
+            <option value="letter">Letter</option>
+            <option value="a3">A3</option>
+            <option value="fit">Fit Content</option>
+          </select>
+        </label>
+        <label style="font-size:13px;">
+          Orientation:
+          <select id="printOrientation" style="margin-left:4px; padding:4px;">
+            <option value="landscape">Landscape</option>
+            <option value="portrait">Portrait</option>
+          </select>
+        </label>
+        <label style="font-size:13px;">
+          <input type="checkbox" id="printShowGrid" style="margin-right:4px;" />
+          Show Grid
+        </label>
+        <button class="btn primary" id="btnDoPrint">Print</button>
+        <button class="btn" id="btnClosePrintPreview">Close</button>
+      </div>
+    </div>
+    <div id="printPreviewBody">
+      <div id="printPreviewPage">
+        <!-- SVG preview will be inserted here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const printPreviewModal = document.getElementById('printPreviewModal');
+  const printPreviewPage = document.getElementById('printPreviewPage');
+  const printPageSize = document.getElementById('printPageSize');
+  const printOrientation = document.getElementById('printOrientation');
+  const printShowGrid = document.getElementById('printShowGrid');
+  const btnDoPrint = document.getElementById('btnDoPrint');
+  const btnClosePrintPreview = document.getElementById('btnClosePrintPreview');
+  const miPrintPreview = document.getElementById('miPrintPreview');
+  const miPrint = document.getElementById('miPrint');
+
+  // Page sizes in mm (width x height for portrait)
+  const pageSizes = {
+    a4: { w: 297, h: 210 },      // landscape by default
+    letter: { w: 279, h: 216 },  // landscape by default
+    a3: { w: 420, h: 297 },      // landscape by default
+    fit: { w: 0, h: 0 }          // will be calculated
+  };
+
+  function generatePrintSVG(showGrid = false) {
+    const svg = document.getElementById('svg');
+    const clone = svg.cloneNode(true);
+    
+    // Remove grid if not wanted
+    if (!showGrid) {
+      const gridElements = clone.querySelectorAll('.grid');
+      gridElements.forEach(el => el.remove());
+    }
+    
+    // Remove selection highlights
+    clone.querySelectorAll('.node-selected, .edge.selected, .group-selected').forEach(el => {
+      el.classList.remove('node-selected', 'selected', 'group-selected');
+    });
+    
+    // Remove marquee if any
+    const marquee = clone.querySelector('.marquee');
+    if (marquee) marquee.remove();
+    
+    return clone;
+  }
+
+  function updatePrintPreview() {
+    const size = printPageSize.value;
+    const orientation = printOrientation.value;
+    const showGrid = printShowGrid.checked;
+    
+    let pageW, pageH;
+    
+    if (size === 'fit') {
+      // Calculate bounding box of content
+      const svg = document.getElementById('svg');
+      const viewBox = svg.getAttribute('viewBox').split(' ').map(Number);
+      pageW = viewBox[2];
+      pageH = viewBox[3];
+    } else {
+      const dims = pageSizes[size];
+      if (orientation === 'landscape') {
+        pageW = Math.max(dims.w, dims.h);
+        pageH = Math.min(dims.w, dims.h);
+      } else {
+        pageW = Math.min(dims.w, dims.h);
+        pageH = Math.max(dims.w, dims.h);
+      }
+    }
+    
+    // Scale for preview (mm to pixels, roughly)
+    const scale = size === 'fit' ? 0.5 : 2;
+    const previewW = pageW * scale;
+    const previewH = pageH * scale;
+    
+    const printSVG = generatePrintSVG(showGrid);
+    printSVG.setAttribute('width', previewW);
+    printSVG.setAttribute('height', previewH);
+    printSVG.style.background = '#fff';
+    
+    printPreviewPage.innerHTML = '';
+    printPreviewPage.style.width = previewW + 'px';
+    printPreviewPage.style.height = previewH + 'px';
+    printPreviewPage.appendChild(printSVG);
+  }
+
+  function showPrintPreview() {
+    printPreviewModal.classList.add('show');
+    updatePrintPreview();
+  }
+
+  function closePrintPreview() {
+    printPreviewModal.classList.remove('show');
+  }
+
+  function doPrint() {
+    closePrintPreview();
+    setTimeout(() => {
+      window.print();
+    }, 100);
+  }
+
+  // Event listeners
+  if (miPrintPreview) {
+    miPrintPreview.addEventListener('click', () => {
+      showPrintPreview();
+      // Close file menu
+      const fileMenu = document.getElementById('fileMenu');
+      if (fileMenu) fileMenu.hidden = true;
+    });
+  }
+
+  if (miPrint) {
+    miPrint.addEventListener('click', () => {
+      // Close file menu
+      const fileMenu = document.getElementById('fileMenu');
+      if (fileMenu) fileMenu.hidden = true;
+      window.print();
+    });
+  }
+
+  if (btnDoPrint) btnDoPrint.addEventListener('click', doPrint);
+  if (btnClosePrintPreview) btnClosePrintPreview.addEventListener('click', closePrintPreview);
+  
+  if (printPageSize) printPageSize.addEventListener('change', updatePrintPreview);
+  if (printOrientation) printOrientation.addEventListener('change', updatePrintPreview);
+  if (printShowGrid) printShowGrid.addEventListener('change', updatePrintPreview);
+
+  // Close on escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && printPreviewModal.classList.contains('show')) {
+      closePrintPreview();
+    }
+  });
+
+  // Close on background click
+  printPreviewModal.addEventListener('click', (e) => {
+    if (e.target === printPreviewModal) {
+      closePrintPreview();
+    }
+  });
+
+  // Ctrl+P shortcut
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+      e.preventDefault();
+      window.print();
+    }
+  });
 })();
 </script>
 </body>
