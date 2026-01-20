@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Diagram Builder (Nodes/Links/Containers) → CSV + NDG</title>
+  <title>NetMap Studio</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23667eea'/%3E%3Cstop offset='100%25' stop-color='%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='28' height='28' rx='4' fill='url(%23g)'/%3E%3Cpath d='M8 8H24M8 16H24M8 24H24M8 8V24M16 8V24M24 8V24' stroke='white' stroke-width='0.8' opacity='0.2'/%3E%3Cpath d='M8 8L16 16L24 8M16 16L8 24M16 16L24 24' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='8' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='8' r='2.5' fill='white'/%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3Ccircle cx='8' cy='24' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='24' r='2.5' fill='white'/%3E%3C/svg%3E" />
   <style>
     :root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
     body { margin: 0; background:#ffffff; color:#333; }
@@ -60,6 +61,139 @@
     /* Toggle items in menu */
     .toggle-item { display: flex; align-items: center; gap: 8px; }
     .toggle-item input { accent-color: #0096D6; }
+    
+    /* Menu section headers */
+    .menu-section-header {
+      padding: 6px 12px 4px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f8f8f8;
+    }
+    
+    /* Inspector inline field controls */
+    .field-with-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .field-with-controls input,
+    .field-with-controls textarea {
+      flex: 1;
+      min-width: 0;
+    }
+    .field-inline-controls {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .field-color-swatch {
+      width: 20px;
+      height: 20px;
+      border: 1px solid #999;
+      border-radius: 3px;
+      cursor: pointer;
+      position: relative;
+    }
+    .field-color-swatch:hover {
+      border-color: #666;
+    }
+    .field-color-swatch input[type="color"] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+    .field-visibility-btn {
+      width: 22px;
+      height: 22px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 12px;
+      padding: 0;
+    }
+    .field-visibility-btn:hover {
+      background: #f0f0f0;
+      border-color: #999;
+    }
+    .field-visibility-btn.hidden {
+      background: #f5f5f5;
+      color: #bbb;
+    }
+    .field-visibility-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    .field-font-select {
+      width: 52px;
+      padding: 2px 4px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font-size: 11px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .field-font-select:hover {
+      border-color: #999;
+    }
+    
+    /* Inspector collapsible sections */
+    .inspector-section {
+      border-bottom: 1px solid #e8e8e8;
+      margin-bottom: 0;
+    }
+    .inspector-section:last-child {
+      border-bottom: none;
+    }
+    .inspector-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #f8f9fa;
+      cursor: pointer;
+      user-select: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .inspector-section-header:hover {
+      background: #f0f1f2;
+    }
+    .inspector-section-header .section-icon {
+      font-size: 10px;
+      color: #888;
+      transition: transform 0.2s;
+    }
+    .inspector-section.collapsed .section-icon {
+      transform: rotate(-90deg);
+    }
+    .inspector-section-content {
+      padding: 10px 12px;
+    }
+    .inspector-section.collapsed .inspector-section-content {
+      display: none;
+    }
+    .inspector-section-content .row {
+      margin-bottom: 10px;
+    }
+    .inspector-section-content .row:last-child {
+      margin-bottom: 0;
+    }
     
     .btn {
       background:#fff; border:1px solid #d0d0d0; color:#333;
@@ -427,6 +561,167 @@
       border-color: #0096D6;
     }
 
+    /* Apply Style Panel */
+    .apply-style-section {
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .apply-style-section:last-child {
+      border-bottom: none;
+    }
+    .apply-style-section-header {
+      padding: 8px 12px;
+      font-size: 10px;
+      font-weight: 600;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #f5f5f5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .apply-style-section-header .count {
+      background: #e0e0e0;
+      color: #555;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: normal;
+    }
+    .apply-style-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      color: #333;
+      transition: background 0.1s;
+    }
+    .apply-style-item:hover {
+      background: #e8f4fc;
+    }
+    .apply-style-swatch {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .apply-style-swatch-fill {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.2);
+    }
+    .apply-style-swatch-stroke {
+      width: 4px;
+      height: 16px;
+      border-radius: 1px;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+    .apply-style-name {
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .apply-style-empty-section {
+      padding: 12px;
+      text-align: center;
+      color: #999;
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    /* Inspector Palette Color Picker */
+    .inspector-color-picker {
+      position: relative;
+      display: inline-block;
+    }
+    .inspector-color-swatch {
+      width: 36px;
+      height: 28px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      transition: border-color 0.15s;
+    }
+    .inspector-color-swatch:hover {
+      border-color: #666;
+    }
+    .inspector-color-swatch-inner {
+      width: 28px;
+      height: 20px;
+      border-radius: 2px;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .inspector-color-dropdown {
+      position: absolute;
+      top: 32px;
+      left: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      z-index: 1000;
+      min-width: 200px;
+    }
+    .inspector-color-dropdown[hidden] {
+      display: none;
+    }
+    .inspector-color-grid {
+      display: grid;
+      grid-template-columns: repeat(8, 22px);
+      gap: 3px;
+      margin-bottom: 10px;
+    }
+    .inspector-color-grid-item {
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+      border: 1px solid rgba(0,0,0,0.15);
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .inspector-color-grid-item:hover {
+      transform: scale(1.15);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 1;
+      position: relative;
+    }
+    .inspector-color-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #e8e8e8;
+    }
+    .inspector-color-custom input[type="color"] {
+      width: 32px;
+      height: 28px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 2px;
+      cursor: pointer;
+    }
+    .inspector-color-custom input[type="text"] {
+      width: 80px;
+      padding: 4px 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+    .inspector-color-custom span {
+      font-size: 11px;
+      color: #666;
+    }
+
     /* Toolbar color grid */
     .color-grid {
       display: grid;
@@ -618,11 +913,38 @@
 <header style="background:#fafafa; border-bottom:1px solid #e0e0e0;">
   <!-- Menu Bar (text menus) -->
   <div style="display:flex; align-items:center; gap:0; padding:4px 12px; background:#fff; border-bottom:1px solid #e8e8e8;">
-    <span style="font-weight:600; color:#7b5eac; font-size:15px; margin-right:16px;">⬡ Diagram Builder</span>
+    <div style="display:flex; align-items:center; gap:8px; margin-right:20px; cursor:default;">
+      <!-- NetMap Studio Logo - Option 4: Minimal Network Grid -->
+      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#667eea"/>
+            <stop offset="100%" style="stop-color:#764ba2"/>
+          </linearGradient>
+        </defs>
+        <!-- Rounded square background -->
+        <rect x="2" y="2" width="28" height="28" rx="4" fill="url(#logoGradient)"/>
+        <!-- Subtle grid lines -->
+        <path d="M8 8H24M8 16H24M8 24H24M8 8V24M16 8V24M24 8V24" stroke="white" stroke-width="0.8" opacity="0.2"/>
+        <!-- Network highlight (X pattern) -->
+        <path d="M8 8L16 16L24 8M16 16L8 24M16 16L24 24" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Network nodes -->
+        <circle cx="8" cy="8" r="2.5" fill="white"/>
+        <circle cx="24" cy="8" r="2.5" fill="white"/>
+        <circle cx="16" cy="16" r="3" fill="white"/>
+        <circle cx="8" cy="24" r="2.5" fill="white"/>
+        <circle cx="24" cy="24" r="2.5" fill="white"/>
+      </svg>
+      <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NetMap</span>
+      <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
+    </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
     <button class="menu-item" id="btnViewMenu" type="button">View</button>
+    <button class="menu-item" id="btnHelp" type="button">Help</button>
     <div class="menu" id="fileMenu" hidden>
+      <div class="item" id="miNew">New <span style="opacity:0.5;float:right">Ctrl+N</span></div>
+      <div class="sep"></div>
       <div class="item" id="miSave">Save <span style="opacity:0.5;float:right">Ctrl+S</span></div>
       <div class="item" id="miSaveAs">Save As…</div>
       <div class="sep"></div>
@@ -654,7 +976,7 @@
       <div class="sep"></div>
       <div class="item" id="miDelete">Delete <span style="opacity:0.5;float:right">Del</span></div>
     </div>
-    <div class="menu" id="viewMenu" hidden>
+    <div class="menu" id="viewMenu" hidden style="min-width:220px;">
       <div class="item" id="miZoomIn">Zoom In <span style="opacity:0.5;float:right">Ctrl++</span></div>
       <div class="item" id="miZoomOut">Zoom Out <span style="opacity:0.5;float:right">Ctrl+-</span></div>
       <div class="item" id="miFitView">Fit to View</div>
@@ -662,11 +984,58 @@
       <div class="item" id="miToggleInspector">Toggle Inspector <span style="opacity:0.5;float:right">I</span></div>
       <div class="item" id="miTagFilter">Tag Filter… <span style="opacity:0.5;float:right">F</span></div>
       <div class="sep"></div>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Show Latency</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Show Node Codes</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkCode" checked /> Show Link Codes</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeTags" /> Show Node Tags</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowExtraTags" /> Show Additional Tags</label>
+      <div class="menu-section-header">Node Labels</div>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeName" checked /> Node Names</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Node Codes</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeTags" /> Node Tags</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowExtraTags" /> Additional Tags</label>
+      <div class="sep"></div>
+      <div class="menu-section-header">Link Labels</div>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkTag" checked /> Link Tags</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkCode" checked /> Link Codes</label>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Latency Values</label>
+      <div class="sep"></div>
+      <div class="menu-section-header">Container Labels</div>
+      <label class="item toggle-item"><input type="checkbox" id="tglShowContainerTitle" checked /> Container Titles</label>
+    </div>
+    <div class="menu" id="helpMenu" hidden style="min-width:280px;">
+      <div style="padding:10px 14px; font-weight:600; border-bottom:1px solid #e0e0e0; background:#f8f8f8;">
+        Keyboard Shortcuts
+      </div>
+      <div style="padding:10px 14px; font-size:12px; line-height:1.8;">
+        <div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;">
+          <div style="font-weight:600; color:#555; margin-bottom:6px; font-size:11px; text-transform:uppercase;">Canvas Navigation</div>
+          <div><kbd>Drag</kbd> Pan canvas</div>
+          <div><kbd>Ctrl</kbd>+<kbd>Wheel</kbd> Zoom in/out</div>
+          <div><kbd>Ctrl</kbd>+<kbd>0</kbd> Reset zoom to 100%</div>
+        </div>
+        <div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;">
+          <div style="font-weight:600; color:#555; margin-bottom:6px; font-size:11px; text-transform:uppercase;">Creating & Selecting</div>
+          <div><kbd>Double-click</kbd> Create new node</div>
+          <div><kbd>Alt</kbd>+<kbd>Drag</kbd> Selection box</div>
+          <div><kbd>Shift</kbd>+<kbd>Click</kbd> Add to selection</div>
+          <div><kbd>Del</kbd> / <kbd>Backspace</kbd> Delete selected</div>
+        </div>
+        <div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;">
+          <div style="font-weight:600; color:#555; margin-bottom:6px; font-size:11px; text-transform:uppercase;">Labels & Positioning</div>
+          <div><kbd>Ctrl</kbd>+<kbd>Drag</kbd> Move text labels</div>
+        </div>
+        <div style="margin-bottom:10px; padding-bottom:8px; border-bottom:1px solid #f0f0f0;">
+          <div style="font-weight:600; color:#555; margin-bottom:6px; font-size:11px; text-transform:uppercase;">Edit Operations</div>
+          <div><kbd>Ctrl</kbd>+<kbd>C</kbd> Copy</div>
+          <div><kbd>Ctrl</kbd>+<kbd>X</kbd> Cut</div>
+          <div><kbd>Ctrl</kbd>+<kbd>V</kbd> Paste</div>
+          <div><kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo</div>
+          <div><kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> Redo</div>
+        </div>
+        <div>
+          <div style="font-weight:600; color:#555; margin-bottom:6px; font-size:11px; text-transform:uppercase;">File Operations</div>
+          <div><kbd>Ctrl</kbd>+<kbd>N</kbd> New diagram</div>
+          <div><kbd>Ctrl</kbd>+<kbd>O</kbd> Open file</div>
+          <div><kbd>Ctrl</kbd>+<kbd>S</kbd> Save</div>
+          <div><kbd>Ctrl</kbd>+<kbd>P</kbd> Print</div>
+        </div>
+      </div>
     </div>
     <input type="file" id="fileLoad" accept=".ndg,application/json" style="display:none;" />
   </div>
@@ -844,16 +1213,16 @@
       </div>
     </div>
     
-    <!-- Line Width -->
+    <!-- Line Format (Width + Style) -->
     <div style="position:relative;">
-      <button class="tool-btn" id="btnLineWidth" type="button" title="Line Width">
+      <button class="tool-btn" id="btnLineWidth" type="button" title="Line Format (Width & Style)">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <rect x="2" y="4" width="20" height="2" rx="1"/>
           <rect x="2" y="11" width="20" height="3" rx="1.5"/>
           <rect x="2" y="18" width="20" height="4" rx="2"/>
         </svg>
       </button>
-      <div class="menu" id="lineWidthMenu" hidden style="min-width:140px;">
+      <div class="menu" id="lineWidthMenu" hidden style="min-width:160px;">
         <div style="padding:6px 12px; font-size:11px; color:#666; border-bottom:1px solid #e0e0e0;">Line Width</div>
         <div class="item line-width-item" data-width="1">
           <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="1"/></svg> 1px
@@ -872,6 +1241,17 @@
         </div>
         <div class="item line-width-item" data-width="6">
           <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="6"/></svg> 6px
+        </div>
+        <div class="sep"></div>
+        <div style="padding:6px 12px; font-size:11px; color:#666; border-bottom:1px solid #e0e0e0;">Line Style</div>
+        <div class="item line-style-item" data-linestyle="solid">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="2"/></svg> Solid
+        </div>
+        <div class="item line-style-item" data-linestyle="dashed">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="2" stroke-dasharray="8,4"/></svg> Dashed
+        </div>
+        <div class="item line-style-item" data-linestyle="dotted">
+          <svg width="60" height="12" style="vertical-align:middle;"><line x1="5" y1="6" x2="55" y2="6" stroke="currentColor" stroke-width="2" stroke-dasharray="2,3"/></svg> Dotted
         </div>
       </div>
     </div>
@@ -897,6 +1277,38 @@
     
     <div class="tool-sep"></div>
     
+    <!-- Font Colour -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnFontColor" type="button" title="Font Colour">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <text x="6" y="16" font-size="14" font-weight="bold" fill="currentColor" stroke="none">A</text>
+          <rect x="3" y="19" width="18" height="3" fill="#e53935" stroke="none"/>
+        </svg>
+      </button>
+      <div class="menu" id="fontColorMenu" hidden style="min-width:260px; max-height:400px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Font Colour & Visibility</div>
+        <div id="fontColorNoSelection" class="muted" style="padding:12px;">Select a node, link, or container to format text.</div>
+        <div id="fontColorFields" style="display:none;"></div>
+      </div>
+    </div>
+    
+    <!-- Font Type -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnFontType" type="button" title="Font Type & Size">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <text x="3" y="16" font-size="16" font-weight="bold" fill="currentColor" stroke="none">T</text>
+          <text x="13" y="16" font-size="10" fill="currentColor" stroke="none">T</text>
+        </svg>
+      </button>
+      <div class="menu" id="fontTypeMenu" hidden style="min-width:280px; max-height:400px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-weight:600; border-bottom:1px solid #e0e0e0;">Font Type & Size</div>
+        <div id="fontTypeNoSelection" class="muted" style="padding:12px;">Select a node, link, or container to format text.</div>
+        <div id="fontTypeFields" style="display:none;"></div>
+      </div>
+    </div>
+    
+    <div class="tool-sep"></div>
+    
     <!-- Brush (Format Painter) - Tilted brush like reference -->
     <button class="tool-btn" id="btnBrush" type="button" title="Format Painter - Copy and apply formatting">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -913,12 +1325,36 @@
       </svg>
     </button>
     
-    <div style="flex:1;"></div>
-    
-    <!-- Compact Help -->
-    <span style="font-size:10px; color:#888; padding:0 8px;">
-      Dbl-click: add node • Alt+drag: select • Drag: pan • Ctrl+wheel: zoom
-    </span>
+    <!-- Apply Style Button -->
+    <div style="position:relative;">
+      <button class="tool-btn" id="btnApplyStyle" type="button" title="Apply Saved Style to Selection">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <!-- Magic wand -->
+          <path d="M15 4l-9 9 3 3 9-9-3-3z"/>
+          <path d="M14.5 4.5l3 3"/>
+          <!-- Sparkles -->
+          <path d="M3 11l1-1-1-1-1 1 1 1z" fill="currentColor" stroke="none"/>
+          <path d="M7 7l1-1-1-1-1 1 1 1z" fill="currentColor" stroke="none"/>
+          <path d="M11 3l1-1-1-1-1 1 1 1z" fill="currentColor" stroke="none"/>
+          <path d="M19 11v2M18 12h2" stroke-width="1.5"/>
+          <path d="M5 19v2M4 20h2" stroke-width="1.5"/>
+        </svg>
+      </button>
+      <div class="menu" id="applyStyleMenu" hidden style="min-width:240px; max-width:320px; max-height:400px; overflow-y:auto;">
+        <div style="padding:8px 12px; font-size:12px; font-weight:600; color:#333; border-bottom:1px solid #e0e0e0; background:#f8f8f8;">
+          Apply Style to Selection
+        </div>
+        <div id="applyStyleContent">
+          <!-- Content will be populated dynamically -->
+        </div>
+        <div id="applyStyleEmpty" style="padding:16px 12px; text-align:center; color:#888; font-size:12px;">
+          Select items to apply styles
+        </div>
+        <div style="padding:8px 12px; border-top:1px solid #e0e0e0; background:#f8f8f8;">
+          <button class="mini-btn" id="btnManageStyles" style="width:100%; font-size:11px;">Manage Styles...</button>
+        </div>
+      </div>
+    </div>
   </div>
   
   <!-- Toolbar Line 2: Filters and Panels -->
@@ -1137,330 +1573,574 @@
     <div id="noSelection" class="muted">Nothing selected.</div>
 
 <div id="nodeInspector" style="display:none;">
-  <div class="row">
-    <label>Unique ID</label>
-    <input id="nodeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
-  </div>
-
-  <div class="row">
-    <label>Node Style Preset</label>
-    <div class="inline">
-      <select id="nodePreset"></select>
-      <button class="mini-btn" id="btnNodePresetSave">Save</button>
-      <button class="mini-btn" id="btnNodePresetApply">Apply</button>
-      <button class="mini-btn" id="btnNodePresetDelete">Delete</button>
+  <!-- Identity Section -->
+  <div class="inspector-section" data-section="node-identity">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Identity</span>
+      <span class="section-icon">▼</span>
+    </div>
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Node Name</label>
+        <div class="field-with-controls">
+          <input id="nodeName" />
+          <div class="field-inline-controls">
+            <select class="field-font-select" id="nodeNameFontInline" title="Font size">
+              <option value="8">8</option><option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13" selected>13</option><option value="14">14</option>
+              <option value="16">16</option><option value="18">18</option><option value="20">20</option>
+              <option value="24">24</option><option value="28">28</option><option value="32">32</option>
+            </select>
+            <div class="field-color-swatch" id="nodeNameColorSwatch" title="Name color">
+              <input type="color" id="nodeNameColorInline" />
+            </div>
+            <button class="field-visibility-btn" id="nodeNameVisibility" title="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <label>Node Code</label>
+        <div class="field-with-controls">
+          <input id="nodeCode" placeholder="e.g. N-001" />
+          <div class="field-inline-controls">
+            <select class="field-font-select" id="nodeCodeFontInline" title="Font size">
+              <option value="8">8</option><option value="10">10</option><option value="11">11</option>
+              <option value="12">12</option><option value="13" selected>13</option><option value="14">14</option>
+              <option value="16">16</option><option value="18">18</option><option value="20">20</option>
+              <option value="24">24</option><option value="28">28</option><option value="32">32</option>
+            </select>
+            <div class="field-color-swatch" id="nodeCodeColorSwatch" title="Code color">
+              <input type="color" id="nodeCodeColorInline" />
+            </div>
+            <button class="field-visibility-btn" id="nodeCodeVisibility" title="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row">
-    <label>Node Name (label)</label>
-    <input id="nodeName" />
-  </div>
-  <div class="row">
-    <label>Node Tag(s) (comma-separated)</label>
-    <textarea id="nodeTags"></textarea>
-  </div>
-  <div class="row">
-    <label>Additional Tags (free text)</label>
-    <input id="nodeExtraTags" placeholder="e.g. role=core, owner=teamA" />
-  </div>
-
-  <div class="row inline">
-    <div>
-      <label>Node Code</label>
-      <input id="nodeCode" placeholder="e.g. N-001" />
+  <!-- Tags Section -->
+  <div class="inspector-section" data-section="node-tags">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Tags & Metadata</span>
+      <span class="section-icon">▼</span>
     </div>
-    <div>
-      <label>Show Code</label>
-      <select id="nodeShowCode">
-        <option value="1">Yes</option>
-        <option value="0">No</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="row">
-    <label>Address</label>
-    <input id="nodeAddress" placeholder="e.g. 123 Main Street" />
-  </div>
-
-  <div class="row inline">
-    <div>
-      <label>City</label>
-      <input id="nodeCity" placeholder="e.g. New York" />
-    </div>
-    <div>
-      <label>Country</label>
-      <input id="nodeCountry" placeholder="e.g. USA" />
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Filter Tags (comma-separated)</label>
+        <textarea id="nodeTags" placeholder="default, core, production"></textarea>
+      </div>
+      <div class="row">
+        <label>Additional Tags (free text)</label>
+        <div class="field-with-controls">
+          <input id="nodeExtraTags" placeholder="e.g. role=core, owner=teamA" />
+          <div class="field-inline-controls">
+            <select class="field-font-select" id="nodeExtraTagsFontInline" title="Font size">
+              <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+              <option value="11" selected>11</option><option value="12">12</option><option value="13">13</option>
+              <option value="14">14</option><option value="16">16</option>
+            </select>
+            <div class="field-color-swatch" id="nodeExtraTagsColorSwatch" title="Tags color">
+              <input type="color" id="nodeExtraTagsColorInline" />
+            </div>
+            <button class="field-visibility-btn" id="nodeExtraTagsVisibility" title="Toggle visibility">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row inline">
-    <div>
-      <label>Name Font</label>
-      <input id="nodeNameFont" type="number" min="6" max="72" step="1" />
+  <!-- Location Section -->
+  <div class="inspector-section collapsed" data-section="node-location">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Location</span>
+      <span class="section-icon">▼</span>
     </div>
-    <div>
-      <label>Tags Font</label>
-      <input id="nodeTagFont" type="number" min="6" max="72" step="1" />
-    </div>
-  </div>
-
-  <div class="row inline">
-    <div>
-      <label>Name Color</label>
-      <input id="nodeNameColor" type="color" />
-    </div>
-    <div>
-      <label>Tags Color</label>
-      <input id="nodeTagColor" type="color" />
-    </div>
-  </div>
-
-  <div class="row inline">
-    <div>
-      <label>Node Fill</label>
-      <input id="nodeFill" type="color" />
-    </div>
-    <div>
-      <label>Node Stroke</label>
-      <input id="nodeStroke" type="color" />
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Address</label>
+        <input id="nodeAddress" placeholder="e.g. 123 Main Street" />
+      </div>
+      <div class="row inline">
+        <div>
+          <label>City</label>
+          <input id="nodeCity" placeholder="e.g. New York" />
+        </div>
+        <div>
+          <label>Country</label>
+          <input id="nodeCountry" placeholder="e.g. USA" />
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="row">
-    <label>Line Width</label>
-    <input id="nodeStrokeW" type="number" min="0.5" max="12" step="0.5" />
-  </div>
-
-  <div class="row">
-    <label>Node Size</label>
-    <input id="nodeSize" type="number" min="10" max="80" step="1" />
-  </div>
-
-  <div class="row">
-    <label>Cable Systems</label>
-    <div id="nodeCableSystems" style="max-height:120px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa;">
-      <div class="muted" style="font-size:11px;">No cable systems defined</div>
+  <!-- Appearance Section -->
+  <div class="inspector-section" data-section="node-appearance">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Appearance</span>
+      <span class="section-icon">▼</span>
     </div>
-    <div class="muted" style="margin-top:4px;">Check the systems this node belongs to.</div>
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Style Preset</label>
+        <div class="inline">
+          <select id="nodePreset"></select>
+          <button class="mini-btn" id="btnNodePresetSave" title="Save current style">Save</button>
+          <button class="mini-btn" id="btnNodePresetApply" title="Apply preset">Apply</button>
+          <button class="mini-btn" id="btnNodePresetDelete" title="Delete preset">Del</button>
+        </div>
+      </div>
+      <div class="row inline">
+        <div>
+          <label>Fill Color</label>
+          <div class="inspector-color-picker" id="nodeFillPicker">
+            <div class="inspector-color-swatch" title="Click to choose color">
+              <div class="inspector-color-swatch-inner" id="nodeFillSwatch"></div>
+            </div>
+            <div class="inspector-color-dropdown" hidden>
+              <div class="inspector-color-grid" data-target="nodeFill"></div>
+              <div class="inspector-color-custom">
+                <input type="color" id="nodeFillCustom" />
+                <input type="text" id="nodeFillHex" placeholder="#000000" maxlength="7" />
+              </div>
+            </div>
+            <input id="nodeFill" type="hidden" />
+          </div>
+        </div>
+        <div>
+          <label>Stroke Color</label>
+          <div class="inspector-color-picker" id="nodeStrokePicker">
+            <div class="inspector-color-swatch" title="Click to choose color">
+              <div class="inspector-color-swatch-inner" id="nodeStrokeSwatch"></div>
+            </div>
+            <div class="inspector-color-dropdown" hidden>
+              <div class="inspector-color-grid" data-target="nodeStroke"></div>
+              <div class="inspector-color-custom">
+                <input type="color" id="nodeStrokeCustom" />
+                <input type="text" id="nodeStrokeHex" placeholder="#000000" maxlength="7" />
+              </div>
+            </div>
+            <input id="nodeStroke" type="hidden" />
+          </div>
+        </div>
+      </div>
+      <div class="row inline">
+        <div>
+          <label>Line Width</label>
+          <input id="nodeStrokeW" type="number" min="0.5" max="12" step="0.5" />
+        </div>
+        <div>
+          <label>Node Size</label>
+          <input id="nodeSize" type="number" min="10" max="80" step="1" />
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="row">
-    <label>Assigned Container Box (auto if inside)</label>
-    <input id="nodeGroup" disabled />
+  <!-- Connections Section -->
+  <div class="inspector-section" data-section="node-connections">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Connections</span>
+      <span class="section-icon">▼</span>
+    </div>
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Cable Systems</label>
+        <div id="nodeCableSystems" style="max-height:100px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa;">
+          <div class="muted" style="font-size:11px;">No cable systems defined</div>
+        </div>
+      </div>
+      <div class="row">
+        <label>Container Box</label>
+        <input id="nodeGroup" disabled style="background:#f5f5f5;" />
+      </div>
+    </div>
   </div>
+
+  <!-- Advanced Section -->
+  <div class="inspector-section collapsed" data-section="node-advanced">
+    <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+      <span>Advanced</span>
+      <span class="section-icon">▼</span>
+    </div>
+    <div class="inspector-section-content">
+      <div class="row">
+        <label>Unique ID (UUID)</label>
+        <input id="nodeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Hidden fields for compatibility -->
+  <input type="hidden" id="nodeNameFont" />
+  <input type="hidden" id="nodeTagFont" />
+  <input type="hidden" id="nodeNameColor" />
+  <input type="hidden" id="nodeTagColor" />
+  <input type="hidden" id="nodeShowCode" />
 </div>
 
     <div id="edgeInspector" style="display:none;">
-      <div class="row">
-        <label>Unique ID</label>
-        <input id="edgeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
+      <!-- Identity Section -->
+      <div class="inspector-section" data-section="edge-identity">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Identity</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Link Tag</label>
+            <div class="field-with-controls">
+              <input id="edgeTag" />
+              <div class="field-inline-controls">
+                <select class="field-font-select" id="edgeLabelFontInline" title="Font size">
+                  <option value="8">8</option><option value="9">9</option><option value="10">10</option>
+                  <option value="11">11</option><option value="12" selected>12</option><option value="13">13</option>
+                  <option value="14">14</option><option value="16">16</option><option value="18">18</option>
+                </select>
+                <div class="field-color-swatch" id="edgeTagColorSwatch" title="Label color">
+                  <input type="color" id="edgeTagColorInline" />
+                </div>
+                <button class="field-visibility-btn" id="edgeTagVisibility" title="Toggle visibility">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <label>Link Code</label>
+            <div class="field-with-controls">
+              <input id="edgeCode" placeholder="e.g. L-010" />
+              <div class="field-inline-controls">
+                <button class="field-visibility-btn" id="edgeCodeVisibility" title="Toggle visibility">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <label>Cable System</label>
+            <select id="edgeCableSystem" style="width:100%;">
+              <option value="">(None)</option>
+            </select>
+            <div id="edgeCableSystemInfo" class="muted" style="margin-top:4px; font-size:11px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data Section -->
+      <div class="inspector-section" data-section="edge-data">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Data</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Latency (ms)</label>
+            <div class="field-with-controls">
+              <input id="edgeLatency" type="text" inputmode="decimal" placeholder="e.g. 1.234" />
+              <div class="field-inline-controls">
+                <button class="field-visibility-btn" id="edgeLatencyVisibility" title="Toggle visibility">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Capacity</label>
+              <input id="edgeCapacity" placeholder="e.g. 100G" />
+            </div>
+            <div>
+              <label>Priority</label>
+              <input id="edgePriority" type="number" min="0" max="9999" step="0.01" placeholder="100" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tags Section -->
+      <div class="inspector-section collapsed" data-section="edge-tags">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Tags & Metadata</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Filter Tags (comma-separated)</label>
+            <textarea id="edgeFilterTags" placeholder="default, onnet, Asia" style="height:40px;"></textarea>
+          </div>
+          <div class="row">
+            <label>Additional Tags (free text)</label>
+            <input id="edgeExtraTags" placeholder="e.g. provider=ISP1, circuit=ABC123" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance Section -->
+      <div class="inspector-section" data-section="edge-appearance">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Appearance</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Style Preset</label>
+            <div class="inline">
+              <select id="edgePreset"></select>
+              <button class="mini-btn" id="btnEdgePresetSave" title="Save">Save</button>
+              <button class="mini-btn" id="btnEdgePresetApply" title="Apply">Apply</button>
+              <button class="mini-btn" id="btnEdgePresetDelete" title="Delete">Del</button>
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Line Style</label>
+              <select id="edgeStyle">
+                <option value="straight">Straight</option>
+                <option value="orthogonal">90° Orthogonal</option>
+                <option value="curve">Curve (Bezier)</option>
+              </select>
+            </div>
+            <div>
+              <label>Routing</label>
+              <select id="edgeRoute">
+                <option value="hv">H → V</option>
+                <option value="vh">V → H</option>
+              </select>
+            </div>
+          </div>
+          <div class="row" id="curveArchControl" style="display:none;">
+            <label>Curve Bend</label>
+            <input id="edgeCurveArch" type="range" min="-0.6" max="0.6" step="0.05" />
+            <span id="curveArchValue" style="font-size:11px; color:#666;">0.30</span>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Line Width</label>
+              <input id="edgeStrokeW" type="number" min="0.5" max="12" step="0.5" />
+            </div>
+            <div>
+              <label>Line Color</label>
+              <div class="inspector-color-picker" id="edgeStrokeColorPicker">
+                <div class="inspector-color-swatch" title="Click to choose color">
+                  <div class="inspector-color-swatch-inner" id="edgeStrokeColorSwatch"></div>
+                </div>
+                <div class="inspector-color-dropdown" hidden>
+                  <div class="inspector-color-grid" data-target="edgeStrokeColor"></div>
+                  <div class="inspector-color-custom">
+                    <input type="color" id="edgeStrokeColorCustom" />
+                    <input type="text" id="edgeStrokeColorHex" placeholder="#000000" maxlength="7" />
+                  </div>
+                </div>
+                <input id="edgeStrokeColor" type="hidden" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Section -->
+      <div class="inspector-section collapsed" data-section="edge-advanced">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Advanced</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Unique ID (UUID)</label>
+            <input id="edgeUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Source UUID</label>
+              <input id="edgeSourceUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:9px;" />
+            </div>
+            <div>
+              <label>Target UUID</label>
+              <input id="edgeTargetUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:9px;" />
+            </div>
+          </div>
+        </div>
       </div>
       
-      <div class="row inline">
-        <div>
-          <label>Source Node UUID</label>
-          <input id="edgeSourceUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
-        </div>
-        <div>
-          <label>Target Node UUID</label>
-          <input id="edgeTargetUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
-        </div>
-      </div>
-
-      <div class="row">
-        <label>Link Style Preset</label>
-        <div class="inline">
-          <select id="edgePreset"></select>
-          <button class="mini-btn" id="btnEdgePresetSave">Save</button>
-          <button class="mini-btn" id="btnEdgePresetApply">Apply</button>
-          <button class="mini-btn" id="btnEdgePresetDelete">Delete</button>
-        </div>
-      </div>
-
-      <div class="row">
-        <label>Cable System</label>
-        <select id="edgeCableSystem" style="width:100%;">
-          <option value="">(None)</option>
-        </select>
-        <div id="edgeCableSystemInfo" class="muted" style="margin-top:4px; font-size:11px;"></div>
-      </div>
-
-      <div class="row">
-        <label>Link Tag</label>
-        <input id="edgeTag" />
-      </div>
-      
-      <div class="row">
-        <label>Filter Tags (comma-separated)</label>
-        <textarea id="edgeFilterTags" placeholder="default, onnet, Asia" style="height:40px;"></textarea>
-      </div>
-
-      <div class="row">
-        <label>Latency value (ms)</label>
-        <input id="edgeLatency" type="text" inputmode="decimal" placeholder="e.g. 1.234" />
-        <div class="muted">This field only accepts a number. The diagram shows it as “X ms”.</div>
-      </div>
-      
-      <div class="row">
-        <label>Capacity Options</label>
-        <input id="edgeCapacity" placeholder="e.g. Up to 100G" />
-      </div>
-      
-      <div class="row">
-        <label>Priority</label>
-        <input id="edgePriority" type="number" min="0" max="9999" step="0.01" placeholder="100" />
-        <div class="muted">Numeric value for link priority (default: 100)</div>
-      </div>
-      
-      <div class="row">
-        <label>Additional Tags (free text)</label>
-        <input id="edgeExtraTags" placeholder="e.g. provider=ISP1, circuit=ABC123" />
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Link Code</label>
-          <input id="edgeCode" placeholder="e.g. L-010" />
-        </div>
-        <div>
-          <label>Show Code</label>
-          <select id="edgeShowCode">
-            <option value="1">Yes</option>
-            <option value="0">No</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Label Font</label>
-          <input id="edgeLabelFont" type="number" min="6" max="72" step="1" />
-        </div>
-        <div>
-          <label>Label Color</label>
-          <input id="edgeLabelColor" type="color" />
-        </div>
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Style</label>
-          <select id="edgeStyle">
-            <option value="straight">Straight</option>
-            <option value="orthogonal">90° Orthogonal</option>
-            <option value="curve">Curve (Bezier)</option>
-          </select>
-        </div>
-        <div>
-          <label>Routing</label>
-          <select id="edgeRoute">
-            <option value="hv">Horizontal then Vertical</option>
-            <option value="vh">Vertical then Horizontal</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="row" id="curveArchControl" style="display:none;">
-         <label>Curve Bend (drag handle on curve or adjust slider)</label>
-         <input id="edgeCurveArch" type="range" min="-0.6" max="0.6" step="0.05" />
-         <span id="curveArchValue">0.30</span>
-      </div>
-
-      <div class="row">
-         <label>Line Width</label>
-  	 <input id="edgeStrokeW" type="number" min="0.5" max="12" step="0.5" />
-      </div>
-
-      <div class="row">
-         <label>Line Color</label>
-         <input id="edgeStrokeColor" type="color" />
-      </div>
+      <!-- Hidden fields for compatibility -->
+      <input type="hidden" id="edgeLabelFont" />
+      <input type="hidden" id="edgeLabelColor" />
+      <input type="hidden" id="edgeShowCode" />
     </div>
      
     <div id="groupInspector" style="display:none;">
-      <div class="row">
-        <label>Unique ID</label>
-        <input id="groupUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:11px;" />
-      </div>
-
-      <div class="row">
-        <label>Box Style Preset</label>
-        <div class="inline">
-          <select id="groupPreset"></select>
-          <button class="mini-btn" id="btnGroupPresetSave">Save</button>
-          <button class="mini-btn" id="btnGroupPresetApply">Apply</button>
-          <button class="mini-btn" id="btnGroupPresetDelete">Delete</button>
+      <!-- Identity Section -->
+      <div class="inspector-section" data-section="group-identity">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Identity</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Title</label>
+            <div class="field-with-controls">
+              <input id="groupTitle" />
+              <div class="field-inline-controls">
+                <select class="field-font-select" id="groupTitleFontInline" title="Font size">
+                  <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                  <option value="13">13</option><option value="14" selected>14</option><option value="16">16</option>
+                  <option value="18">18</option><option value="20">20</option><option value="24">24</option>
+                </select>
+                <div class="field-color-swatch" id="groupTitleColorSwatch" title="Title color">
+                  <input type="color" id="groupTitleColorInline" />
+                </div>
+                <button class="field-visibility-btn" id="groupTitleVisibility" title="Toggle visibility">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Type</label>
+              <select id="groupType">
+                <option value="country">Container</option>
+                <option value="region">Group</option>
+              </select>
+            </div>
+            <div>
+              <label>Parent Group</label>
+              <select id="groupParent"></select>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="row">
-        <label>Box Title</label>
-        <input id="groupTitle" />
+      <!-- Tags Section -->
+      <div class="inspector-section collapsed" data-section="group-tags">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Tags & Metadata</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Filter Tags (comma-separated)</label>
+            <textarea id="groupFilterTags" placeholder="default, APAC, production" style="height:40px;"></textarea>
+          </div>
+          <div class="row">
+            <label>Additional Tags (free text)</label>
+            <input id="groupExtraTags" placeholder="e.g. area=APAC" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance Section -->
+      <div class="inspector-section" data-section="group-appearance">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Appearance</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Style Preset</label>
+            <div class="inline">
+              <select id="groupPreset"></select>
+              <button class="mini-btn" id="btnGroupPresetSave" title="Save">Save</button>
+              <button class="mini-btn" id="btnGroupPresetApply" title="Apply">Apply</button>
+              <button class="mini-btn" id="btnGroupPresetDelete" title="Delete">Del</button>
+            </div>
+          </div>
+          <div class="row">
+            <label>Fill Color</label>
+            <div class="field-with-controls" style="gap:8px;">
+              <div class="inspector-color-picker" id="groupFillColorPicker">
+                <div class="inspector-color-swatch" title="Click to choose color">
+                  <div class="inspector-color-swatch-inner" id="groupFillColorSwatch"></div>
+                </div>
+                <div class="inspector-color-dropdown" hidden>
+                  <div class="inspector-color-grid" data-target="groupFillColor"></div>
+                  <div class="inspector-color-custom">
+                    <input type="color" id="groupFillColorCustom" />
+                    <input type="text" id="groupFillColorHex" placeholder="#000000" maxlength="7" />
+                  </div>
+                </div>
+                <input id="groupFillColor" type="hidden" />
+              </div>
+              <div style="flex:1; display:flex; align-items:center; gap:6px;">
+                <span style="font-size:10px; color:#666;">Opacity:</span>
+                <input id="groupFillOpacity" type="range" min="0" max="100" value="100" style="flex:1;" />
+                <span id="groupFillOpacityValue" style="font-size:10px; color:#666; min-width:32px;">100%</span>
+              </div>
+            </div>
+            <input id="groupFill" type="hidden" />
+          </div>
+          <div class="row">
+            <label>Stroke Color</label>
+            <div class="inspector-color-picker" id="groupStrokePicker">
+              <div class="inspector-color-swatch" title="Click to choose color">
+                <div class="inspector-color-swatch-inner" id="groupStrokeSwatch"></div>
+              </div>
+              <div class="inspector-color-dropdown" hidden>
+                <div class="inspector-color-grid" data-target="groupStroke"></div>
+                <div class="inspector-color-custom">
+                  <input type="color" id="groupStrokeCustom" />
+                  <input type="text" id="groupStrokeHex" placeholder="#000000" maxlength="7" />
+                </div>
+              </div>
+              <input id="groupStroke" type="hidden" />
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Border Width</label>
+              <input id="groupStrokeW" type="number" min="0.5" max="12" step="0.5" />
+            </div>
+            <div style="flex:0;">
+              <!-- Spacer -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Size Section -->
+      <div class="inspector-section" data-section="group-size">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Size</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row inline">
+            <div>
+              <label>Width</label>
+              <input id="groupW" type="number" min="120" />
+            </div>
+            <div>
+              <label>Height</label>
+              <input id="groupH" type="number" min="90" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Advanced Section -->
+      <div class="inspector-section collapsed" data-section="group-advanced">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Advanced</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Unique ID (UUID)</label>
+            <input id="groupUUID" disabled style="background:#f5f5f5; color:#999; font-family:monospace; font-size:10px;" />
+          </div>
+        </div>
       </div>
       
-      <div class="row">
-        <label>Filter Tags (comma-separated)</label>
-        <textarea id="groupFilterTags" placeholder="default, APAC, production" style="height:40px;"></textarea>
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Box Type</label>
-          <select id="groupType">
-            <option value="country">Container</option>
-            <option value="region">Group (Container of Containers)</option>
-          </select>
-        </div>
-        <div>
-          <label>Parent Group</label>
-          <select id="groupParent"></select>
-        </div>
-      </div>
-
-      <div class="row">
-        <label>Additional Tags (free text)</label>
-        <input id="groupExtraTags" placeholder="e.g. area=APAC" />
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Title Font</label>
-          <input id="groupTitleFont" type="number" min="6" max="72" step="1" />
-        </div>
-        <div>
-          <label>Title Color</label>
-          <input id="groupTitleColor" type="color" />
-        </div>
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Box Fill (CSS color)</label>
-          <input id="groupFill" type="text" placeholder="e.g. rgba(54,76,140,0.12) or #112233" />
-        </div>
-        <div>
-          <label>Box Stroke</label>
-          <input id="groupStroke" type="color" />
-        </div>
-      </div>
-
-      <div class="row inline">
-        <div>
-          <label>Width</label>
-          <input id="groupW" type="number" min="120" />
-        </div>
-        <div>
-          <label>Height</label>
-          <input id="groupH" type="number" min="90" />
-        </div>
-      </div>
-
-      <div class="row">
-  	 <label>Border Width</label>
-  	 <input id="groupStrokeW" type="number" min="0.5" max="12" step="0.5" />
-      </div>
+      <!-- Hidden fields for compatibility -->
+      <input type="hidden" id="groupTitleFont" />
+      <input type="hidden" id="groupTitleColor" />
     </div>
     </div><!-- end inspectorContent -->
   </aside>
@@ -1738,6 +2418,9 @@
   const tglShowLinkCode = document.getElementById('tglShowLinkCode');
   const tglShowNodeTags = document.getElementById('tglShowNodeTags');
   const tglShowExtraTags = document.getElementById('tglShowExtraTags');
+  const tglShowNodeName = document.getElementById('tglShowNodeName');
+  const tglShowLinkTag = document.getElementById('tglShowLinkTag');
+  const tglShowContainerTitle = document.getElementById('tglShowContainerTitle');
   const canvasWidth = document.getElementById('canvasWidth');
   const canvasHeight = document.getElementById('canvasHeight');
   const tglCanvasBorder = document.getElementById('tglCanvasBorder');
@@ -1748,12 +2431,15 @@
     if (tglShowLinkCode) tglShowLinkCode.checked = !!state.ui.showLinkCode;
     if (tglShowNodeTags) tglShowNodeTags.checked = !!state.ui.showNodeTags;
     if (tglShowExtraTags) tglShowExtraTags.checked = !!state.ui.showExtraTags;
+    if (tglShowNodeName) tglShowNodeName.checked = state.ui.showNodeName !== false;
+    if (tglShowLinkTag) tglShowLinkTag.checked = state.ui.showLinkTag !== false;
+    if (tglShowContainerTitle) tglShowContainerTitle.checked = state.ui.showContainerTitle !== false;
     if (canvasWidth) canvasWidth.value = state.canvasWidth;
     if (canvasHeight) canvasHeight.value = state.canvasHeight;
     if (tglCanvasBorder) tglCanvasBorder.checked = !!state.showCanvasBorder;
   }
 
-  [tglShowLatency, tglShowNodeCode, tglShowLinkCode, tglShowNodeTags, tglShowExtraTags].forEach(el => {
+  [tglShowLatency, tglShowNodeCode, tglShowLinkCode, tglShowNodeTags, tglShowExtraTags, tglShowNodeName, tglShowLinkTag, tglShowContainerTitle].forEach(el => {
     if (!el) return;
     el.addEventListener('change', () => {
       state.ui.showLatency = !!tglShowLatency?.checked;
@@ -1761,6 +2447,9 @@
       state.ui.showLinkCode = !!tglShowLinkCode?.checked;
       state.ui.showNodeTags = !!tglShowNodeTags?.checked;
       state.ui.showExtraTags = !!tglShowExtraTags?.checked;
+      state.ui.showNodeName = tglShowNodeName?.checked !== false;
+      state.ui.showLinkTag = tglShowLinkTag?.checked !== false;
+      state.ui.showContainerTitle = tglShowContainerTitle?.checked !== false;
       render();
     });
   });
@@ -2182,6 +2871,43 @@
   // Ribbon tabs (File/Home). This does not change any existing handlers.
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
+  // Color helper functions for rgba support
+  function parseColorWithOpacity(colorStr) {
+    if (!colorStr) return { color: '#ffffff', opacity: 1 };
+    
+    // Handle rgba format
+    const rgbaMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (rgbaMatch) {
+      const r = parseInt(rgbaMatch[1]);
+      const g = parseInt(rgbaMatch[2]);
+      const b = parseInt(rgbaMatch[3]);
+      const a = rgbaMatch[4] !== undefined ? parseFloat(rgbaMatch[4]) : 1;
+      const hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+      return { color: hex, opacity: a };
+    }
+    
+    // Handle hex format (with optional alpha)
+    if (colorStr.startsWith('#')) {
+      if (colorStr.length === 9) {
+        // #RRGGBBAA
+        const alpha = parseInt(colorStr.slice(7, 9), 16) / 255;
+        return { color: colorStr.slice(0, 7), opacity: alpha };
+      }
+      return { color: colorStr.slice(0, 7), opacity: 1 };
+    }
+    
+    return { color: colorStr, opacity: 1 };
+  }
+  
+  function combineColorWithOpacity(hexColor, opacity) {
+    if (opacity >= 1) return hexColor;
+    // Convert hex to rgba
+    const r = parseInt(hexColor.slice(1, 3), 16);
+    const g = parseInt(hexColor.slice(3, 5), 16);
+    const b = parseInt(hexColor.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity.toFixed(2)})`;
+  }
+
   // Node shape tool (sets default for NEW nodes only)
   const shapeButtons = document.querySelectorAll('.shape-tool');
   function setActiveShape(shape){
@@ -2226,6 +2952,8 @@
     if (zoomMenu) zoomMenu.hidden = true;
     const gridMenu = document.getElementById('gridMenu');
     if (gridMenu) gridMenu.hidden = true;
+    const helpMenuEl = document.getElementById('helpMenu');
+    if (helpMenuEl) helpMenuEl.hidden = true;
   }
   
   function toggleMenu(btn, menu) {
@@ -2373,9 +3101,10 @@
     downloadBlob(outBlob, name);
   }
 
+document.getElementById('miNew').addEventListener('click', () => { closeAllMenus(); newDiagram(); });
 document.getElementById('miSave').addEventListener('click', () => { closeAllMenus(); saveProject(false); });
   document.getElementById('miSaveAs').addEventListener('click', () => { closeAllMenus(); saveProject(true); });
-  document.getElementById('miOpen').addEventListener('click', () => { closeAllMenus(); document.getElementById('fileLoad').click(); });
+  document.getElementById('miOpen').addEventListener('click', () => { closeAllMenus(); openProjectWithFilePicker(); });
   document.getElementById('miRecover').addEventListener('click', () => { closeAllMenus(); recoverAutosave(); });
   document.getElementById('miClearAutosave').addEventListener('click', () => { closeAllMenus(); clearAutosave(); });
   document.getElementById('miClearDiagram').addEventListener('click', () => { closeAllMenus(); clearDiagram(); });
@@ -2479,6 +3208,353 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     if (state.styleBrush) { clearBrush(); showToast("Format painter off."); return; }
     setBrushFromSelected();
   });
+
+  // --- Apply Style Panel ---
+  const btnApplyStyle = document.getElementById('btnApplyStyle');
+  const applyStyleMenu = document.getElementById('applyStyleMenu');
+  const applyStyleContent = document.getElementById('applyStyleContent');
+  const applyStyleEmpty = document.getElementById('applyStyleEmpty');
+  const btnManageStyles = document.getElementById('btnManageStyles');
+
+  function getSelectionCounts() {
+    // Count selected items of each type
+    let nodeCount = state.selection.nodes.size;
+    let edgeCount = state.selection.edges.size;
+    let groupCount = state.selection.groups.size;
+    
+    // Also include single selection if not in multi-select
+    if (state.selected) {
+      if (state.selected.type === 'node' && !state.selection.nodes.has(state.selected.id)) nodeCount++;
+      if (state.selected.type === 'edge' && !state.selection.edges.has(state.selected.id)) edgeCount++;
+      if (state.selected.type === 'group' && !state.selection.groups.has(state.selected.id)) groupCount++;
+    }
+    
+    return { nodes: nodeCount, edges: edgeCount, groups: groupCount };
+  }
+
+  function getSelectedItemsOfType(type) {
+    const items = [];
+    
+    if (type === 'node') {
+      state.selection.nodes.forEach(id => {
+        const n = findNode(id);
+        if (n) items.push(n);
+      });
+      // Include single selection if applicable
+      if (state.selected?.type === 'node' && !state.selection.nodes.has(state.selected.id)) {
+        const n = findNode(state.selected.id);
+        if (n) items.push(n);
+      }
+    } else if (type === 'edge') {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) items.push(e);
+      });
+      if (state.selected?.type === 'edge' && !state.selection.edges.has(state.selected.id)) {
+        const e = findEdge(state.selected.id);
+        if (e) items.push(e);
+      }
+    } else if (type === 'group') {
+      state.selection.groups.forEach(id => {
+        const g = findGroup(id);
+        if (g) items.push(g);
+      });
+      if (state.selected?.type === 'group' && !state.selection.groups.has(state.selected.id)) {
+        const g = findGroup(state.selected.id);
+        if (g) items.push(g);
+      }
+    }
+    
+    return items;
+  }
+
+  function createStyleSwatch(style, type) {
+    const swatch = document.createElement('div');
+    swatch.className = 'apply-style-swatch';
+    
+    // Fill swatch
+    const fillDiv = document.createElement('div');
+    fillDiv.className = 'apply-style-swatch-fill';
+    
+    // Stroke swatch  
+    const strokeDiv = document.createElement('div');
+    strokeDiv.className = 'apply-style-swatch-stroke';
+    
+    if (type === 'node') {
+      fillDiv.style.background = style.fill || '#1b2030';
+      strokeDiv.style.background = style.stroke || '#9fb3ff';
+    } else if (type === 'edge') {
+      fillDiv.style.background = style.strokeColor || '#6c8ebf';
+      strokeDiv.style.display = 'none'; // Edges don't have separate stroke
+    } else if (type === 'group') {
+      fillDiv.style.background = style.fill || '#ffffff';
+      strokeDiv.style.background = style.stroke || '#666666';
+    }
+    
+    swatch.appendChild(fillDiv);
+    swatch.appendChild(strokeDiv);
+    
+    return swatch;
+  }
+
+  function buildApplyStyleSection(type, count, presets) {
+    const section = document.createElement('div');
+    section.className = 'apply-style-section';
+    
+    // Header
+    const header = document.createElement('div');
+    header.className = 'apply-style-section-header';
+    
+    const typeLabels = { node: 'Node Styles', edge: 'Link Styles', group: 'Container Styles' };
+    header.innerHTML = `<span>${typeLabels[type]}</span><span class="count">${count} selected</span>`;
+    section.appendChild(header);
+    
+    // Style items
+    const presetNames = Object.keys(presets || {}).sort((a, b) => a.localeCompare(b));
+    
+    if (presetNames.length === 0) {
+      const emptyMsg = document.createElement('div');
+      emptyMsg.className = 'apply-style-empty-section';
+      emptyMsg.textContent = `No ${type} styles saved yet`;
+      section.appendChild(emptyMsg);
+    } else {
+      presetNames.forEach(name => {
+        const style = presets[name];
+        const item = document.createElement('div');
+        item.className = 'apply-style-item';
+        item.dataset.type = type;
+        item.dataset.preset = name;
+        
+        // Swatch preview
+        const swatch = createStyleSwatch(style, type);
+        item.appendChild(swatch);
+        
+        // Name
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'apply-style-name';
+        nameSpan.textContent = name;
+        nameSpan.title = name;
+        item.appendChild(nameSpan);
+        
+        // Click handler
+        item.addEventListener('click', () => {
+          applyStyleToSelection(type, name);
+        });
+        
+        section.appendChild(item);
+      });
+    }
+    
+    return section;
+  }
+
+  function applyStyleToSelection(type, presetName) {
+    const style = state.stylePresets[type]?.[presetName];
+    if (!style) {
+      showToast('Style not found.');
+      return;
+    }
+    
+    const items = getSelectedItemsOfType(type);
+    if (items.length === 0) {
+      showToast('No items to apply style to.');
+      return;
+    }
+    
+    // Apply style to all selected items of this type
+    items.forEach(item => {
+      applyStyle(type, item, style);
+    });
+    
+    commit();
+    render();
+    
+    // Close menu and show confirmation
+    applyStyleMenu.hidden = true;
+    const typeLabel = type === 'node' ? 'node' : (type === 'edge' ? 'link' : 'container');
+    showToast(`Applied "${presetName}" to ${items.length} ${typeLabel}${items.length > 1 ? 's' : ''}`);
+  }
+
+  function updateApplyStyleMenu() {
+    const counts = getSelectionCounts();
+    const hasSelection = counts.nodes > 0 || counts.edges > 0 || counts.groups > 0;
+    
+    // Clear content
+    applyStyleContent.innerHTML = '';
+    
+    if (!hasSelection) {
+      applyStyleEmpty.style.display = 'block';
+      applyStyleContent.style.display = 'none';
+      return;
+    }
+    
+    applyStyleEmpty.style.display = 'none';
+    applyStyleContent.style.display = 'block';
+    
+    // Build sections for each type that has selections
+    if (counts.nodes > 0) {
+      applyStyleContent.appendChild(buildApplyStyleSection('node', counts.nodes, state.stylePresets.node));
+    }
+    if (counts.edges > 0) {
+      applyStyleContent.appendChild(buildApplyStyleSection('edge', counts.edges, state.stylePresets.edge));
+    }
+    if (counts.groups > 0) {
+      applyStyleContent.appendChild(buildApplyStyleSection('group', counts.groups, state.stylePresets.group));
+    }
+  }
+
+  if (btnApplyStyle && applyStyleMenu) {
+    btnApplyStyle.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateApplyStyleMenu();
+      applyStyleMenu.hidden = !applyStyleMenu.hidden;
+    });
+    
+    applyStyleMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+
+  if (btnManageStyles) {
+    btnManageStyles.addEventListener('click', () => {
+      applyStyleMenu.hidden = true;
+      showManageStylesDialog();
+    });
+  }
+
+  // Help Button Handler
+  const btnHelp = document.getElementById('btnHelp');
+  const helpMenu = document.getElementById('helpMenu');
+  if (btnHelp && helpMenu) {
+    btnHelp.addEventListener('click', (ev) => { ev.stopPropagation(); toggleMenu(btnHelp, helpMenu); });
+    helpMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+
+  function showManageStylesDialog() {
+    // Create modal dialog for managing styles
+    const modal = document.createElement('div');
+    modal.id = 'manageStylesModal';
+    modal.style.cssText = `
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5); z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    `;
+    
+    const dialog = document.createElement('div');
+    dialog.style.cssText = `
+      background: white; border-radius: 8px; padding: 0;
+      min-width: 400px; max-width: 500px; max-height: 80vh;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column;
+    `;
+    
+    // Header
+    const header = document.createElement('div');
+    header.style.cssText = `
+      padding: 16px 20px; border-bottom: 1px solid #e0e0e0;
+      font-size: 16px; font-weight: 600; color: #333;
+      display: flex; justify-content: space-between; align-items: center;
+    `;
+    header.innerHTML = `
+      <span>Manage Styles</span>
+      <button id="closeManageStyles" style="background:none; border:none; font-size:20px; cursor:pointer; color:#666;">×</button>
+    `;
+    dialog.appendChild(header);
+    
+    // Content
+    const content = document.createElement('div');
+    content.style.cssText = `padding: 0; overflow-y: auto; flex: 1;`;
+    
+    function buildStyleList(type, label) {
+      const section = document.createElement('div');
+      section.style.cssText = `border-bottom: 1px solid #e8e8e8;`;
+      
+      const sectionHeader = document.createElement('div');
+      sectionHeader.style.cssText = `
+        padding: 10px 20px; background: #f5f5f5;
+        font-size: 11px; font-weight: 600; color: #666;
+        text-transform: uppercase; letter-spacing: 0.5px;
+      `;
+      sectionHeader.textContent = label;
+      section.appendChild(sectionHeader);
+      
+      const presets = state.stylePresets[type] || {};
+      const names = Object.keys(presets).sort((a, b) => a.localeCompare(b));
+      
+      if (names.length === 0) {
+        const empty = document.createElement('div');
+        empty.style.cssText = `padding: 12px 20px; color: #999; font-size: 12px; font-style: italic;`;
+        empty.textContent = 'No styles saved';
+        section.appendChild(empty);
+      } else {
+        names.forEach(name => {
+          const row = document.createElement('div');
+          row.style.cssText = `
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 20px; border-top: 1px solid #f0f0f0;
+          `;
+          
+          const swatch = createStyleSwatch(presets[name], type);
+          row.appendChild(swatch);
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.style.cssText = `flex: 1; font-size: 13px;`;
+          nameSpan.textContent = name;
+          row.appendChild(nameSpan);
+          
+          const deleteBtn = document.createElement('button');
+          deleteBtn.style.cssText = `
+            background: none; border: 1px solid #ddd; border-radius: 4px;
+            padding: 4px 8px; font-size: 11px; cursor: pointer; color: #c00;
+          `;
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.addEventListener('click', () => {
+            if (confirm(`Delete style "${name}"?`)) {
+              delete state.stylePresets[type][name];
+              commit();
+              refreshPresetSelects();
+              row.remove();
+              showToast(`Deleted style: ${name}`);
+            }
+          });
+          row.appendChild(deleteBtn);
+          
+          section.appendChild(row);
+        });
+      }
+      
+      return section;
+    }
+    
+    content.appendChild(buildStyleList('node', 'Node Styles'));
+    content.appendChild(buildStyleList('edge', 'Link Styles'));
+    content.appendChild(buildStyleList('group', 'Container Styles'));
+    
+    dialog.appendChild(content);
+    
+    // Footer
+    const footer = document.createElement('div');
+    footer.style.cssText = `
+      padding: 12px 20px; border-top: 1px solid #e0e0e0;
+      display: flex; justify-content: flex-end;
+    `;
+    footer.innerHTML = `<button class="btn" id="closeManageStylesBtn">Close</button>`;
+    dialog.appendChild(footer);
+    
+    modal.appendChild(dialog);
+    document.body.appendChild(modal);
+    
+    // Event handlers
+    const closeModal = () => modal.remove();
+    modal.querySelector('#closeManageStyles').addEventListener('click', closeModal);
+    modal.querySelector('#closeManageStylesBtn').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', function escHandler(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+        document.removeEventListener('keydown', escHandler);
+      }
+    });
+  }
 
   const btnCreateLink = document.getElementById('btnCreateLink');
   
@@ -2980,17 +4056,28 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   // Check if a group should be visible based on current filter
   // Hierarchy: First check if group contains visible nodes, then apply group's own tag filter
   function isGroupVisible(group) {
-    // FIRST: Group must contain at least one visible node to be considered
-    // (unless it's a region that contains visible country boxes)
+    // Always show empty containers (so users can see and work with them)
+    // Only apply filtering to containers that have content
+    
     if (group.type === 'region') {
-      // Region is visible if it contains any visible country box
-      const hasVisibleCountry = state.groups.some(g => 
-        g.type === 'country' && g.parentId === group.id && isCountryBoxVisible(g)
+      // Region: check if it has any country boxes (visible or not)
+      const hasAnyCountry = state.groups.some(g => 
+        g.type === 'country' && g.parentId === group.id
       );
-      if (!hasVisibleCountry) return false;
+      // If region has no children, always show it (empty region)
+      // If region has children, check if any are visible
+      if (hasAnyCountry) {
+        const hasVisibleCountry = state.groups.some(g => 
+          g.type === 'country' && g.parentId === group.id && isCountryBoxVisible(g)
+        );
+        if (!hasVisibleCountry) return false;
+      }
     } else {
-      // Country box must have visible nodes
-      if (!groupHasVisibleNodes(group)) return false;
+      // Country box: check if it has any nodes
+      const hasAnyNodes = state.nodes.some(n => n.groupId === group.id);
+      // If container has no nodes, always show it (empty container)
+      // If container has nodes, check if any are visible
+      if (hasAnyNodes && !groupHasVisibleNodes(group)) return false;
     }
     
     // THEN: Apply group's own tag filter (only if it has visible content)
@@ -3022,8 +4109,11 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   function isCountryBoxVisible(group) {
     if (group.type !== 'country') return isGroupVisible(group);
     
-    // Must have visible nodes
-    if (!groupHasVisibleNodes(group)) return false;
+    // Check if it has any nodes
+    const hasAnyNodes = state.nodes.some(n => n.groupId === group.id);
+    // If container has no nodes, always show it (empty container)
+    // If container has nodes, check if any are visible
+    if (hasAnyNodes && !groupHasVisibleNodes(group)) return false;
     
     // Then apply tag filter
     if (state.tagFilter.mode === 'all') return true;
@@ -3262,6 +4352,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     const strokeColorMenu = document.getElementById('strokeColorMenu');
     const linkStyleMenu = document.getElementById('linkStyleMenu');
     const lineWidthMenu = document.getElementById('lineWidthMenu');
+    const fontColorMenu = document.getElementById('fontColorMenu');
+    const fontTypeMenu = document.getElementById('fontTypeMenu');
+    const applyStyleMenu = document.getElementById('applyStyleMenu');
+    const helpMenu = document.getElementById('helpMenu');
     if (nodeFilterMenu) nodeFilterMenu.hidden = true;
     if (cableSystemFilterMenu) cableSystemFilterMenu.hidden = true;
     if (containerFilterMenu) containerFilterMenu.hidden = true;
@@ -3269,6 +4363,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     if (strokeColorMenu) strokeColorMenu.hidden = true;
     if (linkStyleMenu) linkStyleMenu.hidden = true;
     if (lineWidthMenu) lineWidthMenu.hidden = true;
+    if (fontColorMenu) fontColorMenu.hidden = true;
+    if (fontTypeMenu) fontTypeMenu.hidden = true;
+    if (applyStyleMenu) applyStyleMenu.hidden = true;
+    if (helpMenu) helpMenu.hidden = true;
   };
 
   // ============== NODE FILTER ==============
@@ -3914,6 +5012,285 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     }
   }
   
+  // ============== INSPECTOR PALETTE COLOR PICKERS ==============
+  
+  // Initialize an inspector color picker
+  function initInspectorColorPicker(config) {
+    const { pickerId, swatchId, hiddenInputId, customColorId, hexInputId, gridSelector, onChange } = config;
+    
+    const picker = document.getElementById(pickerId);
+    const swatch = document.getElementById(swatchId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    const customColor = document.getElementById(customColorId);
+    const hexInput = document.getElementById(hexInputId);
+    const dropdown = picker?.querySelector('.inspector-color-dropdown');
+    const grid = picker?.querySelector(gridSelector || '.inspector-color-grid');
+    
+    if (!picker || !swatch || !dropdown || !grid) return;
+    
+    // Build color grid
+    grid.innerHTML = '';
+    toolbarColorPalette.forEach(color => {
+      const item = document.createElement('div');
+      item.className = 'inspector-color-grid-item';
+      item.style.backgroundColor = color;
+      item.dataset.color = color;
+      item.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        setColor(color);
+        dropdown.hidden = true;
+      });
+      grid.appendChild(item);
+    });
+    
+    // Swatch click - toggle dropdown
+    swatch.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      // Close other inspector dropdowns
+      document.querySelectorAll('.inspector-color-dropdown').forEach(d => {
+        if (d !== dropdown) d.hidden = true;
+      });
+      dropdown.hidden = !dropdown.hidden;
+    });
+    
+    // Custom color input
+    if (customColor) {
+      customColor.addEventListener('input', (ev) => {
+        setColor(ev.target.value);
+        if (hexInput) hexInput.value = ev.target.value;
+      });
+    }
+    
+    // Hex input
+    if (hexInput) {
+      hexInput.addEventListener('change', () => {
+        let val = hexInput.value.trim();
+        if (val && !val.startsWith('#')) val = '#' + val;
+        if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+          setColor(val);
+          if (customColor) customColor.value = val;
+        }
+      });
+    }
+    
+    // Dropdown click - prevent close
+    dropdown.addEventListener('click', (ev) => ev.stopPropagation());
+    
+    function setColor(color) {
+      swatch.style.backgroundColor = color;
+      if (hiddenInput) hiddenInput.value = color;
+      if (hexInput) hexInput.value = color;
+      if (customColor) customColor.value = color;
+      if (onChange) onChange(color);
+    }
+    
+    // Return update function
+    return {
+      setValue: (color) => {
+        swatch.style.backgroundColor = color;
+        if (hiddenInput) hiddenInput.value = color;
+        if (hexInput) hexInput.value = color;
+        if (customColor) customColor.value = color;
+      }
+    };
+  }
+  
+  // Close inspector dropdowns when clicking outside
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.inspector-color-dropdown').forEach(d => d.hidden = true);
+  });
+  
+  // Initialize all inspector color pickers
+  const inspectorColorPickers = {};
+  
+  // Node Fill Color
+  inspectorColorPickers.nodeFill = initInspectorColorPicker({
+    pickerId: 'nodeFillPicker',
+    swatchId: 'nodeFillSwatch',
+    hiddenInputId: 'nodeFill',
+    customColorId: 'nodeFillCustom',
+    hexInputId: 'nodeFillHex',
+    onChange: (color) => {
+      if (state.selected?.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.fill = color; commit(); render(); }
+      }
+    }
+  });
+  
+  // Node Stroke Color
+  inspectorColorPickers.nodeStroke = initInspectorColorPicker({
+    pickerId: 'nodeStrokePicker',
+    swatchId: 'nodeStrokeSwatch',
+    hiddenInputId: 'nodeStroke',
+    customColorId: 'nodeStrokeCustom',
+    hexInputId: 'nodeStrokeHex',
+    onChange: (color) => {
+      if (state.selected?.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.stroke = color; commit(); render(); }
+      }
+    }
+  });
+  
+  // Edge Stroke Color
+  inspectorColorPickers.edgeStrokeColor = initInspectorColorPicker({
+    pickerId: 'edgeStrokeColorPicker',
+    swatchId: 'edgeStrokeColorSwatch',
+    hiddenInputId: 'edgeStrokeColor',
+    customColorId: 'edgeStrokeColorCustom',
+    hexInputId: 'edgeStrokeColorHex',
+    onChange: (color) => {
+      if (state.selected?.type === 'edge') {
+        const e = findEdge(state.selected.id);
+        if (e) { e.strokeColor = color; commit(); render(); }
+      }
+    }
+  });
+  
+  // Group Fill Color
+  inspectorColorPickers.groupFillColor = initInspectorColorPicker({
+    pickerId: 'groupFillColorPicker',
+    swatchId: 'groupFillColorSwatch',
+    hiddenInputId: 'groupFillColor',
+    customColorId: 'groupFillColorCustom',
+    hexInputId: 'groupFillColorHex',
+    onChange: (color) => {
+      if (state.selected?.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) {
+          // Combine with opacity
+          const opacity = parseInt(document.getElementById('groupFillOpacity')?.value || 100) / 100;
+          g.fill = hexToRgba(color, opacity);
+          document.getElementById('groupFill').value = g.fill;
+          commit(); render();
+        }
+      }
+    }
+  });
+  
+  // Group Stroke Color
+  inspectorColorPickers.groupStroke = initInspectorColorPicker({
+    pickerId: 'groupStrokePicker',
+    swatchId: 'groupStrokeSwatch',
+    hiddenInputId: 'groupStroke',
+    customColorId: 'groupStrokeCustom',
+    hexInputId: 'groupStrokeHex',
+    onChange: (color) => {
+      if (state.selected?.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) { g.stroke = color; commit(); render(); }
+      }
+    }
+  });
+  
+  // Convert the inline field-color-swatch elements to palette pickers
+  function initInlineColorSwatch(swatchContainerId, colorInputId, onChange) {
+    const container = document.getElementById(swatchContainerId);
+    const colorInput = document.getElementById(colorInputId);
+    
+    if (!container || !colorInput) return;
+    
+    // Create dropdown
+    const dropdown = document.createElement('div');
+    dropdown.className = 'inspector-color-dropdown';
+    dropdown.hidden = true;
+    dropdown.style.cssText = 'top: 24px; left: -80px;';
+    
+    // Build grid
+    const grid = document.createElement('div');
+    grid.className = 'inspector-color-grid';
+    toolbarColorPalette.forEach(color => {
+      const item = document.createElement('div');
+      item.className = 'inspector-color-grid-item';
+      item.style.backgroundColor = color;
+      item.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        colorInput.value = color;
+        container.style.backgroundColor = color;
+        dropdown.hidden = true;
+        if (onChange) onChange(color);
+      });
+      grid.appendChild(item);
+    });
+    dropdown.appendChild(grid);
+    
+    // Custom color row
+    const customRow = document.createElement('div');
+    customRow.className = 'inspector-color-custom';
+    customRow.innerHTML = `
+      <input type="color" value="${colorInput.value}" />
+      <span>Custom</span>
+    `;
+    const customInput = customRow.querySelector('input');
+    customInput.addEventListener('input', (ev) => {
+      colorInput.value = ev.target.value;
+      container.style.backgroundColor = ev.target.value;
+      if (onChange) onChange(ev.target.value);
+    });
+    dropdown.appendChild(customRow);
+    
+    // Prevent dropdown close
+    dropdown.addEventListener('click', (ev) => ev.stopPropagation());
+    
+    container.appendChild(dropdown);
+    
+    // Make the container clickable to toggle dropdown
+    container.style.cursor = 'pointer';
+    container.style.position = 'relative';
+    container.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      // Close other dropdowns
+      document.querySelectorAll('.inspector-color-dropdown').forEach(d => {
+        if (d !== dropdown) d.hidden = true;
+      });
+      // Sync custom input
+      customInput.value = colorInput.value;
+      dropdown.hidden = !dropdown.hidden;
+    });
+    
+    // Hide native color input visually but keep for form handling
+    colorInput.style.opacity = '0';
+    colorInput.style.position = 'absolute';
+    colorInput.style.pointerEvents = 'none';
+  }
+  
+  // Initialize inline color swatches
+  initInlineColorSwatch('nodeNameColorSwatch', 'nodeNameColorInline', (color) => {
+    if (state.selected?.type === 'node') {
+      const n = findNode(state.selected.id);
+      if (n) { n.nameColor = color; commit(); render(); }
+    }
+  });
+  
+  initInlineColorSwatch('nodeCodeColorSwatch', 'nodeCodeColorInline', (color) => {
+    if (state.selected?.type === 'node') {
+      const n = findNode(state.selected.id);
+      if (n) { n.tagColor = color; commit(); render(); }
+    }
+  });
+  
+  initInlineColorSwatch('nodeExtraTagsColorSwatch', 'nodeExtraTagsColorInline', (color) => {
+    if (state.selected?.type === 'node') {
+      const n = findNode(state.selected.id);
+      if (n) { n.extraTagsColor = color; commit(); render(); }
+    }
+  });
+  
+  initInlineColorSwatch('edgeTagColorSwatch', 'edgeTagColorInline', (color) => {
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) { e.labelColor = color; commit(); render(); }
+    }
+  });
+  
+  initInlineColorSwatch('groupTitleColorSwatch', 'groupTitleColorInline', (color) => {
+    if (state.selected?.type === 'group') {
+      const g = findGroup(state.selected.id);
+      if (g) { g.titleColor = color; commit(); render(); }
+    }
+  });
+  
   // Link Style Button
   const btnLinkStyle = document.getElementById('btnLinkStyle');
   const linkStyleMenu = document.getElementById('linkStyleMenu');
@@ -4033,20 +5410,34 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     if (!lineWidthMenu) return;
     
     let currentWidth = 2;
+    let currentStyle = 'solid';
     
     if (state.selected?.type === 'edge') {
       const e = findEdge(state.selected.id);
-      if (e) currentWidth = e.strokeW || 2;
+      if (e) {
+        currentWidth = e.strokeW || 2;
+        currentStyle = e.lineStyle || 'solid';
+      }
     } else if (state.selected?.type === 'node') {
       const n = findNode(state.selected.id);
-      if (n) currentWidth = n.strokeW || 2;
+      if (n) {
+        currentWidth = n.strokeW || 2;
+        currentStyle = n.lineStyle || 'solid';
+      }
     } else if (state.selected?.type === 'group') {
       const g = findGroup(state.selected.id);
-      if (g) currentWidth = g.strokeW || 1;
+      if (g) {
+        currentWidth = g.strokeW || 1;
+        currentStyle = g.lineStyle || 'solid';
+      }
     }
     
     lineWidthMenu.querySelectorAll('.line-width-item').forEach(item => {
       item.classList.toggle('active', parseInt(item.dataset.width) === currentWidth);
+    });
+    
+    lineWidthMenu.querySelectorAll('.line-style-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.linestyle === currentStyle);
     });
   }
   
@@ -4087,6 +5478,322 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       });
       commit(); render();
     }
+  }
+  
+  // Line Style handler
+  if (lineWidthMenu) {
+    lineWidthMenu.querySelectorAll('.line-style-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const lineStyle = item.dataset.linestyle;
+        applyLineStyle(lineStyle);
+        updateLineStyleMenu();
+        lineWidthMenu.hidden = true;
+      });
+    });
+  }
+  
+  function updateLineStyleMenu() {
+    if (!lineWidthMenu) return;
+    
+    let currentStyle = 'solid';
+    
+    if (state.selected?.type === 'edge') {
+      const e = findEdge(state.selected.id);
+      if (e) currentStyle = e.lineStyle || 'solid';
+    } else if (state.selected?.type === 'node') {
+      const n = findNode(state.selected.id);
+      if (n) currentStyle = n.lineStyle || 'solid';
+    } else if (state.selected?.type === 'group') {
+      const g = findGroup(state.selected.id);
+      if (g) currentStyle = g.lineStyle || 'solid';
+    }
+    
+    lineWidthMenu.querySelectorAll('.line-style-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.linestyle === currentStyle);
+    });
+  }
+  
+  function applyLineStyle(lineStyle) {
+    // Apply to selected element
+    if (state.selected) {
+      if (state.selected.type === 'edge') {
+        const e = findEdge(state.selected.id);
+        if (e) { e.lineStyle = lineStyle; commit(); render(); }
+      } else if (state.selected.type === 'node') {
+        const n = findNode(state.selected.id);
+        if (n) { n.lineStyle = lineStyle; commit(); render(); }
+      } else if (state.selected.type === 'group') {
+        const g = findGroup(state.selected.id);
+        if (g) { g.lineStyle = lineStyle; commit(); render(); }
+      }
+    }
+    
+    // Apply to multi-selection
+    if (state.selection.edges.size > 0) {
+      state.selection.edges.forEach(id => {
+        const e = findEdge(id);
+        if (e) e.lineStyle = lineStyle;
+      });
+      commit(); render();
+    }
+    if (state.selection.nodes.size > 0) {
+      state.selection.nodes.forEach(id => {
+        const n = findNode(id);
+        if (n) n.lineStyle = lineStyle;
+      });
+      commit(); render();
+    }
+    if (state.selection.groups.size > 0) {
+      state.selection.groups.forEach(id => {
+        const g = findGroup(id);
+        if (g) g.lineStyle = lineStyle;
+      });
+      commit(); render();
+    }
+  }
+  
+  // Font families and sizes available
+  const fontFamilies = ['Arial', 'Times New Roman', 'Courier New', 'Verdana', 'Georgia', 'Helvetica'];
+  const fontSizes = [6, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24];
+  
+  // Text field definitions per object type
+  // Simplified to match actual rendering: one text block per visual element
+  const textFieldDefs = {
+    node: [
+      { key: 'name', label: 'Node Name', colorKey: 'nameColor', visibleKey: 'showName', fontKey: 'nameFont', sizeKey: 'nameSize', defaultVisible: true },
+      { key: 'code', label: 'Node Code', colorKey: 'codeColor', visibleKey: 'showCode', fontKey: 'codeFont', sizeKey: 'codeSize', defaultVisible: true },
+      { key: 'extraTags', label: 'Additional Tags', colorKey: 'extraTagsColor', visibleKey: 'showExtraTags', fontKey: 'extraTagsFont', sizeKey: 'extraTagsSize', defaultVisible: false }
+    ],
+    edge: [
+      { key: 'tag', label: 'Link Label', colorKey: 'tagColor', visibleKey: 'showTag', fontKey: 'tagFont', sizeKey: 'tagSize', defaultVisible: true }
+    ],
+    group: [
+      { key: 'title', label: 'Title', colorKey: 'titleColor', visibleKey: 'showTitle', fontKey: 'titleFont', sizeKey: 'titleSize', defaultVisible: true }
+    ]
+  };
+  
+  // Font Color Menu
+  const btnFontColor = document.getElementById('btnFontColor');
+  const fontColorMenu = document.getElementById('fontColorMenu');
+  const fontColorNoSelection = document.getElementById('fontColorNoSelection');
+  const fontColorFields = document.getElementById('fontColorFields');
+  
+  if (btnFontColor && fontColorMenu) {
+    btnFontColor.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateFontColorMenu();
+      fontColorMenu.hidden = !fontColorMenu.hidden;
+    });
+    
+    fontColorMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function updateFontColorMenu() {
+    if (!fontColorFields || !fontColorNoSelection) return;
+    
+    const obj = getSelectedObject();
+    if (!obj) {
+      fontColorNoSelection.style.display = 'block';
+      fontColorFields.style.display = 'none';
+      return;
+    }
+    
+    fontColorNoSelection.style.display = 'none';
+    fontColorFields.style.display = 'block';
+    fontColorFields.innerHTML = '';
+    
+    const type = state.selected.type === 'edge' ? 'edge' : (state.selected.type === 'node' ? 'node' : 'group');
+    const fields = textFieldDefs[type] || [];
+    
+    fields.forEach(field => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid #f0f0f0;';
+      
+      // Visibility checkbox
+      const visCheck = document.createElement('input');
+      visCheck.type = 'checkbox';
+      visCheck.checked = obj[field.visibleKey] !== false; // default true unless explicitly false
+      visCheck.title = 'Show/Hide';
+      visCheck.style.cssText = 'width:16px; height:16px; cursor:pointer; flex-shrink:0;';
+      visCheck.addEventListener('change', () => {
+        obj[field.visibleKey] = visCheck.checked;
+        commit(); render();
+      });
+      
+      // Label
+      const label = document.createElement('span');
+      label.textContent = field.label;
+      label.style.cssText = 'flex:1; font-size:12px;';
+      
+      // Color button that opens palette
+      const colorBtn = document.createElement('div');
+      const currentColor = obj[field.colorKey] || '#eaeaea';
+      colorBtn.style.cssText = `width:24px; height:24px; border:1px solid #999; border-radius:3px; cursor:pointer; background:${currentColor}; flex-shrink:0; position:relative;`;
+      colorBtn.title = 'Click to change color';
+      
+      // Color palette dropdown
+      const paletteDropdown = document.createElement('div');
+      paletteDropdown.style.cssText = 'display:none; position:absolute; right:0; top:28px; background:white; border:1px solid #ccc; border-radius:4px; padding:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:1000; width:180px;';
+      
+      // Build palette grid
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid; grid-template-columns:repeat(8,1fr); gap:2px;';
+      toolbarColorPalette.forEach(color => {
+        const swatch = document.createElement('div');
+        swatch.style.cssText = `width:18px; height:18px; background:${color}; border:1px solid #ccc; cursor:pointer; border-radius:2px;`;
+        swatch.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          obj[field.colorKey] = color;
+          colorBtn.style.background = color;
+          paletteDropdown.style.display = 'none';
+          commit(); render();
+        });
+        grid.appendChild(swatch);
+      });
+      paletteDropdown.appendChild(grid);
+      
+      // Custom color input
+      const customRow = document.createElement('div');
+      customRow.style.cssText = 'margin-top:6px; display:flex; align-items:center; gap:4px;';
+      const customLabel = document.createElement('span');
+      customLabel.textContent = 'Custom:';
+      customLabel.style.cssText = 'font-size:10px;';
+      const customInput = document.createElement('input');
+      customInput.type = 'color';
+      customInput.value = currentColor;
+      customInput.style.cssText = 'width:24px; height:20px; border:none; cursor:pointer;';
+      customInput.addEventListener('input', (ev) => {
+        obj[field.colorKey] = ev.target.value;
+        colorBtn.style.background = ev.target.value;
+        commit(); render();
+      });
+      customRow.appendChild(customLabel);
+      customRow.appendChild(customInput);
+      paletteDropdown.appendChild(customRow);
+      
+      colorBtn.appendChild(paletteDropdown);
+      
+      colorBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        // Close other palettes
+        fontColorFields.querySelectorAll('div[style*="position:absolute"]').forEach(p => {
+          if (p !== paletteDropdown) p.style.display = 'none';
+        });
+        paletteDropdown.style.display = paletteDropdown.style.display === 'none' ? 'block' : 'none';
+      });
+      
+      row.appendChild(visCheck);
+      row.appendChild(label);
+      row.appendChild(colorBtn);
+      fontColorFields.appendChild(row);
+    });
+    
+    // Close palettes when clicking elsewhere in the menu
+    fontColorMenu.addEventListener('click', (ev) => {
+      if (!ev.target.closest('div[style*="position:absolute"]') && !ev.target.closest('div[style*="cursor:pointer"]')) {
+        fontColorFields.querySelectorAll('div[style*="position:absolute"]').forEach(p => {
+          p.style.display = 'none';
+        });
+      }
+    });
+  }
+  
+  // Font Type Menu
+  const btnFontType = document.getElementById('btnFontType');
+  const fontTypeMenu = document.getElementById('fontTypeMenu');
+  const fontTypeNoSelection = document.getElementById('fontTypeNoSelection');
+  const fontTypeFields = document.getElementById('fontTypeFields');
+  
+  if (btnFontType && fontTypeMenu) {
+    btnFontType.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      closeAllMenus();
+      updateFontTypeMenu();
+      fontTypeMenu.hidden = !fontTypeMenu.hidden;
+    });
+    
+    fontTypeMenu.addEventListener('click', (ev) => ev.stopPropagation());
+  }
+  
+  function updateFontTypeMenu() {
+    if (!fontTypeFields || !fontTypeNoSelection) return;
+    
+    const obj = getSelectedObject();
+    if (!obj) {
+      fontTypeNoSelection.style.display = 'block';
+      fontTypeFields.style.display = 'none';
+      return;
+    }
+    
+    fontTypeNoSelection.style.display = 'none';
+    fontTypeFields.style.display = 'block';
+    fontTypeFields.innerHTML = '';
+    
+    const type = state.selected.type === 'edge' ? 'edge' : (state.selected.type === 'node' ? 'node' : 'group');
+    const fields = textFieldDefs[type] || [];
+    
+    fields.forEach(field => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex; align-items:center; gap:6px; padding:6px 12px; border-bottom:1px solid #f0f0f0;';
+      
+      // Label
+      const label = document.createElement('span');
+      label.textContent = field.label;
+      label.style.cssText = 'width:90px; font-size:11px; flex-shrink:0;';
+      
+      // Font family select
+      const fontSelect = document.createElement('select');
+      fontSelect.style.cssText = 'flex:1; font-size:11px; padding:2px 4px; border:1px solid #ccc; border-radius:3px;';
+      fontFamilies.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f;
+        opt.textContent = f;
+        opt.selected = (obj[field.fontKey] || 'Arial') === f;
+        fontSelect.appendChild(opt);
+      });
+      fontSelect.addEventListener('change', () => {
+        obj[field.fontKey] = fontSelect.value;
+        commit(); render();
+      });
+      
+      // Font size select
+      const sizeSelect = document.createElement('select');
+      sizeSelect.style.cssText = 'width:50px; font-size:11px; padding:2px 4px; border:1px solid #ccc; border-radius:3px;';
+      fontSizes.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.textContent = s + 'px';
+        opt.selected = (obj[field.sizeKey] || 12) === s;
+        sizeSelect.appendChild(opt);
+      });
+      sizeSelect.addEventListener('change', () => {
+        obj[field.sizeKey] = parseInt(sizeSelect.value);
+        commit(); render();
+      });
+      
+      row.appendChild(label);
+      row.appendChild(fontSelect);
+      row.appendChild(sizeSelect);
+      fontTypeFields.appendChild(row);
+    });
+  }
+  
+  // Helper to get currently selected object
+  function getSelectedObject() {
+    if (!state.selected) return null;
+    if (state.selected.type === 'node') return findNode(state.selected.id);
+    if (state.selected.type === 'edge') return findEdge(state.selected.id);
+    if (state.selected.type === 'group') return findGroup(state.selected.id);
+    return null;
+  }
+  
+  // Helper to get stroke-dasharray value for line style
+  function getStrokeDasharray(lineStyle, strokeWidth) {
+    const sw = strokeWidth || 2;
+    if (lineStyle === 'dashed') return `${sw * 4},${sw * 2}`;
+    if (lineStyle === 'dotted') return `${sw},${sw * 1.5}`;
+    return 'none';
   }
   
   // Update color indicators when selection changes
@@ -4321,6 +6028,30 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     });
   }
 
+  // New function for styled multiline text (each line can have different styles)
+  function setStyledMultilineText(textEl, styledLines) {
+    while (textEl.firstChild) textEl.removeChild(textEl.firstChild);
+    let prevFontSize = 12;
+    styledLines.forEach((item, i) => {
+      const tspan = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
+      tspan.setAttribute('x', textEl.getAttribute('x'));
+      if (i === 0) {
+        tspan.setAttribute('dy', '0');
+      } else {
+        tspan.setAttribute('dy', (prevFontSize * 1.2).toString());
+      }
+      tspan.textContent = item.text;
+      // Apply individual styles
+      if (item.fill) tspan.setAttribute('fill', item.fill);
+      if (item.fontSize) {
+        tspan.style.fontSize = item.fontSize + 'px';
+        prevFontSize = item.fontSize;
+      }
+      if (item.fontFamily) tspan.style.fontFamily = item.fontFamily;
+      textEl.appendChild(tspan);
+    });
+  }
+
   function render() {
     svg.innerHTML = '';
     drawGrid();
@@ -4385,6 +6116,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     rect.setAttribute('fill', g.fill || "rgba(54, 76, 140, 0.12)");
     rect.setAttribute('stroke', g.stroke || "#6073b8");
     rect.setAttribute('stroke-width', (g.strokeW ?? 2));
+    // Apply line style to container border
+    if (g.lineStyle && g.lineStyle !== 'solid') {
+      rect.setAttribute('stroke-dasharray', getStrokeDasharray(g.lineStyle, g.strokeW ?? 2));
+    }
     rect.style.pointerEvents = "auto";  // Make clickable for selection and dragging
     rect.style.cursor = "grab";  // Show hand cursor
 
@@ -4393,8 +6128,14 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     label.setAttribute('y', g.y + 22 + (g.titleDy || 0));
     label.setAttribute('class', 'group-label');
     label.setAttribute('fill', g.titleColor || "#eaeaea");
-    label.style.fontSize = (g.titleFont || 14) + "px";
-    label.textContent = g.title || (g.type==='region' ? `Group${g.id}` : `Container${g.id}`);
+    label.style.fontSize = (g.titleSize || 14) + "px";
+    label.style.fontFamily = g.titleFont || 'Arial';
+    // Only show title if globally enabled AND per-container enabled (defaults to true)
+    if (state.ui.showContainerTitle !== false && g.showTitle !== false) {
+      label.textContent = g.title || (g.type==='region' ? `Group${g.id}` : `Container${g.id}`);
+    } else {
+      label.textContent = '';
+    }
     label.style.pointerEvents = "auto";
 
     const handle = document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -4525,10 +6266,26 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   }
   function getEdgeLabelLines(e) {
     const lines = [];
-    if (state.ui.showLinkCode && e.showCode && e.code && e.code.trim()) lines.push(e.code.trim());
-    lines.push((e.tag && e.tag.trim()) ? e.tag.trim() : "—");
-    if (state.ui.showLatency && typeof e.latencyMs === "number" && isFinite(e.latencyMs)) lines.push(`${e.latencyMs} ms`);
-    if (e.extraTags && e.extraTags.trim()) lines.push(e.extraTags.trim());
+    // Link Code - show if globally enabled AND per-link enabled (defaults to true)
+    if (state.ui.showLinkCode && e.showCode !== false && e.code && e.code.trim()) {
+      lines.push(e.code.trim());
+    }
+    // Link Tag - show if globally enabled AND per-link enabled (defaults to true)
+    if (state.ui.showLinkTag !== false && e.showTag !== false) {
+      lines.push((e.tag && e.tag.trim()) ? e.tag.trim() : "—");
+    }
+    // Latency - show if globally enabled AND per-link enabled (defaults to true)
+    if (state.ui.showLatency && e.showLatency !== false && typeof e.latencyMs === "number" && isFinite(e.latencyMs)) {
+      lines.push(`${e.latencyMs} ms`);
+    }
+    // Capacity - show if per-link enabled (defaults to false)
+    if (e.showCapacity && e.capacity && e.capacity.trim()) {
+      lines.push(e.capacity.trim());
+    }
+    // Additional Tags - show if per-link enabled (defaults to false)
+    if (e.showExtraTags && e.extraTags && e.extraTags.trim()) {
+      lines.push(e.extraTags.trim());
+    }
     return lines;
   }
 
@@ -4657,6 +6414,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       p.setAttribute('class', 'edge' + (isSel ? ' selected' : ''));
       p.setAttribute('stroke-width', (e.strokeW ?? 2));
       p.setAttribute('stroke', e.strokeColor || "#7f8aa6");
+      // Apply line style
+      if (e.lineStyle && e.lineStyle !== 'solid') {
+        p.setAttribute('stroke-dasharray', getStrokeDasharray(e.lineStyle, e.strokeW ?? 2));
+      }
       p.style.pointerEvents = 'none'; // Disable clicks on visible edge
       svg.appendChild(p);
       
@@ -4699,6 +6460,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       p.setAttribute('stroke-width', (e.strokeW ?? 2));
       p.setAttribute('stroke', e.strokeColor || "#7f8aa6");
       p.setAttribute('fill', 'none');
+      // Apply line style
+      if (e.lineStyle && e.lineStyle !== 'solid') {
+        p.setAttribute('stroke-dasharray', getStrokeDasharray(e.lineStyle, e.strokeW ?? 2));
+      }
       p.style.pointerEvents = 'none'; // Disable clicks on visible edge
       svg.appendChild(p);
       
@@ -4762,6 +6527,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       line.setAttribute('class', 'edge' + (isSel ? ' selected' : ''));
       line.setAttribute('stroke-width', (e.strokeW ?? 2));
       line.setAttribute('stroke', e.strokeColor || "#7f8aa6");
+      // Apply line style
+      if (e.lineStyle && e.lineStyle !== 'solid') {
+        line.setAttribute('stroke-dasharray', getStrokeDasharray(e.lineStyle, e.strokeW ?? 2));
+      }
       line.style.pointerEvents = 'none'; // Disable clicks on visible edge
       console.log(`[DRAW EDGE] Line element created and appending to SVG`);
       svg.appendChild(line);
@@ -4807,10 +6576,11 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     label.setAttribute('x', lx);
     label.setAttribute('y', ly);
     label.setAttribute('class', 'edge-label');
-    label.setAttribute('fill', e.labelColor || "#eaeaea");
-    label.style.fontSize = (e.labelFont || 12) + "px";
+    label.setAttribute('fill', e.tagColor || "#eaeaea");
+    label.style.fontSize = (e.tagSize || 12) + "px";
+    label.style.fontFamily = e.tagFont || 'Arial';
     label.style.pointerEvents = "auto";
-    setMultilineText(label, getEdgeLabelLines(e), (e.labelFont || 12));
+    setMultilineText(label, getEdgeLabelLines(e), (e.tagSize || 12));
 
     label.addEventListener('click', (ev) => { 
       ev.stopPropagation(); 
@@ -4949,6 +6719,10 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     c.setAttribute('fill', n.fill || "#1b2030");
     c.setAttribute('stroke', n.stroke || "#9fb3ff");
     c.setAttribute('stroke-width', sw);
+    // Apply line style to node border
+    if (n.lineStyle && n.lineStyle !== 'solid') {
+      c.setAttribute('stroke-dasharray', getStrokeDasharray(n.lineStyle, sw));
+    }
     c.style.pointerEvents = "auto";
     c.style.cursor = "pointer";
     
@@ -4964,12 +6738,29 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     t.setAttribute('x', nameX);
     t.setAttribute('y', nameY);
     t.setAttribute('class', 'node-text');
+    // Default fill (will be overridden by tspan styles)
     t.setAttribute('fill', n.nameColor || "#eaeaea");
-    t.style.fontSize = (n.nameFont || 13) + "px";
-    const nameLines = [];
-    if (state.ui.showNodeCode && n.showCode && n.code && n.code.trim()) nameLines.push(n.code.trim());
-    nameLines.push(n.name || `N${n.id}`);
-    setMultilineText(t, nameLines, (n.nameFont || 13));
+    
+    const styledLines = [];
+    // Node Code - show if globally enabled AND per-node enabled (defaults to true)
+    if (state.ui.showNodeCode && n.showCode !== false && n.code && n.code.trim()) {
+      styledLines.push({
+        text: n.code.trim(),
+        fill: n.codeColor || "#000000",
+        fontSize: n.codeSize || 13,
+        fontFamily: n.codeFont || 'Arial'
+      });
+    }
+    // Node Name - show if globally enabled AND per-node enabled (defaults to true)
+    if (state.ui.showNodeName !== false && n.showName !== false) {
+      styledLines.push({
+        text: n.name || `N${n.id}`,
+        fill: n.nameColor || "#eaeaea",
+        fontSize: n.nameSize || 13,
+        fontFamily: n.nameFont || 'Arial'
+      });
+    }
+    setStyledMultilineText(t, styledLines);
     t.style.pointerEvents = "auto";  // Enable pointer events for Ctrl+drag
     t.style.cursor = "default";
 
@@ -4980,15 +6771,18 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     tags.setAttribute('x', tagX);
     tags.setAttribute('y', tagY);
     tags.setAttribute('class', 'tag-text');
-    tags.setAttribute('fill', n.tagColor || "#b7c0df");
-    tags.style.fontSize = (n.tagFont || 11) + "px";
+    tags.setAttribute('fill', n.extraTagsColor || "#b7c0df");
+    tags.style.fontSize = (n.extraTagsSize || 11) + "px";
+    tags.style.fontFamily = n.extraTagsFont || 'Arial';
     
     // Build tag text based on visibility settings
     const tagParts = [];
+    // Show node tags if globally enabled AND per-node enabled
     if (state.ui.showNodeTags && n.tags?.length) {
       tagParts.push(n.tags.join(', '));
     }
-    if (state.ui.showExtraTags && n.extraTags?.trim()) {
+    // Show extra tags if per-node enabled (defaults to false)
+    if (n.showExtraTags && n.extraTags?.trim()) {
       tagParts.push(n.extraTags.trim());
     }
     tags.textContent = tagParts.join(' | ');
@@ -5356,13 +7150,26 @@ const groupTitle = document.getElementById('groupTitle');
       nodeTags.value = tagsArray.join(', ');
       nodeExtraTags.value = n.extraTags || '';
       nodeCode.value = n.code || '';
-      nodeShowCode.value = (n.showCode !== false) ? '1' : '0';
+      if (nodeShowCode) nodeShowCode.value = (n.showCode !== false) ? '1' : '0';
       nodeNameFont.value = n.nameFont ?? 13;
       nodeTagFont.value = n.tagFont ?? 11;
       nodeNameColor.value = n.nameColor || "#333333";
       nodeTagColor.value = n.tagColor || "#666666";
       nodeFill.value = n.fill || "#dae8fc";
       nodeStroke.value = n.stroke || "#6c8ebf";
+      // Update palette color swatches
+      const nodeFillSwatch = document.getElementById('nodeFillSwatch');
+      const nodeStrokeSwatch = document.getElementById('nodeStrokeSwatch');
+      const nodeFillHex = document.getElementById('nodeFillHex');
+      const nodeStrokeHex = document.getElementById('nodeStrokeHex');
+      const nodeFillCustom = document.getElementById('nodeFillCustom');
+      const nodeStrokeCustom = document.getElementById('nodeStrokeCustom');
+      if (nodeFillSwatch) nodeFillSwatch.style.backgroundColor = n.fill || '#dae8fc';
+      if (nodeStrokeSwatch) nodeStrokeSwatch.style.backgroundColor = n.stroke || '#6c8ebf';
+      if (nodeFillHex) nodeFillHex.value = n.fill || '#dae8fc';
+      if (nodeStrokeHex) nodeStrokeHex.value = n.stroke || '#6c8ebf';
+      if (nodeFillCustom) nodeFillCustom.value = n.fill || '#dae8fc';
+      if (nodeStrokeCustom) nodeStrokeCustom.value = n.stroke || '#6c8ebf';
       if (nodeStrokeW) nodeStrokeW.value = n.strokeW ?? 2;
       if (nodeSize) nodeSize.value = n.r ?? 24;
       if (nodeStrokeW) nodeStrokeW.value = n.strokeW ?? 2;
@@ -5372,6 +7179,41 @@ const groupTitle = document.getElementById('groupTitle');
       updateNodeCableSystemsCheckboxes(n.id);
       // Update color pickers
       if (window.updateColorPickers) window.updateColorPickers();
+      
+      // Sync inline controls
+      const nodeNameColorSwatch = document.getElementById('nodeNameColorSwatch');
+      const nodeNameColorInline = document.getElementById('nodeNameColorInline');
+      const nodeNameVisibility = document.getElementById('nodeNameVisibility');
+      const nodeNameFontInline = document.getElementById('nodeNameFontInline');
+      if (nodeNameColorSwatch) nodeNameColorSwatch.style.backgroundColor = n.nameColor || '#eaeaea';
+      if (nodeNameColorInline) nodeNameColorInline.value = n.nameColor || '#eaeaea';
+      if (nodeNameFontInline) nodeNameFontInline.value = n.nameSize || 13;
+      if (nodeNameVisibility) {
+        nodeNameVisibility.classList.toggle('hidden', n.showName === false);
+      }
+      
+      const nodeCodeColorSwatch = document.getElementById('nodeCodeColorSwatch');
+      const nodeCodeColorInline = document.getElementById('nodeCodeColorInline');
+      const nodeCodeVisibility = document.getElementById('nodeCodeVisibility');
+      const nodeCodeFontInline = document.getElementById('nodeCodeFontInline');
+      if (nodeCodeColorSwatch) nodeCodeColorSwatch.style.backgroundColor = n.codeColor || '#000000';
+      if (nodeCodeColorInline) nodeCodeColorInline.value = n.codeColor || '#000000';
+      if (nodeCodeFontInline) nodeCodeFontInline.value = n.codeSize || 13;
+      if (nodeCodeVisibility) {
+        nodeCodeVisibility.classList.toggle('hidden', n.showCode === false);
+      }
+      
+      const nodeExtraTagsColorSwatch = document.getElementById('nodeExtraTagsColorSwatch');
+      const nodeExtraTagsColorInline = document.getElementById('nodeExtraTagsColorInline');
+      const nodeExtraTagsVisibility = document.getElementById('nodeExtraTagsVisibility');
+      const nodeExtraTagsFontInline = document.getElementById('nodeExtraTagsFontInline');
+      if (nodeExtraTagsColorSwatch) nodeExtraTagsColorSwatch.style.backgroundColor = n.extraTagsColor || '#b7c0df';
+      if (nodeExtraTagsColorInline) nodeExtraTagsColorInline.value = n.extraTagsColor || '#b7c0df';
+      if (nodeExtraTagsFontInline) nodeExtraTagsFontInline.value = n.extraTagsSize || 11;
+      if (nodeExtraTagsVisibility) {
+        nodeExtraTagsVisibility.classList.toggle('hidden', n.showExtraTags === false);
+      }
+      
       return;
     }
 
@@ -5428,15 +7270,44 @@ const groupTitle = document.getElementById('groupTitle');
       if (edgePriority) edgePriority.value = (typeof e.priority === "number" && isFinite(e.priority)) ? e.priority : 100;
       edgeExtraTags.value = e.extraTags || '';
       edgeCode.value = e.code || '';
-      edgeShowCode.value = (e.showCode !== false) ? '1' : '0';
       edgeStyle.value = e.style || 'straight';
       edgeRoute.value = e.route || 'hv';
       edgeLabelFont.value = e.labelFont ?? 12;
       edgeLabelColor.value = e.labelColor || "#333333";
       if (edgeStrokeW) edgeStrokeW.value = e.strokeW ?? 2;
       if (edgeStrokeColor) edgeStrokeColor.value = e.strokeColor || "#666666";
+      // Update edge stroke color palette swatch
+      const edgeStrokeColorSwatch = document.getElementById('edgeStrokeColorSwatch');
+      const edgeStrokeColorHex = document.getElementById('edgeStrokeColorHex');
+      const edgeStrokeColorCustom = document.getElementById('edgeStrokeColorCustom');
+      if (edgeStrokeColorSwatch) edgeStrokeColorSwatch.style.backgroundColor = e.strokeColor || '#666666';
+      if (edgeStrokeColorHex) edgeStrokeColorHex.value = e.strokeColor || '#666666';
+      if (edgeStrokeColorCustom) edgeStrokeColorCustom.value = e.strokeColor || '#666666';
       // Update color pickers
       if (window.updateColorPickers) window.updateColorPickers();
+      
+      // Sync inline controls
+      const edgeTagColorSwatch = document.getElementById('edgeTagColorSwatch');
+      const edgeTagColorInline = document.getElementById('edgeTagColorInline');
+      const edgeTagVisibility = document.getElementById('edgeTagVisibility');
+      const edgeLabelFontInline = document.getElementById('edgeLabelFontInline');
+      if (edgeTagColorSwatch) edgeTagColorSwatch.style.backgroundColor = e.tagColor || '#333333';
+      if (edgeTagColorInline) edgeTagColorInline.value = e.tagColor || '#333333';
+      if (edgeLabelFontInline) edgeLabelFontInline.value = e.labelFont || 12;
+      if (edgeTagVisibility) {
+        edgeTagVisibility.classList.toggle('hidden', e.showTag === false);
+      }
+      
+      const edgeLatencyVisibility = document.getElementById('edgeLatencyVisibility');
+      if (edgeLatencyVisibility) {
+        edgeLatencyVisibility.classList.toggle('hidden', e.showLatency === false);
+      }
+      
+      const edgeCodeVisibility = document.getElementById('edgeCodeVisibility');
+      if (edgeCodeVisibility) {
+        edgeCodeVisibility.classList.toggle('hidden', e.showCode === false);
+      }
+      
       // Show/hide curve arch control based on style
       const curveArchControl = document.getElementById('curveArchControl');
       if (e.style === 'curve') {
@@ -5488,6 +7359,44 @@ const groupTitle = document.getElementById('groupTitle');
       if (groupStrokeW) groupStrokeW.value = g.strokeW ?? 1;
       // Update color pickers
       if (window.updateColorPickers) window.updateColorPickers();
+      
+      // Sync fill color picker and opacity slider
+      const groupFillColor = document.getElementById('groupFillColor');
+      const groupFillOpacity = document.getElementById('groupFillOpacity');
+      const groupFillOpacityValue = document.getElementById('groupFillOpacityValue');
+      const groupFillColorSwatch = document.getElementById('groupFillColorSwatch');
+      const groupFillColorHex = document.getElementById('groupFillColorHex');
+      const groupFillColorCustom = document.getElementById('groupFillColorCustom');
+      if (groupFillColor && groupFillOpacity) {
+        const parsed = parseColorWithOpacity(g.fill || '#ffffff');
+        groupFillColor.value = parsed.color;
+        groupFillOpacity.value = Math.round(parsed.opacity * 100);
+        if (groupFillOpacityValue) groupFillOpacityValue.textContent = Math.round(parsed.opacity * 100) + '%';
+        // Update palette swatch
+        if (groupFillColorSwatch) groupFillColorSwatch.style.backgroundColor = parsed.color;
+        if (groupFillColorHex) groupFillColorHex.value = parsed.color;
+        if (groupFillColorCustom) groupFillColorCustom.value = parsed.color;
+      }
+      
+      // Update group stroke palette swatch
+      const groupStrokeSwatch = document.getElementById('groupStrokeSwatch');
+      const groupStrokeHex = document.getElementById('groupStrokeHex');
+      const groupStrokeCustom = document.getElementById('groupStrokeCustom');
+      if (groupStrokeSwatch) groupStrokeSwatch.style.backgroundColor = g.stroke || '#666666';
+      if (groupStrokeHex) groupStrokeHex.value = g.stroke || '#666666';
+      if (groupStrokeCustom) groupStrokeCustom.value = g.stroke || '#666666';
+      
+      // Sync inline controls
+      const groupTitleColorSwatch = document.getElementById('groupTitleColorSwatch');
+      const groupTitleColorInline = document.getElementById('groupTitleColorInline');
+      const groupTitleVisibility = document.getElementById('groupTitleVisibility');
+      const groupTitleFontInline = document.getElementById('groupTitleFontInline');
+      if (groupTitleColorSwatch) groupTitleColorSwatch.style.backgroundColor = g.titleColor || '#333333';
+      if (groupTitleColorInline) groupTitleColorInline.value = g.titleColor || '#333333';
+      if (groupTitleFontInline) groupTitleFontInline.value = g.titleFont || 14;
+      if (groupTitleVisibility) {
+        groupTitleVisibility.classList.toggle('hidden', g.showTitle === false);
+      }
     }
   }
 
@@ -5517,7 +7426,7 @@ const groupTitle = document.getElementById('groupTitle');
     const n = findNode(state.selected.id); if (!n) return;
     n.code = nodeCode.value; commit(); render();
   });
-  nodeShowCode.addEventListener('change', () => {
+  if (nodeShowCode) nodeShowCode.addEventListener('change', () => {
     if (state.selected?.type!=='node') return;
     const n = findNode(state.selected.id); if (!n) return;
     n.showCode = nodeShowCode.value === '1'; commit(); render();
@@ -5609,6 +7518,206 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
   commit(); render();
 });
 
+// ============== INLINE CONTROL HANDLERS ==============
+
+// Node Name inline controls
+const nodeNameColorInline = document.getElementById('nodeNameColorInline');
+const nodeNameVisibility = document.getElementById('nodeNameVisibility');
+if (nodeNameColorInline) {
+  nodeNameColorInline.addEventListener('input', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.nameColor = nodeNameColorInline.value;
+    const swatch = document.getElementById('nodeNameColorSwatch');
+    if (swatch) swatch.style.backgroundColor = nodeNameColorInline.value;
+    commit(); render();
+  });
+}
+if (nodeNameVisibility) {
+  nodeNameVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.showName = n.showName === false ? true : false;
+    nodeNameVisibility.classList.toggle('hidden', n.showName === false);
+    commit(); render();
+  });
+}
+
+// Node Code inline controls
+const nodeCodeColorInline = document.getElementById('nodeCodeColorInline');
+const nodeCodeVisibility = document.getElementById('nodeCodeVisibility');
+if (nodeCodeColorInline) {
+  nodeCodeColorInline.addEventListener('input', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.codeColor = nodeCodeColorInline.value;
+    const swatch = document.getElementById('nodeCodeColorSwatch');
+    if (swatch) swatch.style.backgroundColor = nodeCodeColorInline.value;
+    commit(); render();
+  });
+}
+if (nodeCodeVisibility) {
+  nodeCodeVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.showCode = n.showCode === false ? true : false;
+    nodeCodeVisibility.classList.toggle('hidden', n.showCode === false);
+    commit(); render();
+  });
+}
+
+// Node Extra Tags inline controls
+const nodeExtraTagsColorInline = document.getElementById('nodeExtraTagsColorInline');
+const nodeExtraTagsVisibility = document.getElementById('nodeExtraTagsVisibility');
+if (nodeExtraTagsColorInline) {
+  nodeExtraTagsColorInline.addEventListener('input', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.extraTagsColor = nodeExtraTagsColorInline.value;
+    const swatch = document.getElementById('nodeExtraTagsColorSwatch');
+    if (swatch) swatch.style.backgroundColor = nodeExtraTagsColorInline.value;
+    commit(); render();
+  });
+}
+if (nodeExtraTagsVisibility) {
+  nodeExtraTagsVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.showExtraTags = !n.showExtraTags;
+    nodeExtraTagsVisibility.classList.toggle('hidden', !n.showExtraTags);
+    commit(); render();
+  });
+}
+
+// Edge Tag inline controls
+const edgeTagColorInline = document.getElementById('edgeTagColorInline');
+const edgeTagVisibility = document.getElementById('edgeTagVisibility');
+if (edgeTagColorInline) {
+  edgeTagColorInline.addEventListener('input', () => {
+    if (state.selected?.type !== 'edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.tagColor = edgeTagColorInline.value;
+    const swatch = document.getElementById('edgeTagColorSwatch');
+    if (swatch) swatch.style.backgroundColor = edgeTagColorInline.value;
+    commit(); render();
+  });
+}
+if (edgeTagVisibility) {
+  edgeTagVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.showTag = e.showTag === false ? true : false;
+    edgeTagVisibility.classList.toggle('hidden', e.showTag === false);
+    commit(); render();
+  });
+}
+
+// Edge Latency inline controls
+const edgeLatencyVisibility = document.getElementById('edgeLatencyVisibility');
+if (edgeLatencyVisibility) {
+  edgeLatencyVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.showLatency = e.showLatency === false ? true : false;
+    edgeLatencyVisibility.classList.toggle('hidden', e.showLatency === false);
+    commit(); render();
+  });
+}
+
+// Edge Code inline controls
+const edgeCodeVisibility = document.getElementById('edgeCodeVisibility');
+if (edgeCodeVisibility) {
+  edgeCodeVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.showCode = e.showCode === false ? true : false;
+    edgeCodeVisibility.classList.toggle('hidden', e.showCode === false);
+    commit(); render();
+  });
+}
+
+// Group Title inline controls
+const groupTitleColorInline = document.getElementById('groupTitleColorInline');
+const groupTitleVisibility = document.getElementById('groupTitleVisibility');
+if (groupTitleColorInline) {
+  groupTitleColorInline.addEventListener('input', () => {
+    if (state.selected?.type !== 'group') return;
+    const g = findGroup(state.selected.id); if (!g) return;
+    g.titleColor = groupTitleColorInline.value;
+    const swatch = document.getElementById('groupTitleColorSwatch');
+    if (swatch) swatch.style.backgroundColor = groupTitleColorInline.value;
+    commit(); render();
+  });
+}
+if (groupTitleVisibility) {
+  groupTitleVisibility.addEventListener('click', () => {
+    if (state.selected?.type !== 'group') return;
+    const g = findGroup(state.selected.id); if (!g) return;
+    g.showTitle = g.showTitle === false ? true : false;
+    groupTitleVisibility.classList.toggle('hidden', g.showTitle === false);
+    commit(); render();
+  });
+}
+
+// ============== INLINE FONT SIZE HANDLERS ==============
+
+// Node Name Font Size
+const nodeNameFontInline = document.getElementById('nodeNameFontInline');
+if (nodeNameFontInline) {
+  nodeNameFontInline.addEventListener('change', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.nameSize = parseInt(nodeNameFontInline.value) || 13;
+    commit(); render();
+  });
+}
+
+// Node Code Font Size
+const nodeCodeFontInline = document.getElementById('nodeCodeFontInline');
+if (nodeCodeFontInline) {
+  nodeCodeFontInline.addEventListener('change', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.codeSize = parseInt(nodeCodeFontInline.value) || 13;
+    commit(); render();
+  });
+}
+
+// Node Extra Tags Font Size
+const nodeExtraTagsFontInline = document.getElementById('nodeExtraTagsFontInline');
+if (nodeExtraTagsFontInline) {
+  nodeExtraTagsFontInline.addEventListener('change', () => {
+    if (state.selected?.type !== 'node') return;
+    const n = findNode(state.selected.id); if (!n) return;
+    n.extraTagsSize = parseInt(nodeExtraTagsFontInline.value) || 11;
+    commit(); render();
+  });
+}
+
+// Edge Label Font Size
+const edgeLabelFontInline = document.getElementById('edgeLabelFontInline');
+if (edgeLabelFontInline) {
+  edgeLabelFontInline.addEventListener('change', () => {
+    if (state.selected?.type !== 'edge') return;
+    const e = findEdge(state.selected.id); if (!e) return;
+    e.labelFont = parseInt(edgeLabelFontInline.value) || 12;
+    commit(); render();
+  });
+}
+
+// Group Title Font Size
+const groupTitleFontInline = document.getElementById('groupTitleFontInline');
+if (groupTitleFontInline) {
+  groupTitleFontInline.addEventListener('change', () => {
+    if (state.selected?.type !== 'group') return;
+    const g = findGroup(state.selected.id); if (!g) return;
+    g.titleFont = parseInt(groupTitleFontInline.value) || 14;
+    commit(); render();
+  });
+}
+
+// ============== END INLINE CONTROL HANDLERS ==============
+
   edgeTag.addEventListener('input', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
@@ -5654,7 +7763,7 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
     const e = findEdge(state.selected.id); if (!e) return;
     e.code = edgeCode.value; commit(); render();
   });
-  edgeShowCode.addEventListener('change', () => {
+  if (edgeShowCode) edgeShowCode.addEventListener('change', () => {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
     e.showCode = edgeShowCode.value === '1'; commit(); render();
@@ -5765,11 +7874,40 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
     const g = findGroup(state.selected.id); if (!g) return;
     g.titleColor = groupTitleColor.value; commit(); render();
   });
+  
+  // Group Fill Color and Opacity handlers
+  const groupFillColor = document.getElementById('groupFillColor');
+  const groupFillOpacity = document.getElementById('groupFillOpacity');
+  const groupFillOpacityValue = document.getElementById('groupFillOpacityValue');
+  
+  function updateGroupFill() {
+    if (state.selected?.type !== 'group') return;
+    const g = findGroup(state.selected.id); if (!g) return;
+    const color = groupFillColor ? groupFillColor.value : '#ffffff';
+    const opacity = groupFillOpacity ? parseInt(groupFillOpacity.value) / 100 : 1;
+    g.fill = combineColorWithOpacity(color, opacity);
+    if (groupFill) groupFill.value = g.fill;
+    commit(); render();
+  }
+  
+  if (groupFillColor) {
+    groupFillColor.addEventListener('input', updateGroupFill);
+  }
+  if (groupFillOpacity) {
+    groupFillOpacity.addEventListener('input', () => {
+      if (groupFillOpacityValue) {
+        groupFillOpacityValue.textContent = groupFillOpacity.value + '%';
+      }
+      updateGroupFill();
+    });
+  }
+  // Keep legacy handler for compatibility
   groupFill.addEventListener('input', () => {
     if (state.selected?.type!=='group') return;
     const g = findGroup(state.selected.id); if (!g) return;
     g.fill = groupFill.value; commit(); render();
   });
+  
   groupStroke.addEventListener('input', () => {
     if (state.selected?.type!=='group') return;
     const g = findGroup(state.selected.id); if (!g) return;
@@ -6136,6 +8274,11 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
   svg.addEventListener('dblclick', (ev) => {
     const m = getMouse(ev);
     if (state.placingGroup) return;
+    // Skip if we just placed a group (prevents node creation on double-click when placing container)
+    if (state._justPlacedGroup) {
+      state._justPlacedGroup = false;
+      return;
+    }
     createNode(m.x, m.y);
   });
 
@@ -6153,6 +8296,7 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
       createGroup(m.x, m.y, state.placingGroupType || 'country');
       state.placingGroup = false;
       state.placingGroupType = 'country';
+      state._justPlacedGroup = true; // Flag to prevent dblclick from creating node
       state.stylePresets = state.stylePresets || { node: {}, edge: {}, group: {} };
       state.styleBrush = null;
       document.getElementById('btnAddGroup').classList.remove('primary');
@@ -6438,6 +8582,12 @@ if (edgePriority) edgePriority.addEventListener('input', () => {
     if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 's') {
       ev.preventDefault(); saveProject(false);
     }
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'o') {
+      ev.preventDefault(); openProjectWithFilePicker();
+    }
+    if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'n') {
+      ev.preventDefault(); newDiagram();
+    }
   });
 
   document.getElementById('btnAddGroup').addEventListener('click', (ev) => {
@@ -6624,18 +8774,95 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
   function getLastFilename() { return localStorage.getItem(LS_LASTNAME_KEY) || ""; }
   function setLastFilename(filename) { localStorage.setItem(LS_LASTNAME_KEY, filename); }
 
-  function saveProject(forcePrompt) {
-    let filename = getLastFilename();
-    if (forcePrompt || !filename) {
-      const base = sanitizeBaseName(prompt("Save project as (without extension):", filename.replace(/\\.ndg$/i, "") || "project"));
-      if (!base) { showToast("Save cancelled."); return; }
-      filename = base.toLowerCase().endsWith(".ndg") ? base : `${base}.ndg`;
-      setLastFilename(filename);
-    }
+  // File System Access API support for true save-in-place
+  let currentFileHandle = null;
+  
+  // Check if File System Access API is supported
+  const hasFileSystemAccess = 'showSaveFilePicker' in window && 'showOpenFilePicker' in window;
+
+  async function saveProject(forcePrompt) {
     const project = buildProjectObject();
-    downloadText(filename, JSON.stringify(project, null, 2), "application/x-ndg+json");
-    dirty = false;
-    showToast(`Saved ${filename}`);
+    const jsonContent = JSON.stringify(project, null, 2);
+    
+    // If File System Access API is supported
+    if (hasFileSystemAccess) {
+      try {
+        // If Save As requested OR no existing file handle, prompt for new location
+        if (forcePrompt || !currentFileHandle) {
+          const suggestedName = getLastFilename() || 'project.ndg';
+          currentFileHandle = await window.showSaveFilePicker({
+            suggestedName: suggestedName,
+            types: [{
+              description: 'NDG Project Files',
+              accept: { 'application/x-ndg+json': ['.ndg'] }
+            }]
+          });
+        }
+        
+        // Write to the file handle (overwrites existing content)
+        const writable = await currentFileHandle.createWritable();
+        await writable.write(jsonContent);
+        await writable.close();
+        
+        // Update stored filename
+        const filename = currentFileHandle.name;
+        setLastFilename(filename);
+        dirty = false;
+        showToast(`Saved ${filename}`);
+        
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          showToast('Save cancelled.');
+        } else {
+          console.error('Save error:', err);
+          showToast('Save failed: ' + err.message);
+        }
+      }
+    } else {
+      // Fallback for browsers without File System Access API (Firefox, Safari)
+      let filename = getLastFilename();
+      if (forcePrompt || !filename) {
+        const base = sanitizeBaseName(prompt("Save project as (without extension):", filename.replace(/\.ndg$/i, "") || "project"));
+        if (!base) { showToast("Save cancelled."); return; }
+        filename = base.toLowerCase().endsWith(".ndg") ? base : `${base}.ndg`;
+        setLastFilename(filename);
+      }
+      downloadText(filename, jsonContent, "application/x-ndg+json");
+      dirty = false;
+      showToast(`Saved ${filename} (download)`);
+    }
+  }
+  
+  async function openProjectWithFilePicker() {
+    if (hasFileSystemAccess) {
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [{
+            description: 'NDG Project Files',
+            accept: { 'application/x-ndg+json': ['.ndg'], 'application/json': ['.json'] }
+          }],
+          multiple: false
+        });
+        
+        currentFileHandle = handle;
+        const file = await handle.getFile();
+        const text = await file.text();
+        loadProjectObject(JSON.parse(text));
+        setLastFilename(file.name);
+        showToast(`Opened ${file.name}`);
+        
+      } catch (err) {
+        if (err.name === 'AbortError') {
+          // User cancelled - do nothing
+        } else {
+          console.error('Open error:', err);
+          showToast('Open failed: ' + err.message);
+        }
+      }
+    } else {
+      // Fallback: trigger the hidden file input
+      document.getElementById('fileLoad').click();
+    }
   }
 
   
@@ -6788,11 +9015,17 @@ function loadProjectObject(obj) {
   const tglShowLatency = document.getElementById('tglShowLatency');
   const tglShowNodeCode = document.getElementById('tglShowNodeCode');
   const tglShowLinkCode = document.getElementById('tglShowLinkCode');
+  const tglShowNodeName = document.getElementById('tglShowNodeName');
+  const tglShowLinkTag = document.getElementById('tglShowLinkTag');
+  const tglShowContainerTitle = document.getElementById('tglShowContainerTitle');
   if (tglShowLatency) tglShowLatency.checked = !!state.ui.showLatency;
   if (tglShowNodeCode) tglShowNodeCode.checked = !!state.ui.showNodeCode;
   if (tglShowLinkCode) tglShowLinkCode.checked = !!state.ui.showLinkCode;
   if (tglShowNodeTags) tglShowNodeTags.checked = !!state.ui.showNodeTags;
   if (tglShowExtraTags) tglShowExtraTags.checked = !!state.ui.showExtraTags;
+  if (tglShowNodeName) tglShowNodeName.checked = state.ui.showNodeName !== false;
+  if (tglShowLinkTag) tglShowLinkTag.checked = state.ui.showLinkTag !== false;
+  if (tglShowContainerTitle) tglShowContainerTitle.checked = state.ui.showContainerTitle !== false;
   
   svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
   
@@ -6849,6 +9082,8 @@ function loadProjectObject(obj) {
       const text = await f.text();
       loadProjectObject(JSON.parse(text));
       setLastFilename(f.name);
+      // Clear file handle since we can't save back to this file via fallback method
+      currentFileHandle = null;
       showToast(`Opened ${f.name}`);
     } catch (e) {
       showToast('Open failed: ' + e.message);
@@ -6863,8 +9098,19 @@ function loadProjectObject(obj) {
     state.selected=null; state.connectFrom=null; state.placingGroup=false; state.placingGroupType='country';
     state.selection.nodes.clear(); state.selection.edges.clear(); state.selection.groups.clear();
     history.stack=[]; history.index=-1; pushHistory();
+    // Clear file handle so next save prompts for new location
+    currentFileHandle = null;
+    setLastFilename('');
     commit(); render();
     showToast('Cleared.');
+  }
+  
+  function newDiagram() {
+    if (dirty && !confirm('You have unsaved changes. Create a new diagram anyway?')) {
+      return;
+    }
+    clearDiagram();
+    showToast('New diagram created.');
   }
 
   // (legacy button) 
@@ -7706,7 +9952,7 @@ function loadProjectObject(obj) {
   // Initialize inspector button state
   if (btnToggleInspector) btnToggleInspector.classList.add('active');
 
-  showToast('Ready — double-click to create a node.');
+  showToast('Welcome to NetMap Studio — double-click to create a node.');
 })();
 </script>
 
