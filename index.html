@@ -207,7 +207,33 @@
     input[type="file"]{ display:none; }
 
     #layout { display: flex; height: calc(100vh - 110px); position: relative; }
-    #wrap { flex: 1; position: relative; overflow: scroll; background: #f0f0f0; min-width: 0; }
+    #wrap { 
+      flex: 1; 
+      position: relative; 
+      overflow: auto; 
+      background: #f0f0f0; 
+      min-width: 0;
+    }
+    /* Ensure scrollbars are styled and visible */
+    #wrap::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+    #wrap::-webkit-scrollbar-track {
+      background: #e0e0e0;
+      border-radius: 6px;
+    }
+    #wrap::-webkit-scrollbar-thumb {
+      background: #a0a0a0;
+      border-radius: 6px;
+      border: 2px solid #e0e0e0;
+    }
+    #wrap::-webkit-scrollbar-thumb:hover {
+      background: #888;
+    }
+    #wrap::-webkit-scrollbar-corner {
+      background: #e0e0e0;
+    }
     #inspector {
       position: absolute;
       right: 20px;
@@ -906,6 +932,262 @@
       }
       .grid { display: none !important; }
     }
+
+    /* Shape Library Panel */
+    #shapeLibraryPanel {
+      position: fixed;
+      left: 0;
+      top: 120px;
+      width: 220px;
+      max-height: calc(100vh - 140px);
+      background: #fff;
+      border: 1px solid #d0d0d0;
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      box-shadow: 2px 2px 12px rgba(0,0,0,0.1);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      transition: left 0.3s ease, top 0.3s ease;
+    }
+    #shapeLibraryPanel.visible {
+      display: flex;
+    }
+    .library-header {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: grab;
+      user-select: none;
+    }
+    .library-header:active {
+      cursor: grabbing;
+    }
+    .library-header-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .library-header-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .library-header-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    .library-search {
+      padding: 8px;
+      border-bottom: 1px solid #e8e8e8;
+    }
+    .library-search input {
+      width: 100%;
+      padding: 6px 10px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .library-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+    }
+    .library-category {
+      margin-bottom: 12px;
+    }
+    .library-category-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 8px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      user-select: none;
+    }
+    .library-category-header:hover {
+      background: #eee;
+    }
+    .library-category-header .arrow {
+      transition: transform 0.2s;
+    }
+    .library-category.collapsed .arrow {
+      transform: rotate(-90deg);
+    }
+    .library-category.collapsed .library-items {
+      display: none;
+    }
+    .library-items {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 8px 4px;
+    }
+    .library-item {
+      aspect-ratio: 1;
+      background: #f8f8f8;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: grab;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .library-item:hover {
+      border-color: #667eea;
+      background: #f0f0ff;
+      transform: scale(1.05);
+    }
+    .library-item:active {
+      cursor: grabbing;
+    }
+    .library-item-preview {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .library-item-preview svg {
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .library-item-name {
+      font-size: 9px;
+      color: #666;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      margin-top: 2px;
+    }
+    .library-item-menu {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      background: rgba(0,0,0,0.4);
+      border-radius: 3px;
+      color: white;
+      font-size: 10px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .library-item:hover .library-item-menu {
+      display: flex;
+    }
+    .library-actions {
+      padding: 8px;
+      border-top: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .library-action-btn {
+      width: 100%;
+      padding: 8px 12px;
+      background: #f5f5f5;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .library-action-btn:hover {
+      background: #e8e8e8;
+      border-color: #bbb;
+    }
+    .library-action-btn.primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+    }
+    .library-action-btn.primary:hover {
+      filter: brightness(1.1);
+    }
+    .library-empty {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-size: 12px;
+    }
+    .library-empty svg {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+      opacity: 0.3;
+    }
+    
+    /* Context menu for library */
+    .context-menu {
+      position: fixed;
+      background: white;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      z-index: 10000;
+      min-width: 160px;
+      padding: 4px 0;
+    }
+    .context-menu-item {
+      padding: 8px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .context-menu-item:hover {
+      background: #f0f0ff;
+    }
+    .context-menu-item.danger {
+      color: #c00;
+    }
+    .context-menu-item.danger:hover {
+      background: #fff0f0;
+    }
+    .context-menu-sep {
+      height: 1px;
+      background: #e0e0e0;
+      margin: 4px 0;
+    }
+
+    /* Canvas resize handle */
+    #canvasResizeHandle {
+      cursor: nwse-resize;
+    }
+    #canvasResizeHandle:hover path {
+      stroke: #667eea;
+      stroke-width: 2.5;
+    }
   </style>
 </head>
 <body>
@@ -1401,6 +1683,17 @@
       <span style="font-size:11px; margin-left:4px;">Inspector</span>
     </button>
     
+    <!-- Shape Library Toggle -->
+    <button class="tool-btn" id="btnToggleLibrary" type="button" title="Toggle Shape Library">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        <circle cx="12" cy="10" r="3"/>
+        <path d="M9 16h6"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">Library</span>
+    </button>
+    
     <div class="tool-sep"></div>
     
     <!-- Cable System List Toggle -->
@@ -1531,6 +1824,38 @@
   </div>
 </header>
 
+<!-- Shape Library Panel -->
+<div id="shapeLibraryPanel">
+  <div class="library-header" title="Drag to move • Double-click to reset position">
+    <span>📚 Shape Library</span>
+    <div class="library-header-actions">
+      <button class="library-header-btn" id="btnLibraryImport" title="Import SVG">+</button>
+      <button class="library-header-btn" id="btnLibraryMenu" title="Library Options">⋮</button>
+      <button class="library-header-btn" id="btnLibraryClose" title="Close Library">×</button>
+    </div>
+  </div>
+  <div class="library-search">
+    <input type="text" id="librarySearch" placeholder="Search shapes..." />
+  </div>
+  <div class="library-content" id="libraryContent">
+    <!-- Library items will be populated here -->
+  </div>
+  <div class="library-actions">
+    <button class="library-action-btn primary" id="btnSaveNodeToLibrary">
+      <span>💾</span> Save Selected Node
+    </button>
+    <button class="library-action-btn" id="btnImportSVGToLibrary">
+      <span>📁</span> Import SVG File
+    </button>
+    <button class="library-action-btn" id="btnExportLibrary">
+      <span>📤</span> Export Library
+    </button>
+  </div>
+</div>
+
+<!-- Hidden file inputs for library -->
+<input type="file" id="svgImportInput" accept=".svg,image/svg+xml" style="display:none;" />
+<input type="file" id="libraryImportInput" accept=".ndl,.json" style="display:none;" />
 
 <div id="layout">
   <div id="wrap">
@@ -2454,33 +2779,10 @@
     });
   });
 
-  if (canvasWidth) {
-    canvasWidth.addEventListener('input', () => {
-      const val = parseInt(canvasWidth.value, 10);
-      if (val >= 400) {
-        state.canvasWidth = val;
-        svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
-        render();
-      }
-    });
-  }
-
-  if (canvasHeight) {
-    canvasHeight.addEventListener('input', () => {
-      const val = parseInt(canvasHeight.value, 10);
-      if (val >= 300) {
-        state.canvasHeight = val;
-        svg.setAttribute('viewBox', `0 0 ${state.canvasWidth} ${state.canvasHeight}`);
-        render();
-      }
-    });
-  }
+  // Canvas settings handlers are initialized later after state is defined
 
   if (tglCanvasBorder) {
-    tglCanvasBorder.addEventListener('change', () => {
-      state.showCanvasBorder = !!tglCanvasBorder.checked;
-      render();
-    });
+    // This handler is also moved later
   }
 
 
@@ -2552,6 +2854,12 @@
 
     // Named style presets (saved inside .ndg)
     stylePresets: { node: {}, edge: {}, group: {} },
+
+    // Shape Library (persisted to localStorage)
+    shapeLibrary: {
+      shapes: {},      // id -> shape definition
+      categories: ['Network Devices', 'Cloud Services', 'Custom']  // default categories
+    },
 
     // Format painter (session-only)
     styleBrush: null,
@@ -5981,19 +6289,112 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   }
   
   function drawCanvasBorder() {
-    if (!state.showCanvasBorder) return;
-    const border = document.createElementNS('http://www.w3.org/2000/svg','rect');
-    border.setAttribute('x', 0);
-    border.setAttribute('y', 0);
-    border.setAttribute('width', state.canvasWidth);
-    border.setAttribute('height', state.canvasHeight);
-    border.setAttribute('fill', 'none');
-    border.setAttribute('stroke', '#444');
-    border.setAttribute('stroke-width', 2);
-    border.setAttribute('stroke-dasharray', '8 4');
-    border.style.pointerEvents = 'none';
-    svg.appendChild(border);
+    if (state.showCanvasBorder) {
+      const border = document.createElementNS('http://www.w3.org/2000/svg','rect');
+      border.setAttribute('x', 0);
+      border.setAttribute('y', 0);
+      border.setAttribute('width', state.canvasWidth);
+      border.setAttribute('height', state.canvasHeight);
+      border.setAttribute('fill', 'none');
+      border.setAttribute('stroke', '#444');
+      border.setAttribute('stroke-width', 2);
+      border.setAttribute('stroke-dasharray', '8 4');
+      border.style.pointerEvents = 'none';
+      svg.appendChild(border);
+    }
+    
+    // Always draw resize handle in corner
+    drawCanvasResizeHandle();
   }
+  
+  function drawCanvasResizeHandle() {
+    const x = state.canvasWidth - 20;
+    const y = state.canvasHeight - 20;
+    
+    // Create resize handle group
+    const handleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    handleGroup.setAttribute('id', 'canvasResizeHandle');
+    handleGroup.style.cursor = 'nwse-resize';
+
+    // Background (larger hit area)
+    const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    hitArea.setAttribute('x', x);
+    hitArea.setAttribute('y', y);
+    hitArea.setAttribute('width', 20);
+    hitArea.setAttribute('height', 20);
+    hitArea.setAttribute('fill', 'rgba(102, 126, 234, 0.1)');
+    hitArea.setAttribute('rx', 3);
+    handleGroup.appendChild(hitArea);
+
+    // Visual handle (diagonal lines like typical resize grip)
+    const grip = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    grip.setAttribute('d', `
+      M${x + 6} ${y + 18} L${x + 18} ${y + 6}
+      M${x + 10} ${y + 18} L${x + 18} ${y + 10}
+      M${x + 14} ${y + 18} L${x + 18} ${y + 14}
+    `);
+    grip.setAttribute('stroke', '#888');
+    grip.setAttribute('stroke-width', '1.5');
+    grip.setAttribute('stroke-linecap', 'round');
+    grip.setAttribute('fill', 'none');
+    grip.style.pointerEvents = 'none';
+    handleGroup.appendChild(grip);
+
+    // Event handler for mousedown
+    handleGroup.addEventListener('mousedown', startCanvasResize);
+
+    svg.appendChild(handleGroup);
+  }
+  
+  // Canvas resize state
+  let canvasResizing = false;
+  let canvasResizeStartX, canvasResizeStartY;
+  let canvasStartWidth, canvasStartHeight;
+  
+  function startCanvasResize(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    canvasResizing = true;
+    canvasResizeStartX = e.clientX;
+    canvasResizeStartY = e.clientY;
+    canvasStartWidth = state.canvasWidth;
+    canvasStartHeight = state.canvasHeight;
+    document.body.style.cursor = 'nwse-resize';
+    document.body.style.userSelect = 'none';
+  }
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!canvasResizing) return;
+
+    const dx = (e.clientX - canvasResizeStartX) / state.zoom;
+    const dy = (e.clientY - canvasResizeStartY) / state.zoom;
+
+    const newWidth = Math.max(400, Math.round(canvasStartWidth + dx));
+    const newHeight = Math.max(300, Math.round(canvasStartHeight + dy));
+
+    state.canvasWidth = newWidth;
+    state.canvasHeight = newHeight;
+
+    // Update viewBox AND visual size
+    updateViewBox();
+    
+    // Update inspector inputs
+    if (canvasWidth) canvasWidth.value = state.canvasWidth;
+    if (canvasHeight) canvasHeight.value = state.canvasHeight;
+    
+    // Redraw
+    render();
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (canvasResizing) {
+      canvasResizing = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      commit();
+      showToast(`Canvas: ${state.canvasWidth} × ${state.canvasHeight}`);
+    }
+  });
   
   function drawGrid() {
     const w = state.canvasWidth, h = state.canvasHeight;
@@ -6615,6 +7016,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   function drawNode(n) {
     // console.log(`[DRAW] Creating node ${n.id} at (${n.x}, ${n.y})`);
     const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.dataset.nodeId = n.id; // For context menu lookup
     const isSelected = (state.selected?.type==='node' && state.selected.id===n.id) || state.selection.nodes.has(n.id);
     const isLinkSource = linkMode && linkSourceNode === n.id;
     const isInLinkMode = linkMode && isSelected; // In link mode, all selected nodes show as potential sources
@@ -6681,7 +7083,50 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     
     let c = null;
     const shape = (n.shape || 'circle');
-    if (shape === 'square') {
+    
+    // Check for custom SVG shape from library
+    if (n.customSvg) {
+      // Create a group to hold the custom SVG
+      c = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      c.setAttribute('class', 'node-circle custom-svg-node');
+      
+      // Parse and insert the SVG
+      const parser = new DOMParser();
+      const svgDoc = parser.parseFromString(n.customSvg, 'image/svg+xml');
+      const svgEl = svgDoc.querySelector('svg');
+      
+      if (svgEl) {
+        // Get viewBox or create one
+        let vb = svgEl.getAttribute('viewBox');
+        if (!vb) {
+          const w = parseFloat(svgEl.getAttribute('width')) || 64;
+          const h = parseFloat(svgEl.getAttribute('height')) || 64;
+          vb = `0 0 ${w} ${h}`;
+        }
+        const [vbX, vbY, vbW, vbH] = vb.split(/[\s,]+/).map(Number);
+        
+        // Calculate scale and position
+        const size = r * 2;
+        const scale = size / Math.max(vbW, vbH);
+        const offsetX = n.x - (vbW * scale) / 2;
+        const offsetY = n.y - (vbH * scale) / 2;
+        
+        c.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+        
+        // Clone child elements into our group
+        Array.from(svgEl.childNodes).forEach(child => {
+          if (child.nodeType === 1) { // Element node
+            c.appendChild(child.cloneNode(true));
+          }
+        });
+      }
+      
+      // Set pointerEvents to none on the visual, hitArea will handle clicks
+      c.style.pointerEvents = 'none';
+      
+      // Add hit area AFTER c so it's on top in the DOM (but visually transparent)
+      // This is handled below after c is appended to g
+    } else if (shape === 'square') {
       c = document.createElementNS('http://www.w3.org/2000/svg','rect');
       c.setAttribute('x', n.x - r);
       c.setAttribute('y', n.y - r);
@@ -6715,16 +7160,20 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       c.setAttribute('cy', n.y);
       c.setAttribute('r', r);
     }
-    c.setAttribute('class', 'node-circle');
-    c.setAttribute('fill', n.fill || "#1b2030");
-    c.setAttribute('stroke', n.stroke || "#9fb3ff");
-    c.setAttribute('stroke-width', sw);
-    // Apply line style to node border
-    if (n.lineStyle && n.lineStyle !== 'solid') {
-      c.setAttribute('stroke-dasharray', getStrokeDasharray(n.lineStyle, sw));
+    
+    // Apply styling only to built-in shapes (not custom SVGs)
+    if (!n.customSvg) {
+      c.setAttribute('class', 'node-circle');
+      c.setAttribute('fill', n.fill || "#1b2030");
+      c.setAttribute('stroke', n.stroke || "#9fb3ff");
+      c.setAttribute('stroke-width', sw);
+      // Apply line style to node border
+      if (n.lineStyle && n.lineStyle !== 'solid') {
+        c.setAttribute('stroke-dasharray', getStrokeDasharray(n.lineStyle, sw));
+      }
+      c.style.pointerEvents = "auto";
+      c.style.cursor = "pointer";
     }
-    c.style.pointerEvents = "auto";
-    c.style.cursor = "pointer";
     
     // Attach click listener directly to circle for better event capture
     // This is now handled by the group click listener above
@@ -6791,6 +7240,19 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     tags.style.cursor = "default";
 
     g.appendChild(c); g.appendChild(t); g.appendChild(tags);
+    
+    // For custom SVG nodes, add hit area on top for click detection
+    if (n.customSvg) {
+      const hitArea = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      hitArea.setAttribute('cx', n.x);
+      hitArea.setAttribute('cy', n.y);
+      hitArea.setAttribute('r', r);
+      hitArea.setAttribute('fill', 'transparent');
+      hitArea.setAttribute('class', 'node-circle node-circle-hit');
+      hitArea.style.pointerEvents = 'auto';
+      hitArea.style.cursor = 'pointer';
+      g.appendChild(hitArea);
+    }
 
     // Handle clicks on the node group (for link mode and regular selection)
     // Use mouseup instead of click to ensure it fires even after mousedown's stopPropagation
@@ -9951,6 +10413,803 @@ function loadProjectObject(obj) {
 
   // Initialize inspector button state
   if (btnToggleInspector) btnToggleInspector.classList.add('active');
+
+  // ============== CANVAS SIZE CONTROLS ==============
+  
+  // Canvas Width handler
+  if (canvasWidth) {
+    canvasWidth.addEventListener('change', () => {
+      const val = parseInt(canvasWidth.value, 10);
+      if (val >= 400) {
+        state.canvasWidth = val;
+        updateViewBox();
+        commit();
+        render();
+      }
+    });
+  }
+
+  // Canvas Height handler
+  if (canvasHeight) {
+    canvasHeight.addEventListener('change', () => {
+      const val = parseInt(canvasHeight.value, 10);
+      if (val >= 300) {
+        state.canvasHeight = val;
+        updateViewBox();
+        commit();
+        render();
+      }
+    });
+  }
+
+  // Canvas Border toggle handler
+  if (tglCanvasBorder) {
+    tglCanvasBorder.addEventListener('change', () => {
+      state.showCanvasBorder = !!tglCanvasBorder.checked;
+      commit();
+      render();
+    });
+  }
+
+  // ============== SHAPE LIBRARY SYSTEM ==============
+  
+  const shapeLibraryPanel = document.getElementById('shapeLibraryPanel');
+  const btnToggleLibrary = document.getElementById('btnToggleLibrary');
+  const btnLibraryClose = document.getElementById('btnLibraryClose');
+  const libraryContent = document.getElementById('libraryContent');
+  const librarySearch = document.getElementById('librarySearch');
+  const btnSaveNodeToLibrary = document.getElementById('btnSaveNodeToLibrary');
+  const btnImportSVGToLibrary = document.getElementById('btnImportSVGToLibrary');
+  const btnExportLibrary = document.getElementById('btnExportLibrary');
+  const btnLibraryImport = document.getElementById('btnLibraryImport');
+  const btnLibraryMenu = document.getElementById('btnLibraryMenu');
+  const svgImportInput = document.getElementById('svgImportInput');
+  const libraryImportInput = document.getElementById('libraryImportInput');
+
+  // Load library from localStorage
+  function loadShapeLibrary() {
+    try {
+      const saved = localStorage.getItem('netmap-shape-library');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        state.shapeLibrary.shapes = parsed.shapes || {};
+        state.shapeLibrary.categories = parsed.categories || ['Network Devices', 'Cloud Services', 'Custom'];
+      }
+      // If no saved library, shapes will be empty - user can import from .ndl file
+    } catch (e) {
+      console.warn('Failed to load shape library:', e);
+    }
+    renderLibraryPanel();
+  }
+
+  // Save library to localStorage
+  function saveShapeLibrary() {
+    try {
+      localStorage.setItem('netmap-shape-library', JSON.stringify(state.shapeLibrary));
+    } catch (e) {
+      console.warn('Failed to save shape library:', e);
+    }
+  }
+
+  // Generate a thumbnail SVG for a library shape
+  function generateShapeThumbnail(shape) {
+    if (shape.type === 'svg' && shape.svgData) {
+      return shape.svgData;
+    }
+    
+    // Generate built-in shape thumbnail
+    const shapeType = shape.shape || 'circle';
+    const fill = shape.fill || '#667eea';
+    const stroke = shape.stroke || '#4a5568';
+    const sw = shape.strokeW || 2;
+    
+    let shapeEl = '';
+    switch (shapeType) {
+      case 'square':
+        shapeEl = `<rect x="6" y="6" width="20" height="20" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        break;
+      case 'rectangle':
+        shapeEl = `<rect x="3" y="8" width="26" height="16" rx="2" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        break;
+      case 'ellipse':
+        shapeEl = `<ellipse cx="16" cy="16" rx="13" ry="9" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        break;
+      case 'triangle':
+        shapeEl = `<polygon points="16,4 28,28 4,28" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        break;
+      case 'hexagon':
+        shapeEl = `<polygon points="16,3 27,9 27,21 16,27 5,21 5,9" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+        break;
+      default: // circle
+        shapeEl = `<circle cx="16" cy="16" r="12" fill="${fill}" stroke="${stroke}" stroke-width="${sw}"/>`;
+    }
+    
+    return `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">${shapeEl}</svg>`;
+  }
+
+  // Render the library panel
+  function renderLibraryPanel() {
+    if (!libraryContent) return;
+    
+    const searchTerm = (librarySearch?.value || '').toLowerCase();
+    const shapes = state.shapeLibrary.shapes;
+    const categories = state.shapeLibrary.categories;
+    
+    // Group shapes by category
+    const byCategory = {};
+    categories.forEach(cat => byCategory[cat] = []);
+    
+    Object.entries(shapes).forEach(([id, shape]) => {
+      if (searchTerm && !shape.name.toLowerCase().includes(searchTerm)) return;
+      const cat = shape.category || 'Custom';
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push({ id, ...shape });
+    });
+    
+    // Check if library is empty
+    const totalShapes = Object.keys(shapes).length;
+    
+    if (totalShapes === 0) {
+      libraryContent.innerHTML = `
+        <div class="library-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="12" cy="10" r="3"/>
+            <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+          </svg>
+          <div>No shapes in library</div>
+          <div style="font-size:10px; margin-top:4px;">Import SVGs or save nodes to build your library</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    categories.forEach(cat => {
+      const items = byCategory[cat];
+      if (items.length === 0 && !searchTerm) return; // Hide empty categories unless searching
+      
+      html += `
+        <div class="library-category" data-category="${cat}">
+          <div class="library-category-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span class="arrow">▼</span>
+            <span>${cat}</span>
+            <span style="margin-left:auto; opacity:0.6; font-size:10px;">${items.length}</span>
+          </div>
+          <div class="library-items">
+      `;
+      
+      items.forEach(item => {
+        const thumb = generateShapeThumbnail(item);
+        html += `
+          <div class="library-item" draggable="true" data-library-id="${item.id}" title="${item.name}">
+            <div class="library-item-preview">${thumb}</div>
+            <div class="library-item-name">${item.name}</div>
+            <div class="library-item-menu" onclick="event.stopPropagation(); showLibraryItemMenu('${item.id}', event)">⋮</div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    });
+    
+    libraryContent.innerHTML = html;
+    
+    // Add drag handlers
+    libraryContent.querySelectorAll('.library-item').forEach(item => {
+      item.addEventListener('dragstart', handleLibraryDragStart);
+      item.addEventListener('dblclick', handleLibraryDoubleClick);
+    });
+  }
+
+  // Handle drag start from library
+  function handleLibraryDragStart(e) {
+    const libraryId = e.currentTarget.dataset.libraryId;
+    e.dataTransfer.setData('application/x-library-shape', libraryId);
+    e.dataTransfer.effectAllowed = 'copy';
+  }
+
+  // Handle double-click on library item (create at center of visible view)
+  function handleLibraryDoubleClick(e) {
+    const libraryId = e.currentTarget.dataset.libraryId;
+    const wrap = document.getElementById('wrap');
+    if (wrap) {
+      // Calculate center of visible area in canvas coordinates
+      const centerScreenX = wrap.scrollLeft + wrap.clientWidth / 2;
+      const centerScreenY = wrap.scrollTop + wrap.clientHeight / 2;
+      const centerX = centerScreenX / state.zoom;
+      const centerY = centerScreenY / state.zoom;
+      createNodeFromLibrary(libraryId, centerX, centerY);
+    } else {
+      // Fallback: center of canvas
+      createNodeFromLibrary(libraryId, state.canvasWidth / 2, state.canvasHeight / 2);
+    }
+  }
+
+  // Create node from library shape
+  function createNodeFromLibrary(libraryId, x, y) {
+    const libShape = state.shapeLibrary.shapes[libraryId];
+    if (!libShape) {
+      showToast('Library shape not found');
+      return;
+    }
+    
+    const node = {
+      id: state.nextNode++,
+      x: Math.round(x),
+      y: Math.round(y),
+      name: libShape.defaultName || libShape.name || 'Node',
+      tag: libShape.defaultCode || '',
+      r: libShape.r || 24,
+      fill: libShape.fill || '#1b2030',
+      stroke: libShape.stroke || '#9fb3ff',
+      strokeW: libShape.strokeW || 2,
+      shape: libShape.shape || 'circle',
+      nameColor: libShape.nameColor,
+      nameFont: libShape.nameFont,
+      tagColor: libShape.tagColor,
+      tagFont: libShape.tagFont,
+      // For custom SVG shapes
+      libraryShapeId: libShape.type === 'svg' ? libraryId : null,
+      customSvg: libShape.type === 'svg' ? libShape.svgData : null
+    };
+    
+    state.nodes.push(node);
+    state.selected = { type: 'node', id: node.id };
+    commit();
+    render();
+    showToast(`Created: ${node.name}`);
+  }
+
+  // Save current node to library
+  function saveNodeToLibrary(node) {
+    if (!node) {
+      showToast('No node selected');
+      return;
+    }
+    
+    const name = prompt('Enter a name for this library shape:', node.name || 'My Shape');
+    if (!name) return;
+    
+    const category = prompt('Enter category:', 'Custom') || 'Custom';
+    
+    // Add category if new
+    if (!state.shapeLibrary.categories.includes(category)) {
+      state.shapeLibrary.categories.push(category);
+    }
+    
+    const libShape = {
+      id: 'lib-' + Date.now(),
+      name: name,
+      category: category,
+      type: node.customSvg ? 'svg' : 'builtin',
+      shape: node.shape || 'circle',
+      r: node.r || 24,
+      fill: node.fill,
+      stroke: node.stroke,
+      strokeW: node.strokeW,
+      nameColor: node.nameColor,
+      nameFont: node.nameFont,
+      tagColor: node.tagColor,
+      tagFont: node.tagFont,
+      defaultName: node.name,
+      defaultCode: node.tag,
+      svgData: node.customSvg || null
+    };
+    
+    state.shapeLibrary.shapes[libShape.id] = libShape;
+    saveShapeLibrary();
+    renderLibraryPanel();
+    showToast(`Saved "${name}" to library`);
+  }
+
+  // Import SVG file to library
+  function importSVGToLibrary(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let svgContent = e.target.result;
+      
+      // Parse and clean SVG
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+      const svgEl = doc.querySelector('svg');
+      
+      if (!svgEl) {
+        showToast('Invalid SVG file');
+        return;
+      }
+      
+      // Ensure viewBox exists
+      if (!svgEl.getAttribute('viewBox')) {
+        const w = svgEl.getAttribute('width') || 64;
+        const h = svgEl.getAttribute('height') || 64;
+        svgEl.setAttribute('viewBox', `0 0 ${parseFloat(w)} ${parseFloat(h)}`);
+      }
+      
+      // Remove width/height to make scalable
+      svgEl.removeAttribute('width');
+      svgEl.removeAttribute('height');
+      
+      const cleanSvg = svgEl.outerHTML;
+      
+      const name = prompt('Enter a name for this shape:', file.name.replace('.svg', ''));
+      if (!name) return;
+      
+      const category = prompt('Enter category:', 'Custom') || 'Custom';
+      
+      // Add category if new
+      if (!state.shapeLibrary.categories.includes(category)) {
+        state.shapeLibrary.categories.push(category);
+      }
+      
+      const libShape = {
+        id: 'lib-' + Date.now(),
+        name: name,
+        category: category,
+        type: 'svg',
+        svgData: cleanSvg,
+        r: 24,
+        fill: '#667eea',
+        stroke: '#4a5568',
+        strokeW: 2
+      };
+      
+      state.shapeLibrary.shapes[libShape.id] = libShape;
+      saveShapeLibrary();
+      renderLibraryPanel();
+      showToast(`Imported "${name}" to library`);
+    };
+    reader.readAsText(file);
+  }
+
+  // Export library to file
+  function exportShapeLibrary() {
+    const data = JSON.stringify(state.shapeLibrary, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'netmap-library.ndl';
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('Library exported');
+  }
+
+  // Import library from file
+  function importLibraryFromFile(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target.result);
+        
+        // Merge with existing library
+        const mergeMode = confirm('Merge with existing library? (Cancel to replace)');
+        
+        if (mergeMode) {
+          // Merge shapes
+          Object.assign(state.shapeLibrary.shapes, imported.shapes || {});
+          // Merge categories
+          (imported.categories || []).forEach(cat => {
+            if (!state.shapeLibrary.categories.includes(cat)) {
+              state.shapeLibrary.categories.push(cat);
+            }
+          });
+        } else {
+          state.shapeLibrary = imported;
+        }
+        
+        saveShapeLibrary();
+        renderLibraryPanel();
+        showToast('Library imported');
+      } catch (err) {
+        showToast('Invalid library file');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // Show context menu for library item
+  window.showLibraryItemMenu = function(libraryId, event) {
+    // Remove existing menu
+    document.querySelectorAll('.context-menu').forEach(m => m.remove());
+    
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.innerHTML = `
+      <div class="context-menu-item" data-action="rename">✏️ Rename</div>
+      <div class="context-menu-item" data-action="duplicate">📋 Duplicate</div>
+      <div class="context-menu-item" data-action="category">📁 Change Category</div>
+      <div class="context-menu-sep"></div>
+      <div class="context-menu-item danger" data-action="delete">🗑️ Delete</div>
+    `;
+    
+    menu.style.left = event.clientX + 'px';
+    menu.style.top = event.clientY + 'px';
+    document.body.appendChild(menu);
+    
+    menu.addEventListener('click', (e) => {
+      const action = e.target.dataset.action;
+      if (!action) return;
+      
+      const shape = state.shapeLibrary.shapes[libraryId];
+      if (!shape) return;
+      
+      switch (action) {
+        case 'rename':
+          const newName = prompt('New name:', shape.name);
+          if (newName) {
+            shape.name = newName;
+            saveShapeLibrary();
+            renderLibraryPanel();
+          }
+          break;
+        case 'duplicate':
+          const dupShape = { ...shape, id: 'lib-' + Date.now(), name: shape.name + ' Copy' };
+          state.shapeLibrary.shapes[dupShape.id] = dupShape;
+          saveShapeLibrary();
+          renderLibraryPanel();
+          showToast('Shape duplicated');
+          break;
+        case 'category':
+          const newCat = prompt('New category:', shape.category);
+          if (newCat) {
+            shape.category = newCat;
+            if (!state.shapeLibrary.categories.includes(newCat)) {
+              state.shapeLibrary.categories.push(newCat);
+            }
+            saveShapeLibrary();
+            renderLibraryPanel();
+          }
+          break;
+        case 'delete':
+          if (confirm(`Delete "${shape.name}" from library?`)) {
+            delete state.shapeLibrary.shapes[libraryId];
+            saveShapeLibrary();
+            renderLibraryPanel();
+            showToast('Shape deleted');
+          }
+          break;
+      }
+      
+      menu.remove();
+    });
+    
+    // Close on click outside
+    setTimeout(() => {
+      document.addEventListener('click', function closeMenu() {
+        menu.remove();
+        document.removeEventListener('click', closeMenu);
+      }, { once: true });
+    }, 0);
+  };
+
+  // Toggle library panel from toolbar button
+  if (btnToggleLibrary && shapeLibraryPanel) {
+    btnToggleLibrary.addEventListener('click', () => {
+      const isVisible = shapeLibraryPanel.classList.contains('visible');
+      shapeLibraryPanel.classList.toggle('visible');
+      btnToggleLibrary.classList.toggle('active', !isVisible);
+      localStorage.setItem('netmap-library-visible', !isVisible);
+    });
+    
+    // Restore visibility state (default: hidden)
+    if (localStorage.getItem('netmap-library-visible') === 'true') {
+      shapeLibraryPanel.classList.add('visible');
+      btnToggleLibrary.classList.add('active');
+    }
+  }
+  
+  // Close button in library header
+  if (btnLibraryClose && shapeLibraryPanel) {
+    btnLibraryClose.addEventListener('click', () => {
+      shapeLibraryPanel.classList.remove('visible');
+      if (btnToggleLibrary) btnToggleLibrary.classList.remove('active');
+      localStorage.setItem('netmap-library-visible', 'false');
+    });
+  }
+
+  // Draggable library panel
+  if (shapeLibraryPanel) {
+    const libraryHeader = shapeLibraryPanel.querySelector('.library-header');
+    let isDragging = false;
+    let dragStartX, dragStartY, panelStartX, panelStartY;
+    
+    // Restore saved position
+    const savedPos = localStorage.getItem('netmap-library-position');
+    if (savedPos) {
+      try {
+        const pos = JSON.parse(savedPos);
+        shapeLibraryPanel.style.left = pos.x + 'px';
+        shapeLibraryPanel.style.top = pos.y + 'px';
+        // Remove default positioning if custom position exists
+        shapeLibraryPanel.style.right = 'auto';
+      } catch (e) {}
+    }
+    
+    if (libraryHeader) {
+      libraryHeader.addEventListener('mousedown', (e) => {
+        // Don't start drag if clicking on buttons
+        if (e.target.closest('.library-header-btn')) return;
+        
+        isDragging = true;
+        dragStartX = e.clientX;
+        dragStartY = e.clientY;
+        
+        const rect = shapeLibraryPanel.getBoundingClientRect();
+        panelStartX = rect.left;
+        panelStartY = rect.top;
+        
+        shapeLibraryPanel.style.transition = 'none';
+        shapeLibraryPanel.style.cursor = 'grabbing';
+        document.body.style.userSelect = 'none';
+        
+        e.preventDefault();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - dragStartX;
+        const dy = e.clientY - dragStartY;
+        
+        let newX = panelStartX + dx;
+        let newY = panelStartY + dy;
+        
+        // Keep panel within viewport bounds
+        const panelRect = shapeLibraryPanel.getBoundingClientRect();
+        const maxX = window.innerWidth - 50; // Leave some visible
+        const maxY = window.innerHeight - 50;
+        
+        newX = Math.max(-panelRect.width + 50, Math.min(newX, maxX));
+        newY = Math.max(0, Math.min(newY, maxY));
+        
+        shapeLibraryPanel.style.left = newX + 'px';
+        shapeLibraryPanel.style.top = newY + 'px';
+        shapeLibraryPanel.style.right = 'auto';
+      });
+      
+      document.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        
+        isDragging = false;
+        shapeLibraryPanel.style.transition = '';
+        shapeLibraryPanel.style.cursor = '';
+        document.body.style.userSelect = '';
+        
+        // Save position
+        const rect = shapeLibraryPanel.getBoundingClientRect();
+        localStorage.setItem('netmap-library-position', JSON.stringify({
+          x: rect.left,
+          y: rect.top
+        }));
+      });
+    }
+    
+    // Reset position button (double-click on header)
+    if (libraryHeader) {
+      libraryHeader.addEventListener('dblclick', (e) => {
+        if (e.target.closest('.library-header-btn')) return;
+        
+        // Reset to default position
+        shapeLibraryPanel.style.left = '0px';
+        shapeLibraryPanel.style.top = '120px';
+        shapeLibraryPanel.style.right = 'auto';
+        localStorage.removeItem('netmap-library-position');
+        showToast('Library position reset');
+      });
+    }
+  }
+
+  // Library search
+  if (librarySearch) {
+    librarySearch.addEventListener('input', () => {
+      renderLibraryPanel();
+    });
+  }
+
+  // Save node to library button
+  if (btnSaveNodeToLibrary) {
+    btnSaveNodeToLibrary.addEventListener('click', () => {
+      if (state.selected?.type === 'node') {
+        const node = findNode(state.selected.id);
+        saveNodeToLibrary(node);
+      } else {
+        showToast('Select a node first');
+      }
+    });
+  }
+
+  // Import SVG button
+  if (btnImportSVGToLibrary) {
+    btnImportSVGToLibrary.addEventListener('click', () => {
+      svgImportInput?.click();
+    });
+  }
+  
+  if (btnLibraryImport) {
+    btnLibraryImport.addEventListener('click', () => {
+      svgImportInput?.click();
+    });
+  }
+
+  // SVG file input handler
+  if (svgImportInput) {
+    svgImportInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        importSVGToLibrary(file);
+        svgImportInput.value = '';
+      }
+    });
+  }
+
+  // Export library button
+  if (btnExportLibrary) {
+    btnExportLibrary.addEventListener('click', exportShapeLibrary);
+  }
+
+  // Library menu button
+  if (btnLibraryMenu) {
+    btnLibraryMenu.addEventListener('click', (e) => {
+      e.stopPropagation();
+      
+      // Remove existing menu
+      document.querySelectorAll('.context-menu').forEach(m => m.remove());
+      
+      const menu = document.createElement('div');
+      menu.className = 'context-menu';
+      menu.innerHTML = `
+        <div class="context-menu-item" data-action="import-lib">📥 Import Library File</div>
+        <div class="context-menu-item" data-action="export-lib">📤 Export Library</div>
+        <div class="context-menu-sep"></div>
+        <div class="context-menu-item" data-action="add-category">📁 Add Category</div>
+        <div class="context-menu-sep"></div>
+        <div class="context-menu-item danger" data-action="clear-lib">🗑️ Clear Library</div>
+      `;
+      
+      const rect = btnLibraryMenu.getBoundingClientRect();
+      menu.style.left = rect.left + 'px';
+      menu.style.top = rect.bottom + 4 + 'px';
+      document.body.appendChild(menu);
+      
+      menu.addEventListener('click', (ev) => {
+        const action = ev.target.dataset.action;
+        
+        switch (action) {
+          case 'import-lib':
+            libraryImportInput?.click();
+            break;
+          case 'export-lib':
+            exportShapeLibrary();
+            break;
+          case 'add-category':
+            const newCat = prompt('New category name:');
+            if (newCat && !state.shapeLibrary.categories.includes(newCat)) {
+              state.shapeLibrary.categories.push(newCat);
+              saveShapeLibrary();
+              renderLibraryPanel();
+              showToast(`Added category: ${newCat}`);
+            }
+            break;
+          case 'clear-lib':
+            if (confirm('Clear entire library? This cannot be undone.')) {
+              state.shapeLibrary.shapes = {};
+              saveShapeLibrary();
+              renderLibraryPanel();
+              showToast('Library cleared');
+            }
+            break;
+        }
+        
+        menu.remove();
+      });
+      
+      setTimeout(() => {
+        document.addEventListener('click', function closeMenu() {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }, { once: true });
+      }, 0);
+    });
+  }
+
+  // Library import file handler
+  if (libraryImportInput) {
+    libraryImportInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        importLibraryFromFile(file);
+        libraryImportInput.value = '';
+      }
+    });
+  }
+
+  // Handle drop on canvas from library
+  const svgContainer = document.getElementById('svgContainer');
+  if (svgContainer) {
+    svgContainer.addEventListener('dragover', (e) => {
+      if (e.dataTransfer.types.includes('application/x-library-shape')) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      }
+    });
+    
+    svgContainer.addEventListener('drop', (e) => {
+      const libraryId = e.dataTransfer.getData('application/x-library-shape');
+      if (libraryId) {
+        e.preventDefault();
+        // Use SVG coordinate transform (same as getMouse)
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        createNodeFromLibrary(libraryId, svgPt.x, svgPt.y);
+      }
+    });
+  }
+
+  // Right-click context menu on nodes for "Add to Library"
+  svg.addEventListener('contextmenu', (e) => {
+    // Check if right-clicked on a node
+    const target = e.target.closest('.node-circle');
+    if (!target) return;
+    
+    e.preventDefault();
+    
+    const nodeId = parseInt(target.closest('g')?.dataset?.nodeId);
+    const node = findNode(nodeId);
+    if (!node) return;
+    
+    // Remove existing menu
+    document.querySelectorAll('.context-menu').forEach(m => m.remove());
+    
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.innerHTML = `
+      <div class="context-menu-item" data-action="add-to-library">📚 Add to Library</div>
+      <div class="context-menu-sep"></div>
+      <div class="context-menu-item" data-action="duplicate">📋 Duplicate</div>
+      <div class="context-menu-item danger" data-action="delete">🗑️ Delete</div>
+    `;
+    
+    menu.style.left = e.clientX + 'px';
+    menu.style.top = e.clientY + 'px';
+    document.body.appendChild(menu);
+    
+    menu.addEventListener('click', (ev) => {
+      const action = ev.target.dataset.action;
+      
+      switch (action) {
+        case 'add-to-library':
+          saveNodeToLibrary(node);
+          break;
+        case 'duplicate':
+          const newNode = { ...node, id: state.nextNode++, x: node.x + 30, y: node.y + 30 };
+          state.nodes.push(newNode);
+          state.selected = { type: 'node', id: newNode.id };
+          commit(); render();
+          showToast('Node duplicated');
+          break;
+        case 'delete':
+          deleteNode(node.id);
+          break;
+      }
+      
+      menu.remove();
+    });
+    
+    setTimeout(() => {
+      document.addEventListener('click', function closeMenu() {
+        menu.remove();
+        document.removeEventListener('click', closeMenu);
+      }, { once: true });
+    }, 0);
+  });
+
+  // Load library on startup
+  loadShapeLibrary();
+
+  // ============== END SHAPE LIBRARY SYSTEM ==============
 
   showToast('Welcome to NetMap Studio — double-click to create a node.');
 })();
