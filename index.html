@@ -2835,6 +2835,15 @@
         </div>
       </div>
 
+      <!-- Visibility Filter -->
+      <div style="padding:10px 12px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:12px;">
+          <input type="checkbox" id="routeVisibleOnly" style="width:16px; height:16px; accent-color:#5a67d8;">
+          <span style="color:#475569;">Calculate using <strong>visible elements only</strong></span>
+        </label>
+        <div style="font-size:10px; color:#94a3b8; margin-top:4px; margin-left:24px;">Respects current tag filters and visibility settings</div>
+      </div>
+
       <!-- Endpoint Selection Section -->
       <div class="inspector-section" data-section="route-endpoints">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -2857,6 +2866,52 @@
           <div class="row" style="display:flex; gap:8px; margin-top:12px;">
             <button class="btn" id="btnSwapEndpoints" style="flex:1;">⇄ Swap</button>
             <button class="btn primary" id="btnCalculateRoutes" style="flex:1;" disabled>🔍 Calculate</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Restrictions Section -->
+      <div class="inspector-section collapsed" data-section="route-restrictions">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>🚫 Restrictions</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <!-- Excluded Nodes -->
+          <div class="row">
+            <label style="font-weight:600; color:#7c3aed; font-size:11px;">Excluded Nodes</label>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+              <select id="routeExcludeNodeSelect" style="flex:1; padding:6px; font-size:11px; border-radius:4px; border:1px solid #ddd;">
+                <option value="">-- Select node to exclude --</option>
+              </select>
+              <button class="btn" id="btnAddExcludeNode" style="padding:6px 10px; font-size:11px;" title="Add selected node">+</button>
+              <button class="btn" id="btnPickExcludeNode" style="padding:6px 10px; font-size:11px;" title="Click on canvas to pick">⊕</button>
+            </div>
+            <div id="excludedNodesList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+              <!-- Excluded nodes will appear here as tags -->
+            </div>
+          </div>
+
+          <!-- Excluded Links -->
+          <div class="row" style="margin-top:12px;">
+            <label style="font-weight:600; color:#dc2626; font-size:11px;">Excluded Links</label>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+              <select id="routeExcludeLinkSelect" style="flex:1; padding:6px; font-size:11px; border-radius:4px; border:1px solid #ddd;">
+                <option value="">-- Select link to exclude --</option>
+              </select>
+              <button class="btn" id="btnAddExcludeLink" style="padding:6px 10px; font-size:11px;" title="Add selected link">+</button>
+              <button class="btn" id="btnPickExcludeLink" style="padding:6px 10px; font-size:11px;" title="Click on canvas to pick">⊕</button>
+            </div>
+            <div id="excludedLinksList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+              <!-- Excluded links will appear here as tags -->
+            </div>
+          </div>
+
+          <!-- Clear All -->
+          <div class="row" style="margin-top:12px;">
+            <button class="btn" id="btnClearAllRestrictions" style="width:100%; font-size:11px; padding:6px; background:#fef2f2; border-color:#fecaca; color:#991b1b;">
+              🗑️ Clear All Restrictions
+            </button>
           </div>
         </div>
       </div>
@@ -7144,8 +7199,15 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
-        // Ignore clicks in calculation mode
-        if (window.routeFinderState && window.routeFinderState.active) return;
+        // Handle link exclusion pick mode in calculation mode
+        if (window.routeFinderState && window.routeFinderState.active) {
+          if (window.routeFinderState.pickMode === 'link') {
+            addExcludedLink(e.id);
+            window.routeFinderState.pickMode = null;
+            updatePickModeButtons();
+          }
+          return;
+        }
         // Handle cable system add mode
         if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
           return;
@@ -7193,8 +7255,15 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
-        // Ignore clicks in calculation mode
-        if (window.routeFinderState && window.routeFinderState.active) return;
+        // Handle link exclusion pick mode in calculation mode
+        if (window.routeFinderState && window.routeFinderState.active) {
+          if (window.routeFinderState.pickMode === 'link') {
+            addExcludedLink(e.id);
+            window.routeFinderState.pickMode = null;
+            updatePickModeButtons();
+          }
+          return;
+        }
         // Handle cable system add mode
         if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
           return;
@@ -7264,8 +7333,15 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       hitArea.style.cursor = 'pointer';
       hitArea.addEventListener('click', (ev) => { 
         ev.stopPropagation(); 
-        // Ignore clicks in calculation mode
-        if (window.routeFinderState && window.routeFinderState.active) return;
+        // Handle link exclusion pick mode in calculation mode
+        if (window.routeFinderState && window.routeFinderState.active) {
+          if (window.routeFinderState.pickMode === 'link') {
+            addExcludedLink(e.id);
+            window.routeFinderState.pickMode = null;
+            updatePickModeButtons();
+          }
+          return;
+        }
         // Handle cable system add mode
         if (typeof handleAddModeClick === 'function' && handleAddModeClick('edge', e.id)) {
           return;
@@ -11560,7 +11636,15 @@ function loadProjectObject(obj) {
     // Default latencies for implicit connections (ms)
     containerLatency: 1,      // Nodes in same container
     regionLatency: 10,        // Containers in same region
-    minLatency: 0.000001      // Floor for zero/undefined latency
+    minLatency: 0.000001,     // Floor for zero/undefined latency
+    
+    // Filtering options
+    visibleOnly: false,       // Only use visible elements
+    excludedNodes: new Set(), // Node IDs to exclude from pathfinding
+    excludedLinks: new Set(), // Link IDs to exclude from pathfinding
+    
+    // Pick mode for exclusions
+    pickMode: null            // null, 'node', or 'link'
   };
   
   // Expose globally for checking in event handlers
@@ -11582,13 +11666,32 @@ function loadProjectObject(obj) {
   // Build pathfinding graph from current state
   function buildPathfindingGraph() {
     const adjacency = new Map();
-    const nodeIds = new Set(state.nodes.map(n => n.id));
+    
+    // Determine which nodes to include
+    const validNodes = state.nodes.filter(n => {
+      // Check if excluded
+      if (routeFinderState.excludedNodes.has(n.id)) return false;
+      // Check visibility if enabled
+      if (routeFinderState.visibleOnly && !isNodeVisible(n)) return false;
+      return true;
+    });
+    
+    const nodeIds = new Set(validNodes.map(n => n.id));
     
     // Initialize adjacency lists
     nodeIds.forEach(id => adjacency.set(id, []));
     
     // 1. Add explicit edges (bidirectional)
     state.edges.forEach(edge => {
+      // Check if edge is excluded
+      if (routeFinderState.excludedLinks.has(edge.id)) return;
+      
+      // Check if both nodes are valid
+      if (!nodeIds.has(edge.a) || !nodeIds.has(edge.b)) return;
+      
+      // Check edge visibility if enabled
+      if (routeFinderState.visibleOnly && !isEdgeVisible(edge)) return;
+      
       const nodeA = findNode(edge.a);
       const nodeB = findNode(edge.b);
       if (!nodeA || !nodeB) return;
@@ -11616,7 +11719,7 @@ function loadProjectObject(obj) {
     
     // 2. Add implicit edges within same container
     const containerNodes = new Map();
-    state.nodes.forEach(n => {
+    validNodes.forEach(n => {
       if (n.groupId) {
         if (!containerNodes.has(n.groupId)) containerNodes.set(n.groupId, []);
         containerNodes.get(n.groupId).push(n.id);
@@ -11634,8 +11737,11 @@ function loadProjectObject(obj) {
           const a = nodeIdsInContainer[i];
           const b = nodeIdsInContainer[j];
           
+          // Check if explicit edge exists (and is not excluded)
           const hasExplicit = state.edges.some(e => 
-            (e.a === a && e.b === b) || (e.a === b && e.b === a)
+            ((e.a === a && e.b === b) || (e.a === b && e.b === a)) &&
+            !routeFinderState.excludedLinks.has(e.id) &&
+            (!routeFinderState.visibleOnly || isEdgeVisible(e))
           );
           
           if (!hasExplicit) {
@@ -11676,8 +11782,11 @@ function loadProjectObject(obj) {
           
           nodesA.forEach(a => {
             nodesB.forEach(b => {
+              // Check if explicit edge exists (and is not excluded)
               const hasExplicit = state.edges.some(e => 
-                (e.a === a && e.b === b) || (e.a === b && e.b === a)
+                ((e.a === a && e.b === b) || (e.a === b && e.b === a)) &&
+                !routeFinderState.excludedLinks.has(e.id) &&
+                (!routeFinderState.visibleOnly || isEdgeVisible(e))
               );
               
               if (!hasExplicit) {
@@ -11874,6 +11983,11 @@ function loadProjectObject(obj) {
     routeFinderState.destNodeId = null;
     routeFinderState.routes = [];
     routeFinderState.activeRouteIndex = 0;
+    routeFinderState.pickMode = null;
+    
+    // Preserve exclusions between calculations (don't reset here)
+    // routeFinderState.excludedNodes = new Set();
+    // routeFinderState.excludedLinks = new Set();
     
     // Show panel
     const panel = document.getElementById('routeFinderPanel');
@@ -11898,6 +12012,19 @@ function loadProjectObject(obj) {
     // Populate node dropdowns
     populateNodeDropdowns();
     
+    // Populate exclusion dropdowns
+    populateExclusionDropdowns();
+    
+    // Render exclusion lists
+    renderExcludedNodesList();
+    renderExcludedLinksList();
+    
+    // Sync visibility checkbox
+    const visibleOnlyCheckbox = document.getElementById('routeVisibleOnly');
+    if (visibleOnlyCheckbox) {
+      visibleOnlyCheckbox.checked = routeFinderState.visibleOnly;
+    }
+    
     // Update UI
     updateRouteFinderUI();
     
@@ -11909,6 +12036,7 @@ function loadProjectObject(obj) {
   function exitCalculationMode() {
     console.log('[ROUTE FINDER] Exiting calculation mode');
     routeFinderState.active = false;
+    routeFinderState.pickMode = null;
     
     // Hide panel
     const panel = document.getElementById('routeFinderPanel');
@@ -11975,6 +12103,14 @@ function loadProjectObject(obj) {
     const node = findNode(nodeId);
     if (!node) return false;
     
+    // Check if in node exclusion pick mode
+    if (routeFinderState.pickMode === 'node') {
+      addExcludedNode(nodeId);
+      routeFinderState.pickMode = null;
+      updatePickModeButtons();
+      return true;
+    }
+    
     // If no origin set, set this as origin
     if (!routeFinderState.originNodeId) {
       routeFinderState.originNodeId = nodeId;
@@ -12033,10 +12169,239 @@ function loadProjectObject(obj) {
     }
   }
 
+  // Populate exclusion dropdowns
+  function populateExclusionDropdowns() {
+    const nodeSelect = document.getElementById('routeExcludeNodeSelect');
+    const linkSelect = document.getElementById('routeExcludeLinkSelect');
+    
+    if (nodeSelect) {
+      nodeSelect.innerHTML = '<option value="">-- Select node to exclude --</option>';
+      const sortedNodes = [...state.nodes].sort((a, b) => {
+        const nameA = (a.name || a.code || '').toLowerCase();
+        const nameB = (b.name || b.code || '').toLowerCase();
+        return nameA.localeCompare(nameB);
+      });
+      sortedNodes.forEach(n => {
+        const opt = document.createElement('option');
+        opt.value = n.id;
+        const name = n.name || n.code || `Node ${n.id}`;
+        opt.textContent = name;
+        nodeSelect.appendChild(opt);
+      });
+    }
+    
+    if (linkSelect) {
+      linkSelect.innerHTML = '<option value="">-- Select link to exclude --</option>';
+      state.edges.forEach(e => {
+        const nodeA = findNode(e.a);
+        const nodeB = findNode(e.b);
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        const nameA = nodeA?.name || nodeA?.code || `N${e.a}`;
+        const nameB = nodeB?.name || nodeB?.code || `N${e.b}`;
+        opt.textContent = `${nameA} ↔ ${nameB}`;
+        linkSelect.appendChild(opt);
+      });
+    }
+  }
+
+  // Render excluded nodes list
+  function renderExcludedNodesList() {
+    const container = document.getElementById('excludedNodesList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (routeFinderState.excludedNodes.size === 0) {
+      container.innerHTML = '<span style="font-size:10px; color:#94a3b8; font-style:italic;">No nodes excluded</span>';
+      return;
+    }
+    
+    routeFinderState.excludedNodes.forEach(nodeId => {
+      const node = findNode(nodeId);
+      if (!node) return;
+      
+      const tag = document.createElement('span');
+      tag.style.cssText = 'display:inline-flex; align-items:center; gap:4px; padding:3px 6px 3px 8px; background:#ede9fe; color:#6d28d9; border-radius:12px; font-size:10px; font-weight:500;';
+      tag.innerHTML = `
+        ${node.name || node.code || 'Node ' + nodeId}
+        <button style="background:none; border:none; color:#8b5cf6; cursor:pointer; font-size:12px; line-height:1; padding:0;" 
+                title="Remove from exclusions" data-node-id="${nodeId}">✕</button>
+      `;
+      tag.querySelector('button').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        removeExcludedNode(nodeId);
+      });
+      container.appendChild(tag);
+    });
+  }
+
+  // Render excluded links list
+  function renderExcludedLinksList() {
+    const container = document.getElementById('excludedLinksList');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    if (routeFinderState.excludedLinks.size === 0) {
+      container.innerHTML = '<span style="font-size:10px; color:#94a3b8; font-style:italic;">No links excluded</span>';
+      return;
+    }
+    
+    routeFinderState.excludedLinks.forEach(edgeId => {
+      const edge = state.edges.find(e => e.id === edgeId);
+      if (!edge) return;
+      
+      const nodeA = findNode(edge.a);
+      const nodeB = findNode(edge.b);
+      const nameA = nodeA?.name || nodeA?.code || `N${edge.a}`;
+      const nameB = nodeB?.name || nodeB?.code || `N${edge.b}`;
+      
+      const tag = document.createElement('span');
+      tag.style.cssText = 'display:inline-flex; align-items:center; gap:4px; padding:3px 6px 3px 8px; background:#fee2e2; color:#dc2626; border-radius:12px; font-size:10px; font-weight:500;';
+      tag.innerHTML = `
+        ${nameA} ↔ ${nameB}
+        <button style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:12px; line-height:1; padding:0;" 
+                title="Remove from exclusions" data-edge-id="${edgeId}">✕</button>
+      `;
+      tag.querySelector('button').addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        removeExcludedLink(edgeId);
+      });
+      container.appendChild(tag);
+    });
+  }
+
+  // Add excluded node
+  function addExcludedNode(nodeId) {
+    if (!nodeId || routeFinderState.excludedNodes.has(nodeId)) return;
+    
+    // Can't exclude origin or destination
+    if (nodeId === routeFinderState.originNodeId || nodeId === routeFinderState.destNodeId) {
+      showToast('⚠️ Cannot exclude origin or destination node');
+      return;
+    }
+    
+    routeFinderState.excludedNodes.add(nodeId);
+    const node = findNode(nodeId);
+    showToast(`🚫 Excluded node: ${node?.name || node?.code || 'Node ' + nodeId}`);
+    renderExcludedNodesList();
+    routeFinderState.routes = []; // Clear routes
+    updateRouteFinderUI();
+  }
+
+  // Remove excluded node
+  function removeExcludedNode(nodeId) {
+    routeFinderState.excludedNodes.delete(nodeId);
+    renderExcludedNodesList();
+    routeFinderState.routes = []; // Clear routes
+    updateRouteFinderUI();
+  }
+
+  // Add excluded link
+  function addExcludedLink(edgeId) {
+    if (!edgeId || routeFinderState.excludedLinks.has(edgeId)) return;
+    
+    routeFinderState.excludedLinks.add(edgeId);
+    const edge = state.edges.find(e => e.id === edgeId);
+    if (edge) {
+      const nodeA = findNode(edge.a);
+      const nodeB = findNode(edge.b);
+      const nameA = nodeA?.name || nodeA?.code || `N${edge.a}`;
+      const nameB = nodeB?.name || nodeB?.code || `N${edge.b}`;
+      showToast(`🚫 Excluded link: ${nameA} ↔ ${nameB}`);
+    }
+    renderExcludedLinksList();
+    routeFinderState.routes = []; // Clear routes
+    updateRouteFinderUI();
+  }
+
+  // Remove excluded link
+  function removeExcludedLink(edgeId) {
+    routeFinderState.excludedLinks.delete(edgeId);
+    renderExcludedLinksList();
+    routeFinderState.routes = []; // Clear routes
+    updateRouteFinderUI();
+  }
+
+  // Clear all restrictions
+  function clearAllRestrictions() {
+    routeFinderState.excludedNodes.clear();
+    routeFinderState.excludedLinks.clear();
+    routeFinderState.visibleOnly = false;
+    
+    const visibleOnlyCheckbox = document.getElementById('routeVisibleOnly');
+    if (visibleOnlyCheckbox) visibleOnlyCheckbox.checked = false;
+    
+    renderExcludedNodesList();
+    renderExcludedLinksList();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+    showToast('🗑️ All restrictions cleared');
+  }
+
+  // Handle exclusion pick mode click on node
+  function handleExclusionNodeClick(nodeId) {
+    if (!routeFinderState.active) return false;
+    if (routeFinderState.pickMode !== 'node') return false;
+    
+    addExcludedNode(nodeId);
+    routeFinderState.pickMode = null;
+    updatePickModeButtons();
+    return true;
+  }
+
+  // Handle exclusion pick mode click on link
+  function handleExclusionLinkClick(edgeId) {
+    if (!routeFinderState.active) return false;
+    if (routeFinderState.pickMode !== 'link') return false;
+    
+    addExcludedLink(edgeId);
+    routeFinderState.pickMode = null;
+    updatePickModeButtons();
+    return true;
+  }
+
+  // Update pick mode button styles
+  function updatePickModeButtons() {
+    const btnPickNode = document.getElementById('btnPickExcludeNode');
+    const btnPickLink = document.getElementById('btnPickExcludeLink');
+    
+    if (btnPickNode) {
+      if (routeFinderState.pickMode === 'node') {
+        btnPickNode.style.background = '#7c3aed';
+        btnPickNode.style.color = 'white';
+      } else {
+        btnPickNode.style.background = '';
+        btnPickNode.style.color = '';
+      }
+    }
+    
+    if (btnPickLink) {
+      if (routeFinderState.pickMode === 'link') {
+        btnPickLink.style.background = '#dc2626';
+        btnPickLink.style.color = 'white';
+      } else {
+        btnPickLink.style.background = '';
+        btnPickLink.style.color = '';
+      }
+    }
+  }
+
   // Calculate routes
   function calculateRoutes() {
     if (!routeFinderState.originNodeId || !routeFinderState.destNodeId) {
       showToast('Please select both origin and destination');
+      return;
+    }
+    
+    // Check if origin or destination is excluded
+    if (routeFinderState.excludedNodes.has(routeFinderState.originNodeId)) {
+      showToast('⚠️ Origin node is excluded - remove from restrictions first');
+      return;
+    }
+    if (routeFinderState.excludedNodes.has(routeFinderState.destNodeId)) {
+      showToast('⚠️ Destination node is excluded - remove from restrictions first');
       return;
     }
     
@@ -12059,13 +12424,20 @@ function loadProjectObject(obj) {
     
     updateRouteFinderUI();
     
+    // Build restriction summary for toast
+    const restrictions = [];
+    if (routeFinderState.visibleOnly) restrictions.push('visible only');
+    if (routeFinderState.excludedNodes.size > 0) restrictions.push(`${routeFinderState.excludedNodes.size} node(s) excluded`);
+    if (routeFinderState.excludedLinks.size > 0) restrictions.push(`${routeFinderState.excludedLinks.size} link(s) excluded`);
+    const restrictionText = restrictions.length > 0 ? ` (${restrictions.join(', ')})` : '';
+    
     if (routes.length > 0) {
       highlightActiveRoute();
-      showToast(`✅ Found ${routes.length} route${routes.length > 1 ? 's' : ''}`);
+      showToast(`✅ Found ${routes.length} route${routes.length > 1 ? 's' : ''}${restrictionText}`);
     } else {
       clearRouteHighlights();
       highlightEndpoints();
-      showToast('❌ No path found between selected nodes');
+      showToast(`❌ No path found${restrictionText}`);
     }
   }
 
@@ -12076,11 +12448,14 @@ function loadProjectObject(obj) {
     routeResultsContent.innerHTML = '';
     
     if (routeFinderState.routes.length === 0) {
+      const hasRestrictions = routeFinderState.visibleOnly || 
+                              routeFinderState.excludedNodes.size > 0 || 
+                              routeFinderState.excludedLinks.size > 0;
       routeResultsContent.innerHTML = `
         <div style="padding:20px; text-align:center; color:#666;">
           <div style="font-size:32px; margin-bottom:8px;">🚫</div>
           <div><strong>No path found</strong></div>
-          <div style="font-size:11px; margin-top:4px;">Nodes are not connected</div>
+          <div style="font-size:11px; margin-top:4px;">${hasRestrictions ? 'Try adjusting restrictions' : 'Nodes are not connected'}</div>
         </div>
       `;
       return;
@@ -12358,6 +12733,79 @@ function loadProjectObject(obj) {
 
   if (btnCalculateRoutes) btnCalculateRoutes.addEventListener('click', calculateRoutes);
   if (btnSwapEndpoints) btnSwapEndpoints.addEventListener('click', swapEndpoints);
+
+  // Restriction controls event handlers
+  const routeVisibleOnlyCheckbox = document.getElementById('routeVisibleOnly');
+  const routeExcludeNodeSelect = document.getElementById('routeExcludeNodeSelect');
+  const routeExcludeLinkSelect = document.getElementById('routeExcludeLinkSelect');
+  const btnAddExcludeNode = document.getElementById('btnAddExcludeNode');
+  const btnPickExcludeNode = document.getElementById('btnPickExcludeNode');
+  const btnAddExcludeLink = document.getElementById('btnAddExcludeLink');
+  const btnPickExcludeLink = document.getElementById('btnPickExcludeLink');
+  const btnClearAllRestrictions = document.getElementById('btnClearAllRestrictions');
+
+  if (routeVisibleOnlyCheckbox) {
+    routeVisibleOnlyCheckbox.addEventListener('change', () => {
+      routeFinderState.visibleOnly = routeVisibleOnlyCheckbox.checked;
+      routeFinderState.routes = []; // Clear routes
+      updateRouteFinderUI();
+      if (routeFinderState.visibleOnly) {
+        showToast('👁️ Calculating using visible elements only');
+      } else {
+        showToast('📊 Calculating using all elements');
+      }
+    });
+  }
+
+  if (btnAddExcludeNode) {
+    btnAddExcludeNode.addEventListener('click', () => {
+      const val = parseInt(routeExcludeNodeSelect?.value, 10);
+      if (!isNaN(val)) {
+        addExcludedNode(val);
+        routeExcludeNodeSelect.value = '';
+      }
+    });
+  }
+
+  if (btnPickExcludeNode) {
+    btnPickExcludeNode.addEventListener('click', () => {
+      if (routeFinderState.pickMode === 'node') {
+        routeFinderState.pickMode = null;
+        showToast('Node pick mode cancelled');
+      } else {
+        routeFinderState.pickMode = 'node';
+        showToast('🎯 Click on a node to exclude it from calculations');
+      }
+      updatePickModeButtons();
+    });
+  }
+
+  if (btnAddExcludeLink) {
+    btnAddExcludeLink.addEventListener('click', () => {
+      const val = parseInt(routeExcludeLinkSelect?.value, 10);
+      if (!isNaN(val)) {
+        addExcludedLink(val);
+        routeExcludeLinkSelect.value = '';
+      }
+    });
+  }
+
+  if (btnPickExcludeLink) {
+    btnPickExcludeLink.addEventListener('click', () => {
+      if (routeFinderState.pickMode === 'link') {
+        routeFinderState.pickMode = null;
+        showToast('Link pick mode cancelled');
+      } else {
+        routeFinderState.pickMode = 'link';
+        showToast('🎯 Click on a link to exclude it from calculations');
+      }
+      updatePickModeButtons();
+    });
+  }
+
+  if (btnClearAllRestrictions) {
+    btnClearAllRestrictions.addEventListener('click', clearAllRestrictions);
+  }
 
   // Make Route Finder panel draggable
   const routeFinderHeader = document.getElementById('routeFinderHeader');
