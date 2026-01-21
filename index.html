@@ -1186,6 +1186,32 @@
     .library-header-btn:hover {
       background: rgba(255,255,255,0.3);
     }
+    .library-tabs {
+      display: flex;
+      border-bottom: 1px solid #e8e8e8;
+      background: #f8f9fa;
+    }
+    .library-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      font-size: 11px;
+      font-weight: 500;
+      color: #666;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .library-tab:hover {
+      background: #f0f0f0;
+      color: #333;
+    }
+    .library-tab.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+      background: white;
+    }
     .library-search {
       padding: 8px;
       border-bottom: 1px solid #e8e8e8;
@@ -1257,6 +1283,11 @@
     }
     .library-item:active {
       cursor: grabbing;
+    }
+    .library-item.selected {
+      border-color: #667eea;
+      background: #e8e8ff;
+      box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
     }
     .library-item-preview {
       width: 36px;
@@ -2043,13 +2074,18 @@
       <button class="library-header-btn" id="btnLibraryClose" title="Close Library">×</button>
     </div>
   </div>
+  <!-- Library Tabs -->
+  <div class="library-tabs">
+    <button class="library-tab active" data-tab="nodes">🔵 Nodes</button>
+    <button class="library-tab" data-tab="containers">📦 Containers</button>
+  </div>
   <div class="library-search">
     <input type="text" id="librarySearch" placeholder="Search shapes..." />
   </div>
   <div class="library-content" id="libraryContent">
     <!-- Library items will be populated here -->
   </div>
-  <div class="library-actions">
+  <div class="library-actions" id="libraryActionsNodes">
     <button class="library-action-btn primary" id="btnSaveNodeToLibrary">
       <span>💾</span> Save Selected Node
     </button>
@@ -2059,6 +2095,14 @@
     <button class="library-action-btn" id="btnExportLibrary">
       <span>📤</span> Export Library
     </button>
+  </div>
+  <div class="library-actions" id="libraryActionsContainers" style="display:none;">
+    <button class="library-action-btn" id="btnImportContainerShape">
+      <span>📁</span> Import Shape SVG
+    </button>
+    <div style="font-size:10px; color:#888; text-align:center; padding:4px 8px;">
+      Drag shapes to canvas to create containers
+    </div>
   </div>
 </div>
 
@@ -2659,6 +2703,28 @@
         </div>
       </div>
 
+      <!-- Container Shape Section -->
+      <div class="inspector-section collapsed" data-section="group-decoration">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>🗺️ Container Shape</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row" id="groupShapeInfo">
+            <div style="font-size:11px; color:#666; font-style:italic;">Standard rectangular container</div>
+          </div>
+          <div class="row" style="display:flex; gap:6px;">
+            <button class="btn" id="btnOpenLibraryForShape" style="flex:1; font-size:11px;">
+              📚 Open Library
+            </button>
+            <button class="btn" id="btnRemoveGroupShape" style="flex:1; font-size:11px;" disabled>
+              🔄 Reset to Rect
+            </button>
+          </div>
+          <div class="hint" style="margin-top:6px;">Drag shapes from Library → Containers tab to create shaped containers</div>
+        </div>
+      </div>
+
       <!-- Advanced Section -->
       <div class="inspector-section collapsed" data-section="group-advanced">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -3219,9 +3285,14 @@
 
     // Shape Library (persisted to localStorage)
     shapeLibrary: {
-      shapes: {},      // id -> shape definition
-      categories: ['Network Devices', 'Cloud Services', 'Custom']  // default categories
+      shapes: {},      // id -> node shape definition
+      categories: ['Network Devices', 'Cloud Services', 'Custom'],  // default categories for nodes
+      containerShapes: {},  // id -> container shape definition (decorative SVG)
+      containerCategories: ['Regions', 'Countries', 'Custom']  // default categories for containers
     },
+    
+    // Current library tab
+    libraryTab: 'nodes',  // 'nodes' or 'containers'
 
     // Format painter (session-only)
     styleBrush: null,
@@ -6532,6 +6603,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
   const findGroup = (id) => state.groups.find(g => g.id === id);
 
   function pointInGroup(x,y,g){
+    // Always use bounding rectangle for containment (simpler, works for all shapes)
     return x >= g.x && x <= g.x+g.w && y >= g.y && y <= g.y+g.h;
   }
   function updateNodeGroupMembership(node) {
@@ -6870,21 +6942,120 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     const isSel = (state.selected?.type==='group' && state.selected?.id===g.id) || state.selection.groups.has(g.id);
     if (isSel) grp.classList.add('group-selected');
 
+    // Check if this is a shape-based container
+    const isShapeContainer = g.shapeContainer && g.decorativeShape && g.decorativeShape.pathData;
+    
+    // Create invisible rect for bounds/interaction (always needed for dragging)
     const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
     rect.setAttribute('x', g.x);
     rect.setAttribute('y', g.y);
     rect.setAttribute('width', g.w);
     rect.setAttribute('height', g.h);
     rect.setAttribute('class', 'group-rect');
-    rect.setAttribute('fill', g.fill || "rgba(54, 76, 140, 0.12)");
-    rect.setAttribute('stroke', g.stroke || "#6073b8");
-    rect.setAttribute('stroke-width', (g.strokeW ?? 2));
-    // Apply line style to container border
-    if (g.lineStyle && g.lineStyle !== 'solid') {
-      rect.setAttribute('stroke-dasharray', getStrokeDasharray(g.lineStyle, g.strokeW ?? 2));
+    
+    if (isShapeContainer) {
+      // For shape containers, make rect invisible - shape will be the visual
+      rect.setAttribute('fill', 'transparent');
+      rect.setAttribute('stroke', 'none');
+    } else {
+      rect.setAttribute('fill', g.fill || "rgba(54, 76, 140, 0.12)");
+      rect.setAttribute('stroke', g.stroke || "#6073b8");
+      rect.setAttribute('stroke-width', (g.strokeW ?? 2));
+      // Apply line style to container border
+      if (g.lineStyle && g.lineStyle !== 'solid') {
+        rect.setAttribute('stroke-dasharray', getStrokeDasharray(g.lineStyle, g.strokeW ?? 2));
+      }
     }
     rect.style.pointerEvents = "auto";  // Make clickable for selection and dragging
     rect.style.cursor = "grab";  // Show hand cursor
+
+    // Render shape as container visual (for shape containers) or decorative overlay
+    let shapeEl = null;
+    if (g.decorativeShape && g.decorativeShape.pathData) {
+      const padding = isShapeContainer ? 0 : 10;
+      const innerW = g.w - padding * 2;
+      const innerH = g.h - padding * 2;
+      
+      // Parse viewBox to get original dimensions
+      const vbParts = (g.decorativeShape.viewBox || '0 0 100 100').split(/\s+/).map(parseFloat);
+      const origW = vbParts[2] || 100;
+      const origH = vbParts[3] || 100;
+      
+      // Calculate scale to fit within container while maintaining aspect ratio
+      const scaleX = innerW / origW;
+      const scaleY = innerH / origH;
+      const scale = Math.min(scaleX, scaleY);
+      
+      // Calculate offset to center the shape
+      const scaledW = origW * scale;
+      const scaledH = origH * scale;
+      const offsetX = g.x + padding + (innerW - scaledW) / 2 - vbParts[0] * scale;
+      const offsetY = g.y + padding + (innerH - scaledH) / 2 - vbParts[1] * scale;
+      
+      shapeEl = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      shapeEl.setAttribute('transform', `translate(${offsetX}, ${offsetY}) scale(${scale})`);
+      
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', g.decorativeShape.pathData);
+      
+      if (isShapeContainer) {
+        // Shape IS the container - draw with full styling
+        path.setAttribute('fill', g.fill || 'rgba(54, 76, 140, 0.15)');
+        path.setAttribute('stroke', g.stroke || '#6073b8');
+        path.setAttribute('stroke-width', (g.strokeW ?? 2) / scale); // Adjust for scale
+        if (g.lineStyle && g.lineStyle !== 'solid') {
+          const dashArray = getStrokeDasharray(g.lineStyle, g.strokeW ?? 2);
+          // Scale dash array
+          const scaledDash = dashArray.split(',').map(v => parseFloat(v) / scale).join(',');
+          path.setAttribute('stroke-dasharray', scaledDash);
+        }
+        // Make shape clickable for dragging
+        path.style.pointerEvents = 'auto';
+        path.style.cursor = 'grab';
+        
+        // Add mousedown handler to shape path for dragging
+        path.addEventListener('mousedown', (ev) => {
+          ev.stopPropagation();
+          const m = getMouse(ev);
+          
+          if (window.routeFinderState && window.routeFinderState.active) return;
+          if (linkMode) return;
+          if (ev.shiftKey && !(ev.ctrlKey || ev.metaKey)) return;
+          
+          if (state.selection.groups.has(g.id) && (state.selection.groups.size > 1 || state.selection.nodes.size > 0)) {
+            const origNodes = [...state.selection.nodes].map(id => {
+              const nn = findNode(id); return nn ? {id, x: nn.x, y: nn.y} : null;
+            }).filter(Boolean);
+            const origGroups = [...state.selection.groups].map(id => {
+              const gg = findGroup(id); return gg ? {id, x: gg.x, y: gg.y} : null;
+            }).filter(Boolean);
+            state.dragging = { type:'selection', mx0: m.x, my0: m.y, origNodes, origGroups };
+            state.selected = null;
+          } else {
+            if (!state.selection.groups.has(g.id)) {
+              setSingleSelection({type:'group', id:g.id});
+            }
+            state.dragging = { type:'group', id:g.id, dx: g.x - m.x, dy: g.y - m.y };
+          }
+          path.style.cursor = 'grabbing';
+          state.connectFrom = null;
+        });
+        
+        // Selection highlight
+        if (isSel) {
+          path.setAttribute('stroke', '#2563eb');
+          path.setAttribute('stroke-width', (g.strokeW ?? 2) / scale + 2/scale);
+        }
+      } else {
+        // Decorative overlay only
+        path.setAttribute('fill', g.stroke || '#6073b8');
+        path.setAttribute('fill-opacity', '0.08');
+        path.setAttribute('stroke', 'none');
+        path.style.pointerEvents = 'none';
+      }
+      
+      shapeEl.appendChild(path);
+    }
 
     const label = document.createElementNS('http://www.w3.org/2000/svg','text');
     label.setAttribute('x', g.x + 14 + (g.titleDx || 0));
@@ -7019,6 +7190,7 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     });
 
     grp.appendChild(rect);
+    if (shapeEl) grp.appendChild(shapeEl);
     grp.appendChild(label);
     grp.appendChild(handle);
     svg.appendChild(grp);
@@ -8271,6 +8443,44 @@ const groupTitle = document.getElementById('groupTitle');
       if (groupTitleVisibility) {
         groupTitleVisibility.classList.toggle('hidden', g.showTitle === false);
       }
+      
+      // Update container shape info
+      const groupShapeInfo = document.getElementById('groupShapeInfo');
+      const btnRemoveGroupShape = document.getElementById('btnRemoveGroupShape');
+      if (groupShapeInfo) {
+        if (g.shapeContainer && g.decorativeShape && g.decorativeShape.name) {
+          // This is a shape-based container
+          groupShapeInfo.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:32px; height:32px; background:#e8f4ff; border:1px solid #2563eb; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                ${g.decorativeShape.svgData || '🗺️'}
+              </div>
+              <div>
+                <div style="font-weight:600; font-size:11px; color:#2563eb;">${g.decorativeShape.name}</div>
+                <div style="font-size:10px; color:#666;">Shape container</div>
+              </div>
+            </div>
+          `;
+          if (btnRemoveGroupShape) btnRemoveGroupShape.disabled = false;
+        } else if (g.decorativeShape && g.decorativeShape.name) {
+          // Decorative overlay on rectangular container
+          groupShapeInfo.innerHTML = `
+            <div style="display:flex; align-items:center; gap:8px;">
+              <div style="width:32px; height:32px; background:#f0f0ff; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                ${g.decorativeShape.svgData || '🗺️'}
+              </div>
+              <div>
+                <div style="font-weight:600; font-size:11px;">${g.decorativeShape.name}</div>
+                <div style="font-size:10px; color:#888;">Decorative overlay</div>
+              </div>
+            </div>
+          `;
+          if (btnRemoveGroupShape) btnRemoveGroupShape.disabled = false;
+        } else {
+          groupShapeInfo.innerHTML = '<div style="font-size:11px; color:#666;">Standard rectangular container</div>';
+          if (btnRemoveGroupShape) btnRemoveGroupShape.disabled = true;
+        }
+      }
     }
   }
 
@@ -8738,6 +8948,48 @@ if (groupTitleFontInline) {
     const g = findGroup(state.selected.id); if (!g) return;
     g.h = clamp(Number(groupH.value||g.h),90,900); refreshAllMemberships(); commit(); render();
   });
+  
+  // Decorative shape buttons
+  const btnOpenLibraryForShape = document.getElementById('btnOpenLibraryForShape');
+  const btnRemoveGroupShape = document.getElementById('btnRemoveGroupShape');
+  
+  if (btnOpenLibraryForShape) {
+    btnOpenLibraryForShape.addEventListener('click', () => {
+      // Open library and switch to containers tab
+      state.libraryTab = 'containers';
+      const panel = document.getElementById('shapeLibraryPanel');
+      if (panel) {
+        panel.classList.add('visible');
+        if (btnToggleLibrary) btnToggleLibrary.classList.add('active');
+        localStorage.setItem('netmap-library-visible', 'true');
+      }
+      renderLibraryPanel();
+    });
+  }
+  
+  if (btnRemoveGroupShape) {
+    btnRemoveGroupShape.addEventListener('click', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g && (g.decorativeShape || g.shapeContainer)) {
+        const wasShapeContainer = g.shapeContainer;
+        delete g.decorativeShape;
+        delete g.shapeContainer;
+        
+        // Restore default fill/stroke if it was a shape container
+        if (wasShapeContainer) {
+          g.fill = g.fill || 'rgba(54, 76, 140, 0.12)';
+          g.stroke = g.stroke || '#6073b8';
+        }
+        
+        refreshAllMemberships();
+        commit();
+        render();
+        showToast(wasShapeContainer ? 'Converted to rectangular container' : 'Shape removed');
+      }
+    });
+  }
+  
   groupTitleFont.addEventListener('input', () => {
     if (state.selected?.type!=='group') return;
     const g = findGroup(state.selected.id); if (!g) return;
@@ -10879,6 +11131,60 @@ function loadProjectObject(obj) {
   const libraryImportInput = document.getElementById('libraryImportInput');
 
   // Load library from localStorage
+  // Default container shapes - detailed continental silhouettes
+  function getDefaultContainerShapes() {
+    return {
+      'region-north-america': {
+        id: 'region-north-america',
+        name: 'North America',
+        category: 'Regions',
+        viewBox: '0 0 300 350',
+        pathData: 'M45,15 L55,12 L65,8 L75,5 L85,8 L95,5 L105,10 L115,8 L125,12 L135,10 L145,15 L155,12 L165,18 L172,22 L178,28 L182,35 L176,42 L182,48 L188,55 L182,62 L188,68 L195,75 L200,82 L205,90 L210,98 L215,106 L212,115 L218,122 L225,130 L230,138 L228,146 L222,154 L228,162 L235,170 L230,178 L224,172 L218,180 L224,188 L218,196 L212,190 L206,198 L212,206 L206,214 L200,208 L194,216 L200,224 L194,232 L188,226 L182,234 L176,242 L170,250 L164,258 L158,266 L152,274 L146,282 L140,288 L134,294 L128,300 L122,306 L116,312 L110,318 L104,322 L98,318 L92,310 L98,302 L92,294 L86,286 L80,278 L74,270 L68,262 L74,254 L68,246 L62,238 L56,230 L62,222 L56,214 L50,206 L44,198 L50,190 L44,182 L38,174 L32,166 L38,158 L32,150 L26,142 L20,134 L26,126 L20,118 L14,110 L20,102 L14,94 L20,86 L26,78 L20,70 L14,62 L20,54 L26,46 L20,38 L26,30 L32,22 L38,18 Z M235,205 L245,200 L255,205 L262,215 L268,225 L275,235 L280,248 L275,260 L268,272 L260,280 L250,285 L240,282 L232,275 L225,265 L228,255 L235,245 L230,235 L235,225 L230,215 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 350"><path d="M45,15 L55,12 L65,8 L75,5 L85,8 L95,5 L105,10 L115,8 L125,12 L135,10 L145,15 L155,12 L165,18 L172,22 L178,28 L182,35 L176,42 L182,48 L188,55 L182,62 L188,68 L195,75 L200,82 L205,90 L210,98 L215,106 L212,115 L218,122 L225,130 L230,138 L228,146 L222,154 L228,162 L235,170 L230,178 L224,172 L218,180 L224,188 L218,196 L212,190 L206,198 L212,206 L206,214 L200,208 L194,216 L200,224 L194,232 L188,226 L182,234 L176,242 L170,250 L164,258 L158,266 L152,274 L146,282 L140,288 L134,294 L128,300 L122,306 L116,312 L110,318 L104,322 L98,318 L92,310 L98,302 L92,294 L86,286 L80,278 L74,270 L68,262 L74,254 L68,246 L62,238 L56,230 L62,222 L56,214 L50,206 L44,198 L50,190 L44,182 L38,174 L32,166 L38,158 L32,150 L26,142 L20,134 L26,126 L20,118 L14,110 L20,102 L14,94 L20,86 L26,78 L20,70 L14,62 L20,54 L26,46 L20,38 L26,30 L32,22 L38,18 Z M235,205 L245,200 L255,205 L262,215 L268,225 L275,235 L280,248 L275,260 L268,272 L260,280 L250,285 L240,282 L232,275 L225,265 L228,255 L235,245 L230,235 L235,225 L230,215 Z" fill="currentColor" opacity="0.3"/></svg>'
+      },
+      'region-south-america': {
+        id: 'region-south-america',
+        name: 'South America',
+        category: 'Regions',
+        viewBox: '0 0 180 320',
+        pathData: 'M75,5 L85,8 L95,5 L105,10 L115,15 L125,22 L135,30 L142,40 L148,52 L155,65 L160,78 L162,92 L158,105 L162,118 L168,132 L172,145 L168,158 L162,172 L165,185 L168,198 L165,212 L160,225 L155,238 L148,252 L140,265 L132,278 L122,290 L112,302 L100,312 L88,318 L78,312 L72,302 L78,292 L72,282 L68,272 L65,262 L62,252 L58,242 L55,232 L52,222 L48,212 L45,202 L42,192 L38,182 L35,172 L32,162 L28,152 L25,142 L22,132 L20,122 L22,112 L25,102 L28,92 L32,82 L38,72 L45,62 L52,52 L60,42 L68,32 L72,22 L70,12 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 320"><path d="M75,5 L85,8 L95,5 L105,10 L115,15 L125,22 L135,30 L142,40 L148,52 L155,65 L160,78 L162,92 L158,105 L162,118 L168,132 L172,145 L168,158 L162,172 L165,185 L168,198 L165,212 L160,225 L155,238 L148,252 L140,265 L132,278 L122,290 L112,302 L100,312 L88,318 L78,312 L72,302 L78,292 L72,282 L68,272 L65,262 L62,252 L58,242 L55,232 L52,222 L48,212 L45,202 L42,192 L38,182 L35,172 L32,162 L28,152 L25,142 L22,132 L20,122 L22,112 L25,102 L28,92 L32,82 L38,72 L45,62 L52,52 L60,42 L68,32 L72,22 L70,12 Z" fill="currentColor" opacity="0.3"/></svg>'
+      },
+      'region-africa': {
+        id: 'region-africa',
+        name: 'Africa',
+        category: 'Regions',
+        viewBox: '0 0 220 300',
+        pathData: 'M85,8 L95,5 L105,8 L115,5 L125,10 L135,8 L145,12 L155,15 L165,20 L172,28 L168,38 L175,48 L182,58 L188,70 L192,82 L195,95 L192,108 L195,120 L198,132 L195,145 L190,158 L195,170 L198,182 L195,195 L190,208 L185,220 L178,232 L170,245 L162,258 L152,270 L142,280 L130,288 L118,295 L105,298 L92,295 L80,288 L72,278 L78,268 L72,258 L68,248 L65,238 L62,228 L58,218 L55,208 L52,198 L48,188 L45,178 L42,168 L38,158 L35,148 L32,138 L28,128 L25,118 L28,108 L35,98 L42,88 L35,78 L28,68 L35,58 L42,48 L50,38 L58,28 L68,18 L78,12 Z M185,35 L195,32 L205,38 L212,48 L215,60 L218,72 L215,85 L210,98 L202,108 L192,115 L185,108 L188,98 L185,88 L188,78 L185,68 L188,58 L185,48 Z M180,268 L190,265 L200,272 L205,285 L200,298 L190,305 L180,300 L175,288 L178,278 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 300"><path d="M85,8 L95,5 L105,8 L115,5 L125,10 L135,8 L145,12 L155,15 L165,20 L172,28 L168,38 L175,48 L182,58 L188,70 L192,82 L195,95 L192,108 L195,120 L198,132 L195,145 L190,158 L195,170 L198,182 L195,195 L190,208 L185,220 L178,232 L170,245 L162,258 L152,270 L142,280 L130,288 L118,295 L105,298 L92,295 L80,288 L72,278 L78,268 L72,258 L68,248 L65,238 L62,228 L58,218 L55,208 L52,198 L48,188 L45,178 L42,168 L38,158 L35,148 L32,138 L28,128 L25,118 L28,108 L35,98 L42,88 L35,78 L28,68 L35,58 L42,48 L50,38 L58,28 L68,18 L78,12 Z M185,35 L195,32 L205,38 L212,48 L215,60 L218,72 L215,85 L210,98 L202,108 L192,115 L185,108 L188,98 L185,88 L188,78 L185,68 L188,58 L185,48 Z M180,268 L190,265 L200,272 L205,285 L200,298 L190,305 L180,300 L175,288 L178,278 Z" fill="currentColor" opacity="0.3"/></svg>'
+      },
+      'region-europe': {
+        id: 'region-europe',
+        name: 'Europe',
+        category: 'Regions',
+        viewBox: '0 0 300 250',
+        pathData: 'M55,45 L65,40 L72,48 L68,58 L75,65 L82,58 L88,68 L95,62 L102,72 L108,65 L115,75 L122,68 L128,78 L135,72 L142,82 L148,75 L155,85 L162,80 L168,90 L175,85 L182,95 L188,90 L195,100 L202,95 L208,105 L215,100 L222,110 L228,118 L235,128 L240,138 L245,148 L248,160 L245,172 L240,162 L232,172 L238,182 L232,192 L225,185 L218,195 L225,205 L218,215 L210,208 L202,218 L195,210 L188,220 L180,212 L172,222 L165,215 L158,225 L150,218 L142,228 L135,220 L128,230 L120,222 L112,232 L105,225 L98,235 L90,228 L82,238 L75,232 L68,238 L60,230 L52,238 L45,232 L40,222 L35,212 L30,200 L35,188 L30,178 L35,168 L30,158 L35,148 L30,138 L35,128 L40,118 L35,108 L40,98 L45,88 L40,78 L45,68 L50,58 Z M10,68 L20,62 L30,68 L38,78 L42,90 L38,102 L30,110 L22,105 L15,95 L12,85 L15,75 Z M8,115 L18,110 L28,118 L32,130 L28,142 L18,148 L8,142 L5,130 L8,120 Z M220,165 L230,160 L240,168 L248,180 L252,195 L255,210 L252,225 L248,238 L240,248 L230,252 L220,248 L212,238 L208,225 L212,210 L218,195 L215,182 L218,172 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 250"><path d="M55,45 L65,40 L72,48 L68,58 L75,65 L82,58 L88,68 L95,62 L102,72 L108,65 L115,75 L122,68 L128,78 L135,72 L142,82 L148,75 L155,85 L162,80 L168,90 L175,85 L182,95 L188,90 L195,100 L202,95 L208,105 L215,100 L222,110 L228,118 L235,128 L240,138 L245,148 L248,160 L245,172 L240,162 L232,172 L238,182 L232,192 L225,185 L218,195 L225,205 L218,215 L210,208 L202,218 L195,210 L188,220 L180,212 L172,222 L165,215 L158,225 L150,218 L142,228 L135,220 L128,230 L120,222 L112,232 L105,225 L98,235 L90,228 L82,238 L75,232 L68,238 L60,230 L52,238 L45,232 L40,222 L35,212 L30,200 L35,188 L30,178 L35,168 L30,158 L35,148 L30,138 L35,128 L40,118 L35,108 L40,98 L45,88 L40,78 L45,68 L50,58 Z M10,68 L20,62 L30,68 L38,78 L42,90 L38,102 L30,110 L22,105 L15,95 L12,85 L15,75 Z M8,115 L18,110 L28,118 L32,130 L28,142 L18,148 L8,142 L5,130 L8,120 Z M220,165 L230,160 L240,168 L248,180 L252,195 L255,210 L252,225 L248,238 L240,248 L230,252 L220,248 L212,238 L208,225 L212,210 L218,195 L215,182 L218,172 Z" fill="currentColor" opacity="0.3"/></svg>'
+      },
+      'region-asia': {
+        id: 'region-asia',
+        name: 'Asia',
+        category: 'Regions',
+        viewBox: '0 0 400 320',
+        pathData: 'M25,55 L35,50 L45,55 L55,48 L65,55 L75,50 L85,58 L95,52 L105,60 L115,55 L125,62 L135,58 L145,65 L155,60 L165,68 L175,62 L185,70 L195,65 L205,72 L215,68 L225,75 L235,70 L245,78 L255,72 L265,80 L275,75 L285,82 L295,78 L305,85 L315,90 L325,98 L335,108 L342,118 L348,130 L352,142 L348,155 L342,168 L348,180 L355,192 L360,205 L355,218 L348,230 L340,242 L330,252 L320,262 L308,270 L295,275 L282,278 L270,275 L258,280 L245,278 L232,282 L220,278 L208,285 L195,282 L182,288 L170,285 L158,290 L145,288 L132,292 L120,288 L108,292 L95,288 L82,292 L70,285 L60,278 L52,268 L45,258 L40,248 L35,238 L32,228 L30,218 L28,208 L32,198 L28,188 L25,178 L28,168 L32,158 L28,148 L25,138 L28,128 L32,118 L28,108 L25,98 L28,88 L32,78 L28,68 L30,60 Z M362,120 L372,115 L382,122 L388,135 L392,150 L388,165 L382,178 L372,188 L362,182 L358,168 L362,155 L358,142 L362,130 Z M365,200 L375,195 L385,202 L390,215 L385,228 L375,235 L365,230 L360,218 L362,208 Z M340,280 L350,275 L360,282 L368,295 L365,310 L355,318 L345,315 L338,302 L340,290 Z M300,295 L310,290 L320,298 L328,312 L325,325 L315,332 L305,328 L298,315 L300,302 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320"><path d="M25,55 L35,50 L45,55 L55,48 L65,55 L75,50 L85,58 L95,52 L105,60 L115,55 L125,62 L135,58 L145,65 L155,60 L165,68 L175,62 L185,70 L195,65 L205,72 L215,68 L225,75 L235,70 L245,78 L255,72 L265,80 L275,75 L285,82 L295,78 L305,85 L315,90 L325,98 L335,108 L342,118 L348,130 L352,142 L348,155 L342,168 L348,180 L355,192 L360,205 L355,218 L348,230 L340,242 L330,252 L320,262 L308,270 L295,275 L282,278 L270,275 L258,280 L245,278 L232,282 L220,278 L208,285 L195,282 L182,288 L170,285 L158,290 L145,288 L132,292 L120,288 L108,292 L95,288 L82,292 L70,285 L60,278 L52,268 L45,258 L40,248 L35,238 L32,228 L30,218 L28,208 L32,198 L28,188 L25,178 L28,168 L32,158 L28,148 L25,138 L28,128 L32,118 L28,108 L25,98 L28,88 L32,78 L28,68 L30,60 Z M362,120 L372,115 L382,122 L388,135 L392,150 L388,165 L382,178 L372,188 L362,182 L358,168 L362,155 L358,142 L362,130 Z M365,200 L375,195 L385,202 L390,215 L385,228 L375,235 L365,230 L360,218 L362,208 Z M340,280 L350,275 L360,282 L368,295 L365,310 L355,318 L345,315 L338,302 L340,290 Z M300,295 L310,290 L320,298 L328,312 L325,325 L315,332 L305,328 L298,315 L300,302 Z" fill="currentColor" opacity="0.3"/></svg>'
+      },
+      'region-australia': {
+        id: 'region-australia',
+        name: 'Australia',
+        category: 'Regions',
+        viewBox: '0 0 280 220',
+        pathData: 'M30,65 L42,58 L55,62 L68,55 L80,60 L92,55 L105,62 L118,58 L130,65 L142,60 L155,68 L168,62 L180,70 L192,65 L205,72 L218,68 L230,78 L242,85 L252,95 L260,108 L265,122 L262,135 L255,125 L248,138 L255,150 L262,162 L265,175 L260,188 L252,198 L242,205 L230,210 L218,208 L205,212 L192,208 L180,215 L168,210 L155,215 L142,210 L130,215 L118,208 L105,212 L92,205 L80,198 L68,188 L58,178 L48,168 L40,155 L35,142 L32,128 L28,115 L25,102 L28,88 L32,75 Z M5,45 L18,40 L30,48 L38,62 L35,78 L25,88 L12,85 L5,72 L8,58 Z M232,175 L245,170 L258,178 L265,192 L262,208 L252,218 L238,215 L230,202 L232,188 Z',
+        svgData: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 220"><path d="M30,65 L42,58 L55,62 L68,55 L80,60 L92,55 L105,62 L118,58 L130,65 L142,60 L155,68 L168,62 L180,70 L192,65 L205,72 L218,68 L230,78 L242,85 L252,95 L260,108 L265,122 L262,135 L255,125 L248,138 L255,150 L262,162 L265,175 L260,188 L252,198 L242,205 L230,210 L218,208 L205,212 L192,208 L180,215 L168,210 L155,215 L142,210 L130,215 L118,208 L105,212 L92,205 L80,198 L68,188 L58,178 L48,168 L40,155 L35,142 L32,128 L28,115 L25,102 L28,88 L32,75 Z M5,45 L18,40 L30,48 L38,62 L35,78 L25,88 L12,85 L5,72 L8,58 Z M232,175 L245,170 L258,178 L265,192 L262,208 L252,218 L238,215 L230,202 L232,188 Z" fill="currentColor" opacity="0.3"/></svg>'
+      }
+    };
+  }
+
   function loadShapeLibrary() {
     try {
       const saved = localStorage.getItem('netmap-shape-library');
@@ -10886,8 +11192,16 @@ function loadProjectObject(obj) {
         const parsed = JSON.parse(saved);
         state.shapeLibrary.shapes = parsed.shapes || {};
         state.shapeLibrary.categories = parsed.categories || ['Network Devices', 'Cloud Services', 'Custom'];
+        state.shapeLibrary.containerShapes = parsed.containerShapes || {};
+        state.shapeLibrary.containerCategories = parsed.containerCategories || ['Regions', 'Countries', 'Custom'];
       }
-      // If no saved library, shapes will be empty - user can import from .ndl file
+      
+      // Initialize default container shapes if empty
+      if (!state.shapeLibrary.containerShapes || Object.keys(state.shapeLibrary.containerShapes).length === 0) {
+        state.shapeLibrary.containerShapes = getDefaultContainerShapes();
+        state.shapeLibrary.containerCategories = ['Regions', 'Countries', 'Custom'];
+        saveShapeLibrary();
+      }
     } catch (e) {
       console.warn('Failed to load shape library:', e);
     }
@@ -10944,6 +11258,28 @@ function loadProjectObject(obj) {
     if (!libraryContent) return;
     
     const searchTerm = (librarySearch?.value || '').toLowerCase();
+    const isContainerTab = state.libraryTab === 'containers';
+    
+    // Update tab buttons
+    document.querySelectorAll('.library-tab').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.tab === state.libraryTab);
+    });
+    
+    // Update action buttons visibility
+    const nodesActions = document.getElementById('libraryActionsNodes');
+    const containerActions = document.getElementById('libraryActionsContainers');
+    if (nodesActions) nodesActions.style.display = isContainerTab ? 'none' : 'block';
+    if (containerActions) containerActions.style.display = isContainerTab ? 'block' : 'none';
+    
+    if (isContainerTab) {
+      renderContainerShapesLibrary(searchTerm);
+    } else {
+      renderNodeShapesLibrary(searchTerm);
+    }
+  }
+  
+  // Render node shapes library
+  function renderNodeShapesLibrary(searchTerm) {
     const shapes = state.shapeLibrary.shapes;
     const categories = state.shapeLibrary.categories;
     
@@ -10969,7 +11305,7 @@ function loadProjectObject(obj) {
             <circle cx="12" cy="10" r="3"/>
             <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
           </svg>
-          <div>No shapes in library</div>
+          <div>No node shapes in library</div>
           <div style="font-size:10px; margin-top:4px;">Import SVGs or save nodes to build your library</div>
         </div>
       `;
@@ -10994,7 +11330,7 @@ function loadProjectObject(obj) {
       items.forEach(item => {
         const thumb = generateShapeThumbnail(item);
         html += `
-          <div class="library-item" draggable="true" data-library-id="${item.id}" title="${item.name}">
+          <div class="library-item" draggable="true" data-library-id="${item.id}" data-library-type="node" title="${item.name}">
             <div class="library-item-preview">${thumb}</div>
             <div class="library-item-name">${item.name}</div>
             <div class="library-item-menu" onclick="event.stopPropagation(); showLibraryItemMenu('${item.id}', event)">⋮</div>
@@ -11011,6 +11347,94 @@ function loadProjectObject(obj) {
     libraryContent.querySelectorAll('.library-item').forEach(item => {
       item.addEventListener('dragstart', handleLibraryDragStart);
       item.addEventListener('dblclick', handleLibraryDoubleClick);
+    });
+  }
+  
+  // Render container shapes library
+  function renderContainerShapesLibrary(searchTerm) {
+    const shapes = state.shapeLibrary.containerShapes || {};
+    const categories = state.shapeLibrary.containerCategories || ['Regions', 'Countries', 'Custom'];
+    
+    // Group shapes by category
+    const byCategory = {};
+    categories.forEach(cat => byCategory[cat] = []);
+    
+    Object.entries(shapes).forEach(([id, shape]) => {
+      if (searchTerm && !shape.name.toLowerCase().includes(searchTerm)) return;
+      const cat = shape.category || 'Custom';
+      if (!byCategory[cat]) byCategory[cat] = [];
+      byCategory[cat].push({ id, ...shape });
+    });
+    
+    // Check if library is empty
+    const totalShapes = Object.keys(shapes).length;
+    
+    if (totalShapes === 0) {
+      libraryContent.innerHTML = `
+        <div class="library-empty">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M2 8h20"/>
+            <path d="M8 4v4"/>
+          </svg>
+          <div>No container shapes</div>
+          <div style="font-size:10px; margin-top:4px;">Import country or region SVGs to create shaped containers</div>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    categories.forEach(cat => {
+      const items = byCategory[cat];
+      if (items.length === 0 && !searchTerm) return;
+      
+      html += `
+        <div class="library-category" data-category="${cat}">
+          <div class="library-category-header" onclick="this.parentElement.classList.toggle('collapsed')">
+            <span class="arrow">▼</span>
+            <span>${cat}</span>
+            <span style="margin-left:auto; opacity:0.6; font-size:10px;">${items.length}</span>
+          </div>
+          <div class="library-items">
+      `;
+      
+      items.forEach(item => {
+        // Generate thumbnail - for container shapes, show the SVG
+        const thumb = item.svgData || '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor"/></svg>';
+        html += `
+          <div class="library-item" draggable="true" data-container-shape-id="${item.id}" data-library-type="container" title="${item.name} - Drag to canvas to create container">
+            <div class="library-item-preview" style="opacity:0.7;">${thumb}</div>
+            <div class="library-item-name">${item.name}</div>
+            <div class="library-item-menu" onclick="event.stopPropagation(); showContainerShapeMenu('${item.id}', event)">⋮</div>
+          </div>
+        `;
+      });
+      
+      html += '</div></div>';
+    });
+    
+    libraryContent.innerHTML = html;
+    
+    // Add drag and click handlers for container shapes
+    libraryContent.querySelectorAll('.library-item[data-container-shape-id]').forEach(item => {
+      // Enable dragging
+      item.addEventListener('dragstart', (e) => {
+        const shapeId = item.dataset.containerShapeId;
+        e.dataTransfer.setData('application/x-container-shape', shapeId);
+        e.dataTransfer.effectAllowed = 'copy';
+      });
+      
+      // Double-click to apply to selected container (legacy behavior)
+      item.addEventListener('dblclick', (e) => {
+        const shapeId = item.dataset.containerShapeId;
+        // If a container is selected, apply shape to it
+        if (state.selected?.type === 'group' || state.selection.groups.size > 0) {
+          applyContainerShapeToSelected(shapeId);
+        } else {
+          showToast('Drag to canvas to create container, or select a container first');
+        }
+      });
     });
   }
 
@@ -11174,6 +11598,234 @@ function loadProjectObject(obj) {
     reader.readAsText(file);
   }
 
+  // Import SVG as container shape (decorative)
+  function importContainerShapeSVG(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      let svgContent = e.target.result;
+      
+      // Parse SVG
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(svgContent, 'image/svg+xml');
+      const svgEl = doc.querySelector('svg');
+      
+      if (!svgEl) {
+        showToast('Invalid SVG file');
+        return;
+      }
+      
+      // Get or compute viewBox
+      let viewBox = svgEl.getAttribute('viewBox');
+      if (!viewBox) {
+        const w = parseFloat(svgEl.getAttribute('width')) || 100;
+        const h = parseFloat(svgEl.getAttribute('height')) || 100;
+        viewBox = `0 0 ${w} ${h}`;
+      }
+      
+      // Simplify complex SVGs by combining all paths
+      const allPaths = svgEl.querySelectorAll('path');
+      let combinedPathD = '';
+      
+      if (allPaths.length > 0) {
+        // Combine all path d attributes
+        allPaths.forEach(path => {
+          const d = path.getAttribute('d');
+          if (d) combinedPathD += d + ' ';
+        });
+      }
+      
+      // Create a simplified SVG with just the outline
+      const [vbX, vbY, vbW, vbH] = viewBox.split(/\s+/).map(parseFloat);
+      const simplifiedSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">
+        <path d="${combinedPathD.trim()}" fill="currentColor" stroke="none" opacity="0.15"/>
+      </svg>`;
+      
+      const name = prompt('Enter a name for this container shape:', file.name.replace('.svg', ''));
+      if (!name) return;
+      
+      const category = prompt('Enter category:', 'Countries') || 'Countries';
+      
+      // Add category if new
+      if (!state.shapeLibrary.containerCategories) {
+        state.shapeLibrary.containerCategories = ['Regions', 'Countries', 'Custom'];
+      }
+      if (!state.shapeLibrary.containerCategories.includes(category)) {
+        state.shapeLibrary.containerCategories.push(category);
+      }
+      
+      const shapeId = 'container-' + Date.now();
+      if (!state.shapeLibrary.containerShapes) {
+        state.shapeLibrary.containerShapes = {};
+      }
+      
+      state.shapeLibrary.containerShapes[shapeId] = {
+        id: shapeId,
+        name: name,
+        category: category,
+        svgData: simplifiedSvg,
+        viewBox: viewBox,
+        pathData: combinedPathD.trim()
+      };
+      
+      saveShapeLibrary();
+      renderLibraryPanel();
+      showToast(`Imported "${name}" as container shape`);
+    };
+    reader.readAsText(file);
+  }
+
+  // Apply container shape to selected container
+  function applyContainerShapeToSelected(shapeId) {
+    const shape = state.shapeLibrary.containerShapes?.[shapeId];
+    if (!shape) {
+      showToast('Shape not found');
+      return;
+    }
+    
+    // Find selected container(s)
+    const selectedGroups = [];
+    if (state.selected?.type === 'group') {
+      selectedGroups.push(state.selected.id);
+    }
+    state.selection.groups.forEach(id => selectedGroups.push(id));
+    
+    if (selectedGroups.length === 0) {
+      showToast('Select a container first');
+      return;
+    }
+    
+    selectedGroups.forEach(groupId => {
+      const group = findGroup(groupId);
+      if (group) {
+        group.decorativeShape = {
+          id: shapeId,
+          svgData: shape.svgData,
+          pathData: shape.pathData,
+          viewBox: shape.viewBox,
+          name: shape.name
+        };
+      }
+    });
+    
+    commit();
+    render();
+    showToast(`Applied "${shape.name}" to ${selectedGroups.length} container(s)`);
+  }
+
+  // Remove decorative shape from selected container(s)
+  function removeContainerShapeFromSelected() {
+    const selectedGroups = [];
+    if (state.selected?.type === 'group') {
+      selectedGroups.push(state.selected.id);
+    }
+    state.selection.groups.forEach(id => selectedGroups.push(id));
+    
+    if (selectedGroups.length === 0) {
+      showToast('Select a container first');
+      return;
+    }
+    
+    let removed = 0;
+    selectedGroups.forEach(groupId => {
+      const group = findGroup(groupId);
+      if (group && group.decorativeShape) {
+        delete group.decorativeShape;
+        removed++;
+      }
+    });
+    
+    if (removed > 0) {
+      commit();
+      render();
+      showToast(`Removed shape from ${removed} container(s)`);
+    } else {
+      showToast('Selected containers have no decorative shape');
+    }
+  }
+
+  // Show context menu for container shape library item
+  window.showContainerShapeMenu = function(shapeId, event) {
+    // Remove any existing menu
+    const existingMenu = document.querySelector('.library-context-menu');
+    if (existingMenu) existingMenu.remove();
+    
+    const menu = document.createElement('div');
+    menu.className = 'library-context-menu';
+    menu.style.cssText = `
+      position: fixed;
+      left: ${event.clientX}px;
+      top: ${event.clientY}px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10000;
+      min-width: 140px;
+      padding: 4px 0;
+    `;
+    
+    const items = [
+      { label: '✏️ Rename', action: () => renameContainerShape(shapeId) },
+      { label: '🗑️ Delete', action: () => deleteContainerShape(shapeId) }
+    ];
+    
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.textContent = item.label;
+      btn.style.cssText = `
+        display: block;
+        width: 100%;
+        padding: 8px 12px;
+        border: none;
+        background: none;
+        text-align: left;
+        cursor: pointer;
+        font-size: 12px;
+      `;
+      btn.onmouseenter = () => btn.style.background = '#f0f0f0';
+      btn.onmouseleave = () => btn.style.background = 'none';
+      btn.onclick = () => {
+        menu.remove();
+        item.action();
+      };
+      menu.appendChild(btn);
+    });
+    
+    document.body.appendChild(menu);
+    
+    // Close on click outside
+    setTimeout(() => {
+      document.addEventListener('click', () => menu.remove(), { once: true });
+    }, 0);
+  };
+
+  // Rename container shape
+  function renameContainerShape(shapeId) {
+    const shape = state.shapeLibrary.containerShapes?.[shapeId];
+    if (!shape) return;
+    
+    const newName = prompt('Enter new name:', shape.name);
+    if (newName && newName !== shape.name) {
+      shape.name = newName;
+      saveShapeLibrary();
+      renderLibraryPanel();
+      showToast(`Renamed to "${newName}"`);
+    }
+  }
+
+  // Delete container shape from library
+  function deleteContainerShape(shapeId) {
+    const shape = state.shapeLibrary.containerShapes?.[shapeId];
+    if (!shape) return;
+    
+    if (confirm(`Delete "${shape.name}" from library?`)) {
+      delete state.shapeLibrary.containerShapes[shapeId];
+      saveShapeLibrary();
+      renderLibraryPanel();
+      showToast(`Deleted "${shape.name}"`);
+    }
+  }
+
   // Export library to file
   function exportShapeLibrary() {
     const data = JSON.stringify(state.shapeLibrary, null, 2);
@@ -11198,16 +11850,35 @@ function loadProjectObject(obj) {
         const mergeMode = confirm('Merge with existing library? (Cancel to replace)');
         
         if (mergeMode) {
-          // Merge shapes
+          // Merge node shapes
           Object.assign(state.shapeLibrary.shapes, imported.shapes || {});
-          // Merge categories
+          // Merge node categories
           (imported.categories || []).forEach(cat => {
             if (!state.shapeLibrary.categories.includes(cat)) {
               state.shapeLibrary.categories.push(cat);
             }
           });
+          // Merge container shapes
+          if (imported.containerShapes) {
+            if (!state.shapeLibrary.containerShapes) state.shapeLibrary.containerShapes = {};
+            Object.assign(state.shapeLibrary.containerShapes, imported.containerShapes);
+          }
+          // Merge container categories
+          (imported.containerCategories || []).forEach(cat => {
+            if (!state.shapeLibrary.containerCategories) {
+              state.shapeLibrary.containerCategories = ['Regions', 'Countries', 'Custom'];
+            }
+            if (!state.shapeLibrary.containerCategories.includes(cat)) {
+              state.shapeLibrary.containerCategories.push(cat);
+            }
+          });
         } else {
           state.shapeLibrary = imported;
+          // Ensure container arrays exist
+          if (!state.shapeLibrary.containerShapes) state.shapeLibrary.containerShapes = {};
+          if (!state.shapeLibrary.containerCategories) {
+            state.shapeLibrary.containerCategories = ['Regions', 'Countries', 'Custom'];
+          }
         }
         
         saveShapeLibrary();
@@ -11317,6 +11988,50 @@ function loadProjectObject(obj) {
       shapeLibraryPanel.classList.remove('visible');
       if (btnToggleLibrary) btnToggleLibrary.classList.remove('active');
       localStorage.setItem('netmap-library-visible', 'false');
+    });
+  }
+
+  // Tab switching for library
+  document.querySelectorAll('.library-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      state.libraryTab = tab.dataset.tab;
+      renderLibraryPanel();
+    });
+  });
+
+  // Container shape action buttons
+  const btnApplyContainerShape = document.getElementById('btnApplyContainerShape');
+  const btnImportContainerShape = document.getElementById('btnImportContainerShape');
+  const btnRemoveContainerShape = document.getElementById('btnRemoveContainerShape');
+  
+  if (btnApplyContainerShape) {
+    btnApplyContainerShape.addEventListener('click', () => {
+      const selected = libraryContent?.querySelector('.library-item.selected[data-container-shape-id]');
+      if (selected) {
+        applyContainerShapeToSelected(selected.dataset.containerShapeId);
+      } else {
+        showToast('Select a shape first, then select a container');
+      }
+    });
+  }
+  
+  if (btnImportContainerShape) {
+    btnImportContainerShape.addEventListener('click', () => {
+      // Trigger file input for container shape import
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.svg,image/svg+xml';
+      input.onchange = (e) => {
+        const file = e.target.files[0];
+        if (file) importContainerShapeSVG(file);
+      };
+      input.click();
+    });
+  }
+  
+  if (btnRemoveContainerShape) {
+    btnRemoveContainerShape.addEventListener('click', () => {
+      removeContainerShapeFromSelected();
     });
   }
 
@@ -11540,13 +12255,15 @@ function loadProjectObject(obj) {
   const svgContainer = document.getElementById('svgContainer');
   if (svgContainer) {
     svgContainer.addEventListener('dragover', (e) => {
-      if (e.dataTransfer.types.includes('application/x-library-shape')) {
+      if (e.dataTransfer.types.includes('application/x-library-shape') ||
+          e.dataTransfer.types.includes('application/x-container-shape')) {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
       }
     });
     
     svgContainer.addEventListener('drop', (e) => {
+      // Handle node shape drop
       const libraryId = e.dataTransfer.getData('application/x-library-shape');
       if (libraryId) {
         e.preventDefault();
@@ -11556,8 +12273,87 @@ function loadProjectObject(obj) {
         pt.y = e.clientY;
         const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
         createNodeFromLibrary(libraryId, svgPt.x, svgPt.y);
+        return;
+      }
+      
+      // Handle container shape drop
+      const containerShapeId = e.dataTransfer.getData('application/x-container-shape');
+      if (containerShapeId) {
+        e.preventDefault();
+        const pt = svg.createSVGPoint();
+        pt.x = e.clientX;
+        pt.y = e.clientY;
+        const svgPt = pt.matrixTransform(svg.getScreenCTM().inverse());
+        createContainerFromShape(containerShapeId, svgPt.x, svgPt.y);
       }
     });
+  }
+
+  // Create container from library shape
+  function createContainerFromShape(shapeId, x, y) {
+    const shape = state.shapeLibrary.containerShapes?.[shapeId];
+    if (!shape) {
+      showToast('Shape not found in library');
+      return;
+    }
+    
+    // Parse viewBox to get aspect ratio
+    const vbParts = (shape.viewBox || '0 0 100 100').split(/\s+/).map(parseFloat);
+    const origW = vbParts[2] || 100;
+    const origH = vbParts[3] || 100;
+    const aspectRatio = origW / origH;
+    
+    // Default container size, respecting aspect ratio
+    let containerW = 300;
+    let containerH = containerW / aspectRatio;
+    
+    // Ensure minimum size
+    if (containerH < 150) {
+      containerH = 150;
+      containerW = containerH * aspectRatio;
+    }
+    if (containerW < 200) {
+      containerW = 200;
+      containerH = containerW / aspectRatio;
+    }
+    
+    // Center on drop point
+    const groupX = x - containerW / 2;
+    const groupY = y - containerH / 2;
+    
+    // Create the container
+    const newGroup = {
+      id: Date.now(),
+      uuid: generateUUID(),
+      type: 'country',
+      title: shape.name,
+      x: groupX,
+      y: groupY,
+      w: Math.round(containerW),
+      h: Math.round(containerH),
+      fill: 'rgba(54, 76, 140, 0.08)',
+      stroke: '#6073b8',
+      strokeW: 2,
+      titleColor: '#eaeaea',
+      titleFont: 14,
+      filterTags: ['default'],
+      // Shape as the visual container
+      shapeContainer: true,
+      decorativeShape: {
+        id: shapeId,
+        svgData: shape.svgData,
+        pathData: shape.pathData,
+        viewBox: shape.viewBox,
+        name: shape.name,
+        aspectRatio: aspectRatio
+      }
+    };
+    
+    state.groups.push(newGroup);
+    select({ type: 'group', id: newGroup.id });
+    commit();
+    render();
+    showToast(`Created "${shape.name}" container`);
   }
 
   // Right-click context menu on nodes for "Add to Library"
