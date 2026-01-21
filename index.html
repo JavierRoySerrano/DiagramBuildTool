@@ -2749,6 +2749,21 @@
         </div>
       </div>
 
+      <!-- Routing Section -->
+      <div class="inspector-section" data-section="group-routing">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>🔀 Routing</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row">
+            <label>Internal Transit Time (ms)</label>
+            <input id="groupInternalLatency" type="number" min="0" step="0.1" placeholder="Default: 1ms / 10ms" />
+            <div class="hint" style="margin-top:4px;">Implicit latency between nodes inside this container. Used by Route Finder for paths without explicit links.</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Container Shape Section -->
       <div class="inspector-section collapsed" data-section="group-decoration">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -8242,6 +8257,7 @@ const groupTitle = document.getElementById('groupTitle');
   const groupFill = document.getElementById('groupFill');
   const groupStroke = document.getElementById('groupStroke');
   const groupStrokeW = document.getElementById('groupStrokeW');
+  const groupInternalLatency = document.getElementById('groupInternalLatency');
 
   // Preset controls
   const btnNodePresetSave = document.getElementById('btnNodePresetSave');
@@ -8570,6 +8586,13 @@ const groupTitle = document.getElementById('groupTitle');
       groupFill.value = g.fill || "#ffffff";
       groupStroke.value = g.stroke || "#666666";
       if (groupStrokeW) groupStrokeW.value = g.strokeW ?? 1;
+      // Update internal latency field
+      if (groupInternalLatency) {
+        // Show placeholder with default value based on type
+        const defaultLatency = g.type === 'region' ? 10 : 1;
+        groupInternalLatency.value = g.internalLatency ?? '';
+        groupInternalLatency.placeholder = `Default: ${defaultLatency}ms`;
+      }
       // Update color pickers
       if (window.updateColorPickers) window.updateColorPickers();
       
@@ -9211,6 +9234,19 @@ if (groupTitleFontInline) {
     const g = findGroup(state.selected.id); if (!g) return;
     g.strokeW = clamp(Number(groupStrokeW.value||2),0.5,12);
     commit(); render();
+  });
+  
+  // Internal latency for routing
+  if (groupInternalLatency) groupInternalLatency.addEventListener('input', () => {
+    if (state.selected?.type!=='group') return;
+    const g = findGroup(state.selected.id); if (!g) return;
+    const val = groupInternalLatency.value.trim();
+    if (val === '') {
+      delete g.internalLatency; // Use default
+    } else {
+      g.internalLatency = Math.max(0, parseFloat(val) || 0);
+    }
+    commit();
   });
 
 
@@ -12773,7 +12809,10 @@ function loadProjectObject(obj) {
     containerNodes.forEach((nodeIdsInContainer, groupId) => {
       const group = findGroup(groupId);
       const containerName = group?.title || 'Container';
-      const latency = routeFinderState.containerLatency;
+      // Use container-specific latency if defined, otherwise use global default
+      const latency = (group?.internalLatency !== undefined && group?.internalLatency !== null) 
+        ? group.internalLatency 
+        : routeFinderState.containerLatency;
       const cost = calculateEdgeCost(latency, 0);
       
       for (let i = 0; i < nodeIdsInContainer.length; i++) {
@@ -12814,7 +12853,10 @@ function loadProjectObject(obj) {
     regionContainers.forEach((containerIds, regionId) => {
       const region = findGroup(regionId);
       const regionName = region?.title || 'Region';
-      const latency = routeFinderState.regionLatency;
+      // Use region-specific latency if defined, otherwise use global default
+      const latency = (region?.internalLatency !== undefined && region?.internalLatency !== null) 
+        ? region.internalLatency 
+        : routeFinderState.regionLatency;
       const cost = calculateEdgeCost(latency, 0);
       
       for (let i = 0; i < containerIds.length; i++) {
