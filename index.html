@@ -1260,6 +1260,7 @@
     }
     .library-category {
       margin-bottom: 12px;
+      overflow: hidden;
     }
     .library-category-header {
       display: flex;
@@ -1273,6 +1274,8 @@
       color: #555;
       cursor: pointer;
       user-select: none;
+      position: relative;
+      z-index: 1;
     }
     .library-category-header:hover {
       background: #eee;
@@ -1291,6 +1294,7 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 6px;
       padding: 8px 4px;
+      overflow: hidden;
     }
     .library-item {
       aspect-ratio: 1;
@@ -1305,6 +1309,8 @@
       padding: 4px;
       transition: all 0.15s;
       position: relative;
+      overflow: hidden;
+      min-height: 0;
     }
     .library-item:hover {
       border-color: #667eea;
@@ -1325,10 +1331,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
     }
     .library-item-preview svg {
       max-width: 100%;
       max-height: 100%;
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
     }
     .library-item-name {
       font-size: 9px;
