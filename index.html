@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>NexiMap Studio</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23667eea'/%3E%3Cstop offset='100%25' stop-color='%23764ba2'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='2' y='2' width='28' height='28' rx='4' fill='url(%23g)'/%3E%3Cpath d='M8 8H24M8 16H24M8 24H24M8 8V24M16 8V24M24 8V24' stroke='white' stroke-width='0.8' opacity='0.2'/%3E%3Cpath d='M8 8L16 16L24 8M16 16L8 24M16 16L24 24' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='8' cy='8' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='8' r='2.5' fill='white'/%3E%3Ccircle cx='16' cy='16' r='3' fill='white'/%3E%3Ccircle cx='8' cy='24' r='2.5' fill='white'/%3E%3Ccircle cx='24' cy='24' r='2.5' fill='white'/%3E%3C/svg%3E" />
+  <!-- MapLibre GL JS for interactive maps -->
+  <link href="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.1.0/dist/maplibre-gl.js"></script>
   <style>
     :root { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; }
     body { margin: 0; background:#ffffff; color:#333; }
@@ -12,6 +15,41 @@
       display:flex; gap:10px; align-items:center; flex-wrap:wrap;
       padding:0; border-bottom:1px solid #e0e0e0;
       position: sticky; top: 0; background:#fafafa; z-index: 10;
+    }
+    
+    /* MapLibre container styles */
+    #maplibreContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: none;
+    }
+    #maplibreContainer.active {
+      display: block;
+    }
+    .maplibregl-map {
+      width: 100%;
+      height: 100%;
+    }
+    /* Custom marker styles for MapLibre */
+    .maplibre-node-marker {
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    .maplibre-node-marker:hover {
+      transform: scale(1.15);
+    }
+    .maplibre-node-label {
+      background: rgba(255,255,255,0.9);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 500;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
     
     /* Menu Bar Items */
@@ -972,6 +1010,70 @@
     .menu .item:hover{ background:#f5f5f5; }
     .menu .item.active { background:#e8f4fc; color:#0096D6; }
     .menu .sep{ height:1px; background:#e0e0e0; margin:4px 0; }
+    
+    /* Submenu styles */
+    .menu .has-submenu {
+      position: relative;
+    }
+    .menu .has-submenu::after {
+      content: '▶';
+      font-size: 9px;
+      margin-left: auto;
+      opacity: 0.5;
+    }
+    .menu .submenu {
+      display: none;
+      position: absolute;
+      left: 100%;
+      top: 0;
+      background: #ffffff;
+      border: 1px solid #d0d0d0;
+      border-radius: 6px;
+      padding: 4px 0;
+      min-width: 220px;
+      max-height: calc(100vh - 80px);
+      overflow-y: auto;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+      z-index: 31;
+    }
+    /* Smart positioning - flip up if needed */
+    .menu .submenu.flip-up {
+      top: auto;
+      bottom: 0;
+    }
+    .menu .has-submenu:hover > .submenu {
+      display: block;
+    }
+    .menu .submenu .item {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+    .menu .submenu .menu-section-header {
+      padding: 4px 14px;
+      font-size: 10px;
+    }
+    .menu .submenu-content {
+      padding: 8px 14px;
+    }
+    .menu .submenu-content label {
+      font-size: 11px;
+      color: #666;
+    }
+    /* Scrollbar styling for submenus */
+    .menu .submenu::-webkit-scrollbar {
+      width: 6px;
+    }
+    .menu .submenu::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    .menu .submenu::-webkit-scrollbar-thumb {
+      background: #ccc;
+      border-radius: 3px;
+    }
+    .menu .submenu::-webkit-scrollbar-thumb:hover {
+      background: #aaa;
+    }
 
     .toggle{ display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:4px; font-size:12px; color:#555; }
     .toggle input{ accent-color:#0096D6; }
@@ -1724,61 +1826,145 @@
       <div class="item" id="miToggleInspector">Toggle Inspector <span style="opacity:0.5;float:right">I</span></div>
       <div class="item" id="miTagFilter">Tag Filter… <span style="opacity:0.5;float:right">F</span></div>
       <div class="sep"></div>
+      
+      <!-- View Mode Section -->
       <div class="menu-section-header">🌍 View Mode</div>
       <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeStandard" checked /> Standard Canvas</label>
-      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeGeo" /> Geographic View (GPS)</label>
-      <div id="geoViewOptions" style="display:none; padding-left:10px; border-left:2px solid #0096D6;">
-        <div class="menu-section-header" style="font-size:10px; margin-top:4px;">Map Background</div>
-        <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUrl" checked /> Wikimedia Map (Default)</label>
-        <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUpload" /> Uploaded Image</label>
-        <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceBuiltin" /> Built-in SVG Map</label>
-        <div class="item" id="miLoadMapUrl" style="color:#0096D6;">🔗 Load Map from URL...</div>
-        <div class="item" id="miUploadGeoMap" style="color:#0096D6;">📷 Upload Map Image...</div>
-        <div class="sep"></div>
-        <div class="menu-section-header" style="font-size:10px;">Projection Adjustment</div>
-        <div style="padding:6px 12px; font-size:11px;">
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <label style="width:70px; color:#666;">Scale X:</label>
-            <input type="range" id="projScaleX" min="0.8" max="1.2" step="0.005" value="0.895" style="flex:1; cursor:pointer;">
-            <input type="number" id="projScaleXVal" value="0.895" step="0.005" min="0.5" max="1.5" style="width:55px; font-size:10px; text-align:center; padding:2px;">
+      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeGeo" /> 🌐 Geo Static Background</label>
+      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeMapLibre" /> 🗺️ Geo Dynamic Map</label>
+      
+      <div class="sep"></div>
+      
+      <!-- Geo Dynamic Map Settings - Submenu -->
+      <div class="item has-submenu" id="mapLibreSettingsItem">🗺️ Geo Dynamic Map Settings
+        <div class="submenu" id="mapLibreSubmenu">
+          <div class="menu-section-header">Map Style</div>
+          <label class="item toggle-item"><input type="radio" name="mapLibreStyle" id="mapStyleLiberty" checked /> Liberty (Default)</label>
+          <label class="item toggle-item"><input type="radio" name="mapLibreStyle" id="mapStyleBright" /> Bright</label>
+          <label class="item toggle-item"><input type="radio" name="mapLibreStyle" id="mapStylePositron" /> Positron (Light)</label>
+          <label class="item toggle-item"><input type="radio" name="mapLibreStyle" id="mapStyleDarkMatter" /> Dark Matter</label>
+          <div class="sep"></div>
+          <div class="menu-section-header">Default Link Style</div>
+          <div class="submenu-content">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <label style="width:70px;">Color:</label>
+              <input type="color" id="mlDefaultLinkColor" value="#6c8ebf" style="width:28px; height:22px; border:1px solid #ccc; border-radius:3px; cursor:pointer;">
+              <span id="mlDefaultLinkColorHex" style="font-size:10px; color:#888;">#6c8ebf</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+              <label style="width:70px;">Width:</label>
+              <input type="range" id="mlDefaultLinkWidth" min="1" max="8" step="0.5" value="2" style="width:50px;">
+              <span id="mlDefaultLinkWidthVal" style="font-size:10px; color:#888;">2px</span>
+            </div>
+            <label style="display:flex; align-items:center; gap:6px; margin-top:4px; cursor:pointer;">
+              <input type="checkbox" id="mlUseCanvasColors" checked /> Use Canvas Colors
+            </label>
           </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <label style="width:70px; color:#666;">Scale Y:</label>
-            <input type="range" id="projScaleY" min="0.8" max="1.2" step="0.005" value="0.815" style="flex:1; cursor:pointer;">
-            <input type="number" id="projScaleYVal" value="0.815" step="0.005" min="0.5" max="1.5" style="width:55px; font-size:10px; text-align:center; padding:2px;">
+          <div class="sep"></div>
+          <div class="menu-section-header">Display</div>
+          <label class="item toggle-item"><input type="checkbox" id="mlShowLinks" checked /> Show Links</label>
+          <div class="sep"></div>
+          <div class="menu-section-header">Interaction</div>
+          <label class="item toggle-item"><input type="checkbox" id="mlEnableSelection" checked /> Enable Selection</label>
+          <div class="item" id="mlPathFinderBtn" style="color:#10b981;">🔍 Path Finder</div>
+          <div style="padding:4px 14px; font-size:9px; color:#888;">
+            OpenFreeMap + OpenStreetMap
           </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <label style="width:70px; color:#666;">Offset X:</label>
-            <input type="range" id="projOffsetX" min="-100" max="100" step="1" value="-61" style="flex:1; cursor:pointer;">
-            <input type="number" id="projOffsetXVal" value="-61" step="1" min="-200" max="200" style="width:55px; font-size:10px; text-align:center; padding:2px;">
-          </div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
-            <label style="width:70px; color:#666;">Offset Y:</label>
-            <input type="range" id="projOffsetY" min="-100" max="100" step="1" value="-10" style="flex:1; cursor:pointer;">
-            <input type="number" id="projOffsetYVal" value="-10" step="1" min="-200" max="200" style="width:55px; font-size:10px; text-align:center; padding:2px;">
-          </div>
-          <div style="display:flex; gap:6px; margin-top:8px;">
-            <button id="projResetBtn" class="btn mini-btn" style="flex:1;">Reset</button>
-            <button id="projShowValuesBtn" class="btn mini-btn" style="flex:1;">📋 Copy Values</button>
-          </div>
-          <div style="font-size:9px; color:#888; margin-top:6px;">Calibrated for Wikimedia world map</div>
         </div>
       </div>
+      
+      <!-- Geo Static Background Settings - Submenu -->
+      <div class="item has-submenu" id="geoViewSettingsItem">🌐 Geo Static Background Settings
+        <div class="submenu" id="geoViewSubmenu">
+          <div class="menu-section-header">Map Background</div>
+          <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUrl" checked /> Wikimedia Map</label>
+          <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUpload" /> Uploaded Image</label>
+          <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceBuiltin" /> Built-in SVG Map</label>
+          <div class="item" id="miLoadMapUrl" style="color:#0096D6;">🔗 Load from URL...</div>
+          <div class="item" id="miUploadGeoMap" style="color:#0096D6;">📷 Upload Image...</div>
+          <div class="sep"></div>
+          <div class="menu-section-header">Projection Adjustment</div>
+          <div class="submenu-content" style="font-size:11px;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="width:55px; color:#666;">Scale X:</label>
+              <input type="range" id="projScaleX" min="0.8" max="1.2" step="0.005" value="0.895" style="width:60px; cursor:pointer;">
+              <input type="number" id="projScaleXVal" value="0.895" step="0.005" min="0.5" max="1.5" style="width:50px; font-size:10px; text-align:center; padding:2px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="width:55px; color:#666;">Scale Y:</label>
+              <input type="range" id="projScaleY" min="0.8" max="1.2" step="0.005" value="0.815" style="width:60px; cursor:pointer;">
+              <input type="number" id="projScaleYVal" value="0.815" step="0.005" min="0.5" max="1.5" style="width:50px; font-size:10px; text-align:center; padding:2px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="width:55px; color:#666;">Offset X:</label>
+              <input type="range" id="projOffsetX" min="-100" max="100" step="1" value="-61" style="width:60px; cursor:pointer;">
+              <input type="number" id="projOffsetXVal" value="-61" step="1" min="-200" max="200" style="width:50px; font-size:10px; text-align:center; padding:2px;">
+            </div>
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+              <label style="width:55px; color:#666;">Offset Y:</label>
+              <input type="range" id="projOffsetY" min="-100" max="100" step="1" value="-10" style="width:60px; cursor:pointer;">
+              <input type="number" id="projOffsetYVal" value="-10" step="1" min="-200" max="200" style="width:50px; font-size:10px; text-align:center; padding:2px;">
+            </div>
+            <div style="display:flex; gap:4px; margin-top:6px;">
+              <button id="projResetBtn" class="btn mini-btn" style="flex:1; font-size:10px; padding:3px 6px;">Reset</button>
+              <button id="projShowValuesBtn" class="btn mini-btn" style="flex:1; font-size:10px; padding:3px 6px;">📋 Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <div class="sep"></div>
-      <div class="menu-section-header">Node Labels</div>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeName" checked /> Node Names</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Node Codes</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowNodeTags" /> Node Tags</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowExtraTags" /> Additional Tags</label>
-      <div class="sep"></div>
-      <div class="menu-section-header">Link Labels</div>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkTag" checked /> Link Tags</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowLinkCode" checked /> Link Codes</label>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Latency Values</label>
-      <div class="sep"></div>
-      <div class="menu-section-header">Container Labels</div>
-      <label class="item toggle-item"><input type="checkbox" id="tglShowContainerTitle" checked /> Container Titles</label>
+      
+      <!-- Labels - Submenu -->
+      <div class="item has-submenu">🏷️ Labels
+        <div class="submenu">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 10px; border-bottom:1px solid #e5e5e5; margin-bottom:4px;">
+            <span style="font-size:11px; color:#666;">Label Visibility</span>
+            <button id="btnPinLabels" title="Pin as floating panel" style="background:none; border:1px solid #ccc; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">📌 Pin</button>
+          </div>
+          <div class="menu-section-header">Node Labels</div>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowNodeName" checked /> Node Names</label>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowNodeCode" checked /> Node Codes</label>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowNodeTags" /> Node Tags</label>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowExtraTags" /> Additional Tags</label>
+          <div class="sep"></div>
+          <div class="menu-section-header">Link Labels</div>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowLinkTag" checked /> Link Tags</label>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowLinkCode" checked /> Link Codes</label>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowLatency" checked /> Latency Values</label>
+          <div class="sep"></div>
+          <div class="menu-section-header">Container Labels</div>
+          <label class="item toggle-item"><input type="checkbox" id="tglShowContainerTitle" checked /> Container Titles</label>
+        </div>
+      </div>
     </div>
+    
+    <!-- Floating Labels Panel (pinned) -->
+    <div id="floatingLabelsPanel" class="floating-panel" style="display:none; position:fixed; top:80px; right:20px; z-index:1500; background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.25); min-width:200px; font-size:12px;">
+      <div class="floating-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f5f5f5; border-radius:8px 8px 0 0; cursor:move; border-bottom:1px solid #e0e0e0;">
+        <span style="font-weight:600; font-size:12px;">🏷️ Labels</span>
+        <div>
+          <span id="floatingLabelsViewIndicator" style="font-size:10px; color:#666; margin-right:8px;">Canvas</span>
+          <button id="btnCloseLabelsPanel" title="Close" style="background:none; border:none; font-size:14px; cursor:pointer; color:#666;">✕</button>
+        </div>
+      </div>
+      <div style="padding:8px 0;">
+        <div class="menu-section-header" style="padding:4px 12px; font-size:10px; color:#888; text-transform:uppercase;">Node Labels</div>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowNodeName" style="margin-right:8px;" /> Node Names</label>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowNodeCode" style="margin-right:8px;" /> Node Codes</label>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowNodeTags" style="margin-right:8px;" /> Node Tags</label>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowExtraTags" style="margin-right:8px;" /> Additional Tags</label>
+        <div style="border-top:1px solid #eee; margin:4px 0;"></div>
+        <div class="menu-section-header" style="padding:4px 12px; font-size:10px; color:#888; text-transform:uppercase;">Link Labels</div>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowLinkTag" style="margin-right:8px;" /> Link Tags</label>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowLinkCode" style="margin-right:8px;" /> Link Codes</label>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowLatency" style="margin-right:8px;" /> Latency Values</label>
+        <div style="border-top:1px solid #eee; margin:4px 0;"></div>
+        <div class="menu-section-header" style="padding:4px 12px; font-size:10px; color:#888; text-transform:uppercase;">Container Labels</div>
+        <label class="item toggle-item" style="display:flex; align-items:center; padding:4px 12px; cursor:pointer;"><input type="checkbox" id="floatShowContainerTitle" style="margin-right:8px;" /> Container Titles</label>
+      </div>
+    </div>
+    
     <div class="menu" id="helpMenu" hidden style="min-width:280px;">
       <div style="padding:10px 14px; font-weight:600; border-bottom:1px solid #e0e0e0; background:#f8f8f8;">
         Keyboard Shortcuts
@@ -2332,7 +2518,7 @@
     </button>
     
     <!-- Geographic View Toggle Button -->
-    <button class="tool-btn" id="btnGeoView" type="button" title="Toggle Geographic View - Show nodes on world map based on GPS coordinates">
+    <button class="tool-btn" id="btnGeoView" type="button" title="Geo Static Background - Show nodes on customizable world map based on GPS coordinates">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="10"/>
         <ellipse cx="12" cy="12" rx="10" ry="4"/>
@@ -2340,6 +2526,19 @@
         <path d="M2 12h20"/>
       </svg>
       <span style="font-size:11px; margin-left:4px;">Geo</span>
+    </button>
+    
+    <!-- Geo Dynamic Map (MapLibre) Button -->
+    <button class="tool-btn" id="btnMapLibre" type="button" title="Geo Dynamic Map - Zoomable interactive map with OpenStreetMap tiles" style="color: #10b981;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Folded map icon -->
+        <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/>
+        <path d="M9 3v15"/>
+        <path d="M15 6v15"/>
+        <!-- Location pin -->
+        <circle cx="17" cy="9" r="2" fill="#10b981" stroke="#10b981"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">Map</span>
     </button>
     
     <!-- Route Finder Button -->
@@ -2407,6 +2606,10 @@
   <div id="wrap">
     <div id="svgContainer" style="transform-origin: 0 0;">
       <svg id="svg" viewBox="0 0 1600 900" preserveAspectRatio="none"></svg>
+    </div>
+    <!-- MapLibre GL Interactive Map Container -->
+    <div id="maplibreContainer">
+      <div id="maplibreMap"></div>
     </div>
     <div class="toast" id="toast"></div>
   </div>
@@ -3910,6 +4113,7 @@
   [tglShowLatency, tglShowNodeCode, tglShowLinkCode, tglShowNodeTags, tglShowExtraTags, tglShowNodeName, tglShowLinkTag, tglShowContainerTitle].forEach(el => {
     if (!el) return;
     el.addEventListener('change', () => {
+      
       state.ui.showLatency = !!tglShowLatency?.checked;
       state.ui.showNodeCode = !!tglShowNodeCode?.checked;
       state.ui.showLinkCode = !!tglShowLinkCode?.checked;
@@ -3918,9 +4122,182 @@
       state.ui.showNodeName = tglShowNodeName?.checked !== false;
       state.ui.showLinkTag = tglShowLinkTag?.checked !== false;
       state.ui.showContainerTitle = tglShowContainerTitle?.checked !== false;
-      render();
+      
+      
+      
+      // Save to current view settings
+      if (typeof saveCurrentViewLabelSettings === 'function') {
+        saveCurrentViewLabelSettings();
+      }
+      
+      // Re-render the appropriate view (use window references since mapLibreState is defined later)
+      
+      if (window.mapLibreState && window.mapLibreState.active && typeof window.renderMapLibreContent === 'function') {
+        
+        window.mapLibreState.skipFitBounds = true;
+        window.renderMapLibreContent();
+      } else {
+        
+        render();
+      }
+      
+      // Sync floating panel checkboxes
+      syncFloatingLabelsPanel();
     });
   });
+  
+  // ============== FLOATING LABELS PANEL ==============
+  
+  // Sync floating panel checkboxes with state.ui
+  function syncFloatingLabelsPanel() {
+    const floatShowNodeName = document.getElementById('floatShowNodeName');
+    const floatShowNodeCode = document.getElementById('floatShowNodeCode');
+    const floatShowNodeTags = document.getElementById('floatShowNodeTags');
+    const floatShowExtraTags = document.getElementById('floatShowExtraTags');
+    const floatShowLinkTag = document.getElementById('floatShowLinkTag');
+    const floatShowLinkCode = document.getElementById('floatShowLinkCode');
+    const floatShowLatency = document.getElementById('floatShowLatency');
+    const floatShowContainerTitle = document.getElementById('floatShowContainerTitle');
+    
+    if (floatShowNodeName) floatShowNodeName.checked = state.ui.showNodeName;
+    if (floatShowNodeCode) floatShowNodeCode.checked = state.ui.showNodeCode;
+    if (floatShowNodeTags) floatShowNodeTags.checked = state.ui.showNodeTags;
+    if (floatShowExtraTags) floatShowExtraTags.checked = state.ui.showExtraTags;
+    if (floatShowLinkTag) floatShowLinkTag.checked = state.ui.showLinkTag;
+    if (floatShowLinkCode) floatShowLinkCode.checked = state.ui.showLinkCode;
+    if (floatShowLatency) floatShowLatency.checked = state.ui.showLatency;
+    if (floatShowContainerTitle) floatShowContainerTitle.checked = state.ui.showContainerTitle;
+    
+    // Update view indicator
+    updateFloatingLabelsViewIndicator();
+  }
+  
+  // Update the view indicator in floating panel
+  function updateFloatingLabelsViewIndicator() {
+    const indicator = document.getElementById('floatingLabelsViewIndicator');
+    if (indicator) {
+      if (window.mapLibreState && window.mapLibreState.active) {
+        indicator.textContent = '🗺️ Geo Dynamic';
+        indicator.style.color = '#10b981';
+      } else if (window.geoViewState && window.geoViewState.active) {
+        indicator.textContent = '🌐 Geo Static';
+        indicator.style.color = '#0096D6';
+      } else {
+        indicator.textContent = '📋 Canvas';
+        indicator.style.color = '#666';
+      }
+    }
+  }
+  
+  // Sync main menu checkboxes from floating panel
+  function syncMainMenuFromFloating() {
+    if (tglShowNodeName) tglShowNodeName.checked = state.ui.showNodeName;
+    if (tglShowNodeCode) tglShowNodeCode.checked = state.ui.showNodeCode;
+    if (tglShowNodeTags) tglShowNodeTags.checked = state.ui.showNodeTags;
+    if (tglShowExtraTags) tglShowExtraTags.checked = state.ui.showExtraTags;
+    if (tglShowLinkTag) tglShowLinkTag.checked = state.ui.showLinkTag;
+    if (tglShowLinkCode) tglShowLinkCode.checked = state.ui.showLinkCode;
+    if (tglShowLatency) tglShowLatency.checked = state.ui.showLatency;
+    if (tglShowContainerTitle) tglShowContainerTitle.checked = state.ui.showContainerTitle;
+  }
+  
+  // Handle floating panel checkbox changes
+  function setupFloatingPanelHandlers() {
+    const floatCheckboxes = [
+      { id: 'floatShowNodeName', prop: 'showNodeName' },
+      { id: 'floatShowNodeCode', prop: 'showNodeCode' },
+      { id: 'floatShowNodeTags', prop: 'showNodeTags' },
+      { id: 'floatShowExtraTags', prop: 'showExtraTags' },
+      { id: 'floatShowLinkTag', prop: 'showLinkTag' },
+      { id: 'floatShowLinkCode', prop: 'showLinkCode' },
+      { id: 'floatShowLatency', prop: 'showLatency' },
+      { id: 'floatShowContainerTitle', prop: 'showContainerTitle' }
+    ];
+    
+    floatCheckboxes.forEach(({ id, prop }) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('change', () => {
+          state.ui[prop] = el.checked;
+          
+          // Save to current view settings
+          if (typeof saveCurrentViewLabelSettings === 'function') {
+            saveCurrentViewLabelSettings();
+          }
+          
+          // Sync main menu
+          syncMainMenuFromFloating();
+          
+          // Re-render
+          if (window.mapLibreState && window.mapLibreState.active && typeof window.renderMapLibreContent === 'function') {
+            window.mapLibreState.skipFitBounds = true;
+            window.renderMapLibreContent();
+          } else {
+            render();
+          }
+        });
+      }
+    });
+    
+    // Pin button handler
+    const btnPinLabels = document.getElementById('btnPinLabels');
+    const floatingPanel = document.getElementById('floatingLabelsPanel');
+    if (btnPinLabels && floatingPanel) {
+      btnPinLabels.addEventListener('click', (e) => {
+        e.stopPropagation();
+        floatingPanel.style.display = 'block';
+        syncFloatingLabelsPanel();
+        // Close the menu
+        document.querySelectorAll('.menu').forEach(m => m.hidden = true);
+      });
+    }
+    
+    // Close button handler
+    const btnCloseLabelsPanel = document.getElementById('btnCloseLabelsPanel');
+    if (btnCloseLabelsPanel && floatingPanel) {
+      btnCloseLabelsPanel.addEventListener('click', () => {
+        floatingPanel.style.display = 'none';
+      });
+    }
+    
+    // Make panel draggable
+    if (floatingPanel) {
+      const header = floatingPanel.querySelector('.floating-panel-header');
+      if (header) {
+        let isDragging = false;
+        let offsetX, offsetY;
+        
+        header.addEventListener('mousedown', (e) => {
+          if (e.target.tagName === 'BUTTON') return;
+          isDragging = true;
+          offsetX = e.clientX - floatingPanel.offsetLeft;
+          offsetY = e.clientY - floatingPanel.offsetTop;
+          header.style.cursor = 'grabbing';
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          floatingPanel.style.left = (e.clientX - offsetX) + 'px';
+          floatingPanel.style.top = (e.clientY - offsetY) + 'px';
+          floatingPanel.style.right = 'auto';
+        });
+        
+        document.addEventListener('mouseup', () => {
+          isDragging = false;
+          header.style.cursor = 'move';
+        });
+      }
+    }
+  }
+  
+  // Initialize floating panel handlers when DOM is ready
+  setTimeout(setupFloatingPanelHandlers, 100);
+  
+  // Expose functions for view switching
+  window.syncFloatingLabelsPanel = syncFloatingLabelsPanel;
+  window.updateFloatingLabelsViewIndicator = updateFloatingLabelsViewIndicator;
+  
+  // ============== END FLOATING LABELS PANEL ==============
 
   // Canvas settings handlers are initialized later after state is defined
 
@@ -3993,8 +4370,51 @@
     // Zoom level (CSS transform based)
     zoom: 1,
 
-    // UI/global toggles
-    ui: { showLatency: true, showNodeCode: true, showLinkCode: true, showNodeTags: false, showExtraTags: false },
+    // UI/global toggles - now with per-view settings
+    ui: { 
+      showLatency: true, 
+      showNodeCode: true, 
+      showLinkCode: true, 
+      showNodeTags: false, 
+      showExtraTags: false,
+      showNodeName: true,
+      showLinkTag: true,
+      showContainerTitle: true
+    },
+    
+    // Per-view label settings (each view stores its own label visibility preferences)
+    viewSettings: {
+      canvas: {
+        showNodeName: true,
+        showNodeCode: true,
+        showNodeTags: false,
+        showExtraTags: false,
+        showLinkTag: true,
+        showLinkCode: true,
+        showLatency: true,
+        showContainerTitle: true
+      },
+      geoStatic: {
+        showNodeName: true,
+        showNodeCode: true,
+        showNodeTags: false,
+        showExtraTags: false,
+        showLinkTag: true,
+        showLinkCode: false,
+        showLatency: true,
+        showContainerTitle: false
+      },
+      geoDynamic: {
+        showNodeName: false,
+        showNodeCode: true,
+        showNodeTags: false,
+        showExtraTags: false,
+        showLinkTag: true,
+        showLinkCode: false,
+        showLatency: false,
+        showContainerTitle: false
+      }
+    },
 
     // Named style presets (saved inside .ndg)
     stylePresets: { node: {}, edge: {}, group: {} },
@@ -4021,6 +4441,93 @@
 
   const history = { stack: [], index: -1, max: 120 };
   let dirty = false;
+  
+  // ============== VIEW-AWARE LABEL SETTINGS ==============
+  
+  // Get current view type
+  function getCurrentViewType() {
+    if (window.mapLibreState && window.mapLibreState.active) {
+      return 'geoDynamic';
+    }
+    if (window.geoViewState && window.geoViewState.active) {
+      return 'geoStatic';
+    }
+    return 'canvas';
+  }
+  
+  // Save current label settings to the current view
+  function saveCurrentViewLabelSettings() {
+    const viewType = getCurrentViewType();
+    if (!state.viewSettings[viewType]) {
+      state.viewSettings[viewType] = {};
+    }
+    
+    state.viewSettings[viewType].showNodeName = state.ui.showNodeName;
+    state.viewSettings[viewType].showNodeCode = state.ui.showNodeCode;
+    state.viewSettings[viewType].showNodeTags = state.ui.showNodeTags;
+    state.viewSettings[viewType].showExtraTags = state.ui.showExtraTags;
+    state.viewSettings[viewType].showLinkTag = state.ui.showLinkTag;
+    state.viewSettings[viewType].showLinkCode = state.ui.showLinkCode;
+    state.viewSettings[viewType].showLatency = state.ui.showLatency;
+    state.viewSettings[viewType].showContainerTitle = state.ui.showContainerTitle;
+  }
+  
+  // Load label settings for a specific view into state.ui and update checkboxes
+  function loadViewLabelSettings(viewType) {
+    const settings = state.viewSettings[viewType];
+    if (!settings) return;
+    
+    // Update state.ui
+    state.ui.showNodeName = settings.showNodeName !== false;
+    state.ui.showNodeCode = settings.showNodeCode !== false;
+    state.ui.showNodeTags = !!settings.showNodeTags;
+    state.ui.showExtraTags = !!settings.showExtraTags;
+    state.ui.showLinkTag = settings.showLinkTag !== false;
+    state.ui.showLinkCode = settings.showLinkCode !== false;
+    state.ui.showLatency = settings.showLatency !== false;
+    state.ui.showContainerTitle = settings.showContainerTitle !== false;
+    
+    // Update checkboxes in the Labels submenu
+    const tglShowNodeName = document.getElementById('tglShowNodeName');
+    const tglShowNodeCode = document.getElementById('tglShowNodeCode');
+    const tglShowNodeTags = document.getElementById('tglShowNodeTags');
+    const tglShowExtraTags = document.getElementById('tglShowExtraTags');
+    const tglShowLinkTag = document.getElementById('tglShowLinkTag');
+    const tglShowLinkCode = document.getElementById('tglShowLinkCode');
+    const tglShowLatency = document.getElementById('tglShowLatency');
+    const tglShowContainerTitle = document.getElementById('tglShowContainerTitle');
+    
+    if (tglShowNodeName) tglShowNodeName.checked = state.ui.showNodeName;
+    if (tglShowNodeCode) tglShowNodeCode.checked = state.ui.showNodeCode;
+    if (tglShowNodeTags) tglShowNodeTags.checked = state.ui.showNodeTags;
+    if (tglShowExtraTags) tglShowExtraTags.checked = state.ui.showExtraTags;
+    if (tglShowLinkTag) tglShowLinkTag.checked = state.ui.showLinkTag;
+    if (tglShowLinkCode) tglShowLinkCode.checked = state.ui.showLinkCode;
+    if (tglShowLatency) tglShowLatency.checked = state.ui.showLatency;
+    if (tglShowContainerTitle) tglShowContainerTitle.checked = state.ui.showContainerTitle;
+    
+    // Also sync floating panel if it exists
+    if (typeof window.syncFloatingLabelsPanel === 'function') {
+      window.syncFloatingLabelsPanel();
+    }
+  }
+  
+  // Switch label settings when changing views
+  function switchViewLabelSettings(fromViewType, toViewType) {
+    // Save current view's settings
+    if (fromViewType && state.viewSettings[fromViewType]) {
+      saveCurrentViewLabelSettings();
+    }
+    // Load new view's settings
+    loadViewLabelSettings(toViewType);
+    
+    // Update floating panel view indicator
+    if (typeof window.updateFloatingLabelsViewIndicator === 'function') {
+      window.updateFloatingLabelsViewIndicator();
+    }
+  }
+  
+  // ============== END VIEW-AWARE LABEL SETTINGS ==============
 
   // Pan and Zoom functionality using CSS transform and scrollbars
   function updateViewBox() {
@@ -4622,7 +5129,50 @@
       const r = btn.getBoundingClientRect();
       menu.style.left = r.left + "px";
       menu.style.top = r.bottom + "px";
+      
+      // Position submenus intelligently
+      positionSubmenus(menu);
     }
+  }
+  
+  // Smart submenu positioning to prevent overflow
+  function positionSubmenus(menu) {
+    const submenus = menu.querySelectorAll('.submenu');
+    submenus.forEach(submenu => {
+      // Reset any previous positioning
+      submenu.classList.remove('flip-up');
+      submenu.style.maxHeight = '';
+      
+      // Check position when parent is hovered
+      const parent = submenu.parentElement;
+      parent.addEventListener('mouseenter', () => {
+        requestAnimationFrame(() => {
+          const rect = submenu.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const viewportWidth = window.innerWidth;
+          
+          // Check if submenu goes below viewport
+          if (rect.bottom > viewportHeight - 20) {
+            // Try flipping up first
+            submenu.classList.add('flip-up');
+            
+            // Re-check after flip
+            const newRect = submenu.getBoundingClientRect();
+            if (newRect.top < 20) {
+              // Can't flip, use scroll instead
+              submenu.classList.remove('flip-up');
+              submenu.style.maxHeight = (viewportHeight - rect.top - 40) + 'px';
+            }
+          }
+          
+          // Check if submenu goes past right edge
+          if (rect.right > viewportWidth - 10) {
+            submenu.style.left = 'auto';
+            submenu.style.right = '100%';
+          }
+        });
+      }, { once: false });
+    });
   }
   
   fileBtn.addEventListener('click', (ev) => { ev.stopPropagation(); toggleMenu(fileBtn, fileMenu); });
@@ -11206,7 +11756,8 @@ document.getElementById('btnExportLinks').addEventListener('click', () => {
         selectedBoxes: Array.from(state.containerFilter.selectedBoxes),
         selectedGroups: Array.from(state.containerFilter.selectedGroups)
       },
-      ui: state.ui
+      ui: state.ui,
+      viewSettings: state.viewSettings
     };
   }
 
@@ -11495,6 +12046,12 @@ function loadProjectObject(obj) {
   if (obj.ui) {
     state.ui = { ...state.ui, ...obj.ui };
   }
+  
+  // Restore per-view label settings
+  if (obj.viewSettings) {
+    state.viewSettings = { ...state.viewSettings, ...obj.viewSettings };
+  }
+  
   // Sync UI toggles
   const tglShowNodeTags = document.getElementById('tglShowNodeTags');
   const tglShowExtraTags = document.getElementById('tglShowExtraTags');
@@ -15452,7 +16009,11 @@ function loadProjectObject(obj) {
     clearRouteHighlights();
     highlightEndpoints();
     
-    if (routeFinderState.routes.length === 0) return;
+    if (routeFinderState.routes.length === 0) {
+      // Also clear MapLibre path if no routes
+      clearMapLibreRoutePath();
+      return;
+    }
     
     const route = routeFinderState.routes[routeFinderState.activeRouteIndex];
     const routeClass = `route-path-${routeFinderState.activeRouteIndex + 1}`;
@@ -15517,6 +16078,149 @@ function loadProjectObject(obj) {
           }
         }
       }
+    });
+    
+    // Also render the route in MapLibre Geo Dynamic Map
+    renderRouteInMapLibre(route, color);
+  }
+  
+  // Render route in MapLibre Geo Dynamic Map
+  function renderRouteInMapLibre(route, color) {
+    if (!window.mapLibreState || !window.mapLibreState.map || !window.mapLibreState.isStyleLoaded) return;
+    
+    // Clear any existing route path
+    clearMapLibreRoutePath();
+    
+    // Build path coordinates from route nodes
+    const coordinates = [];
+    route.path.forEach(nodeId => {
+      const node = findNode(nodeId);
+      if (node && node.gpsLat != null && node.gpsLon != null) {
+        coordinates.push([node.gpsLon, node.gpsLat]);
+      }
+    });
+    
+    if (coordinates.length < 2) return;
+    
+    try {
+      // Add the route path source
+      mapLibreState.map.addSource('route-finder-path', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: {
+            type: 'LineString',
+            coordinates: coordinates
+          }
+        }
+      });
+      
+      // Add outer glow layer
+      mapLibreState.map.addLayer({
+        id: 'route-finder-path-glow',
+        type: 'line',
+        source: 'route-finder-path',
+        paint: {
+          'line-color': color,
+          'line-width': 10,
+          'line-opacity': 0.3,
+          'line-blur': 3
+        },
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        }
+      });
+      
+      // Add main route layer
+      mapLibreState.map.addLayer({
+        id: 'route-finder-path-main',
+        type: 'line',
+        source: 'route-finder-path',
+        paint: {
+          'line-color': color,
+          'line-width': 5,
+          'line-opacity': 0.9
+        },
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        }
+      });
+      
+      // Highlight origin and destination nodes
+      highlightRouteNodesInMapLibre(route.path, color);
+      
+    } catch (err) {
+      console.warn('Failed to render route in MapLibre:', err);
+    }
+  }
+  
+  // Clear route path from MapLibre
+  function clearMapLibreRoutePath() {
+    if (!window.mapLibreState || !window.mapLibreState.map) return;
+    
+    try {
+      if (mapLibreState.map.getLayer('route-finder-path-glow')) {
+        mapLibreState.map.removeLayer('route-finder-path-glow');
+      }
+      if (mapLibreState.map.getLayer('route-finder-path-main')) {
+        mapLibreState.map.removeLayer('route-finder-path-main');
+      }
+      if (mapLibreState.map.getSource('route-finder-path')) {
+        mapLibreState.map.removeSource('route-finder-path');
+      }
+      
+      // Clear node highlights
+      clearRouteNodeHighlightsInMapLibre();
+    } catch (err) {
+      // Ignore errors during cleanup
+    }
+  }
+  
+  // Highlight route nodes in MapLibre
+  function highlightRouteNodesInMapLibre(path, color) {
+    // This visually updates the node markers to show they're part of the route
+    document.querySelectorAll('.maplibre-node-marker').forEach(marker => {
+      const nodeId = marker.dataset.nodeId;
+      if (!nodeId) return;
+      
+      const pathIndex = path.indexOf(nodeId);
+      const isOrigin = pathIndex === 0;
+      const isDest = pathIndex === path.length - 1;
+      const isIntermediate = pathIndex > 0 && pathIndex < path.length - 1;
+      
+      const circle = marker.querySelector('circle');
+      if (!circle) return;
+      
+      // Reset first
+      circle.removeAttribute('data-route-node');
+      
+      if (isOrigin) {
+        circle.setAttribute('stroke', '#22c55e');
+        circle.setAttribute('stroke-width', '4');
+        circle.setAttribute('data-route-node', 'origin');
+      } else if (isDest) {
+        circle.setAttribute('stroke', '#ef4444');
+        circle.setAttribute('stroke-width', '4');
+        circle.setAttribute('data-route-node', 'dest');
+      } else if (isIntermediate) {
+        circle.setAttribute('stroke', color);
+        circle.setAttribute('stroke-width', '3');
+        circle.setAttribute('data-route-node', 'intermediate');
+      }
+    });
+  }
+  
+  // Clear route node highlights in MapLibre
+  function clearRouteNodeHighlightsInMapLibre() {
+    document.querySelectorAll('.maplibre-node-marker circle[data-route-node]').forEach(circle => {
+      const node = findNode(circle.closest('.maplibre-node-marker')?.dataset.nodeId);
+      if (node) {
+        circle.setAttribute('stroke', node.stroke || '#6c8ebf');
+        circle.setAttribute('stroke-width', '2');
+      }
+      circle.removeAttribute('data-route-node');
     });
   }
 
@@ -17050,6 +17754,9 @@ function loadProjectObject(obj) {
     mapUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/9f/BlankMap-World-Equirectangular.svg'
   };
   
+  // Expose to window for access from other parts of the code
+  window.geoViewState = geoViewState;
+  
   // Load custom map settings from localStorage if available
   try {
     const savedMap = localStorage.getItem('neximap-geo-custom-map');
@@ -17848,6 +18555,11 @@ function loadProjectObject(obj) {
     }
     
     if (active) {
+      // Switch label settings from canvas to geoStatic
+      if (typeof switchViewLabelSettings === 'function') {
+        switchViewLabelSettings('canvas', 'geoStatic');
+      }
+      
       // Save current canvas settings
       geoViewState.savedCanvasWidth = state.canvasWidth;
       geoViewState.savedCanvasHeight = state.canvasHeight;
@@ -17858,8 +18570,13 @@ function loadProjectObject(obj) {
       updateViewBox();
       
       renderGeoView();
-      showToast('🌍 Geographic View — showing nodes with GPS coordinates');
+      showToast('🌐 Geo Static Background — showing nodes with GPS coordinates');
     } else {
+      // Switch label settings back to canvas
+      if (typeof switchViewLabelSettings === 'function') {
+        switchViewLabelSettings('geoStatic', 'canvas');
+      }
+      
       // Restore canvas settings
       if (geoViewState.savedCanvasWidth) {
         state.canvasWidth = geoViewState.savedCanvasWidth;
@@ -17869,6 +18586,11 @@ function loadProjectObject(obj) {
       updateViewBox();
       render();
       showToast('📋 Standard Canvas View');
+    }
+    
+    // Re-render route finder highlights after view switch
+    if (typeof routeFinderState !== 'undefined' && routeFinderState.active && routeFinderState.routes.length > 0) {
+      setTimeout(() => highlightActiveRoute(), 100);
     }
   }
   
@@ -18397,14 +19119,35 @@ function loadProjectObject(obj) {
   const btnGeoView = document.getElementById('btnGeoView');
   if (btnGeoView) {
     btnGeoView.addEventListener('click', () => {
+      // If MapLibre is active, deactivate it first
+      if (mapLibreState && mapLibreState.active) {
+        toggleMapLibreView(false);
+      }
       toggleGeoView(!geoViewState.active);
+      // Update button states
+      const btnMapLibre = document.getElementById('btnMapLibre');
+      if (btnMapLibre) btnMapLibre.classList.remove('active');
+    });
+  }
+  
+  // Interactive Map (MapLibre) button
+  const btnMapLibre = document.getElementById('btnMapLibre');
+  if (btnMapLibre) {
+    btnMapLibre.addEventListener('click', () => {
+      // If Geo view is active, deactivate it first
+      if (geoViewState && geoViewState.active) {
+        toggleGeoView(false);
+      }
+      toggleMapLibreView(!mapLibreState.active);
+      // Update button states
+      btnMapLibre.classList.toggle('active', mapLibreState.active);
+      if (btnGeoView) btnGeoView.classList.remove('active');
     });
   }
   
   // View menu radio buttons
   const viewModeStandard = document.getElementById('viewModeStandard');
   const viewModeGeo = document.getElementById('viewModeGeo');
-  const geoViewOptions = document.getElementById('geoViewOptions');
   const mapSourceUrl = document.getElementById('mapSourceUrl');
   const mapSourceUpload = document.getElementById('mapSourceUpload');
   const mapSourceBuiltin = document.getElementById('mapSourceBuiltin');
@@ -18415,7 +19158,6 @@ function loadProjectObject(obj) {
     viewModeStandard.addEventListener('change', () => {
       if (viewModeStandard.checked) {
         toggleGeoView(false);
-        if (geoViewOptions) geoViewOptions.style.display = 'none';
       }
     });
   }
@@ -18423,7 +19165,6 @@ function loadProjectObject(obj) {
     viewModeGeo.addEventListener('change', () => {
       if (viewModeGeo.checked) {
         toggleGeoView(true);
-        if (geoViewOptions) geoViewOptions.style.display = '';
       }
     });
   }
@@ -18879,7 +19620,6 @@ function loadProjectObject(obj) {
         render();
       } else {
         toggleGeoView(true);
-        if (geoViewOptions) geoViewOptions.style.display = '';
         if (viewModeGeo) viewModeGeo.checked = true;
       }
       
@@ -18973,7 +19713,6 @@ function loadProjectObject(obj) {
         render();
       } else {
         toggleGeoView(true);
-        if (geoViewOptions) geoViewOptions.style.display = '';
         if (viewModeGeo) viewModeGeo.checked = true;
       }
       
@@ -19007,6 +19746,1214 @@ function loadProjectObject(obj) {
       }
     };
   }
+  
+  // ============== MAPLIBRE INTERACTIVE MAP ==============
+  
+  // MapLibre state
+  const mapLibreState = {
+    active: false,
+    map: null,
+    markers: [],
+    lines: [],
+    style: 'liberty',
+    isStyleLoaded: false,
+    renderPending: false,
+    // Selection state
+    selectedNode: null,
+    selectedEdge: null,
+    selectionEnabled: true,
+    // Default colors (used when canvas colors not available or disabled)
+    defaultLinkColor: '#6c8ebf',
+    defaultLinkWidth: 2,
+    useCanvasColors: true,
+    // Available map styles from OpenFreeMap
+    styles: {
+      liberty: 'https://tiles.openfreemap.org/styles/liberty',
+      bright: 'https://tiles.openfreemap.org/styles/bright',
+      positron: 'https://tiles.openfreemap.org/styles/positron',
+      darkMatter: 'https://tiles.openfreemap.org/styles/dark'
+    }
+  };
+  
+  // Expose globally for label toggle handlers
+  window.mapLibreState = mapLibreState;
+  
+  // Initialize MapLibre map
+  function initMapLibre() {
+    if (mapLibreState.map) return; // Already initialized
+    
+    const container = document.getElementById('maplibreMap');
+    if (!container) return;
+    
+    // Set container size
+    container.style.width = '100%';
+    container.style.height = '100%';
+    
+    // Load saved settings
+    try {
+      const savedSettings = localStorage.getItem('neximap-maplibre-settings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        if (settings.defaultLinkColor) mapLibreState.defaultLinkColor = settings.defaultLinkColor;
+        if (settings.defaultLinkWidth) mapLibreState.defaultLinkWidth = settings.defaultLinkWidth;
+        if (settings.useCanvasColors !== undefined) mapLibreState.useCanvasColors = settings.useCanvasColors;
+      }
+    } catch(e) {}
+    
+    try {
+      mapLibreState.map = new maplibregl.Map({
+        container: 'maplibreMap',
+        style: mapLibreState.styles[mapLibreState.style],
+        center: [0, 20], // Default center
+        zoom: 1.5,
+        attributionControl: true
+      });
+      
+      // Add navigation controls
+      mapLibreState.map.addControl(new maplibregl.NavigationControl(), 'top-right');
+      
+      // Add scale control
+      mapLibreState.map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+      
+      // When map style is fully loaded, render the nodes
+      mapLibreState.map.on('load', () => {
+        mapLibreState.isStyleLoaded = true;
+        renderMapLibreContent();
+      });
+      
+      // Handle style changes - wait for style to fully load before re-rendering
+      mapLibreState.map.on('style.load', () => {
+        console.log('[MapLibre] Style loaded, re-rendering content');
+        mapLibreState.isStyleLoaded = true;
+        // Reset the edge click handler flag since old handlers are gone with style change
+        mapLibreState.edgeClickHandlerAdded = false;
+        
+        if (mapLibreState.active) {
+          // Small delay to ensure style is fully applied
+          setTimeout(() => {
+            mapLibreState.skipFitBounds = true; // Don't re-center the map
+            renderMapLibreContent();
+          }, 100);
+        }
+      });
+      
+    } catch (e) {
+      console.error('Failed to initialize MapLibre:', e);
+      showToast('⚠️ Failed to load interactive map. Check your internet connection.');
+    }
+  }
+  
+  // Change map style
+  function changeMapLibreStyle(styleName) {
+    if (!mapLibreState.map) return;
+    if (!mapLibreState.styles[styleName]) return;
+    
+    console.log('[MapLibre] Changing style to:', styleName);
+    
+    mapLibreState.style = styleName;
+    mapLibreState.isStyleLoaded = false;
+    
+    // Reset the edge click handler flag since layers will be recreated
+    mapLibreState.edgeClickHandlerAdded = false;
+    
+    // Clear markers only (layers will be gone after style change anyway)
+    mapLibreState.markers.forEach(m => m.remove());
+    mapLibreState.markers = [];
+    mapLibreState.lines = [];
+    
+    // Set the new style
+    mapLibreState.map.setStyle(mapLibreState.styles[styleName]);
+    
+    // Use 'idle' event which fires when map is completely ready after style change
+    const onIdle = () => {
+      console.log('[MapLibre] Map idle after style change, rendering content');
+      mapLibreState.map.off('idle', onIdle); // Remove listener after first fire
+      mapLibreState.isStyleLoaded = true;
+      mapLibreState.edgeClickHandlerAdded = false;
+      mapLibreState.skipFitBounds = true;
+      renderMapLibreContent();
+    };
+    mapLibreState.map.on('idle', onIdle);
+    
+    // Save preference
+    try {
+      localStorage.setItem('neximap-maplibre-style', styleName);
+    } catch(e) {}
+    
+    showToast(`🗺️ Map style: ${styleName.charAt(0).toUpperCase() + styleName.slice(1)}`);
+  }
+  
+  // Clear all markers and lines from the map
+  function clearMapLibreContent() {
+    // Remove markers
+    mapLibreState.markers.forEach(m => m.remove());
+    mapLibreState.markers = [];
+    
+    // Remove line layers and sources safely
+    if (mapLibreState.map && mapLibreState.isStyleLoaded) {
+      // Remove the combined edges layer and source
+      try {
+        if (mapLibreState.map.getLayer('neximap-edges-layer')) {
+          mapLibreState.map.removeLayer('neximap-edges-layer');
+        }
+        if (mapLibreState.map.getSource('neximap-edges')) {
+          mapLibreState.map.removeSource('neximap-edges');
+        }
+      } catch(e) {
+        // Ignore errors during style transitions
+      }
+      
+      // Also clean up any legacy individual edge layers
+      mapLibreState.lines.forEach(lineId => {
+        try {
+          if (mapLibreState.map.getLayer(lineId)) {
+            mapLibreState.map.removeLayer(lineId);
+          }
+          if (mapLibreState.map.getSource(lineId)) {
+            mapLibreState.map.removeSource(lineId);
+          }
+        } catch(e) {
+          // Ignore errors during style transitions
+        }
+      });
+    }
+    mapLibreState.lines = [];
+  }
+  
+  // Render nodes and edges on the MapLibre map
+  function renderMapLibreContent() {
+    
+    if (!mapLibreState.map || !mapLibreState.active) {
+      
+      return;
+    }
+    if (!mapLibreState.isStyleLoaded) {
+      
+      return; // Wait for style to load
+    }
+    
+    // Clear existing content first
+    clearMapLibreContent();
+    
+    // Get visibility settings from state.ui (shared with main Labels menu)
+    const showLinks = document.getElementById('mlShowLinks')?.checked !== false;
+    const showNodeLabels = state.ui.showNodeName || state.ui.showNodeCode || state.ui.showNodeTags || state.ui.showExtraTags; // Show label if any node label is enabled
+    const showLinkLabels = state.ui.showLinkTag || state.ui.showLatency || state.ui.showLinkCode; // Show label if any link label is enabled
+    
+    
+    const useCanvasColors = document.getElementById('mlUseCanvasColors')?.checked !== false;
+    const selectionEnabled = document.getElementById('mlEnableSelection')?.checked !== false;
+    mapLibreState.selectionEnabled = selectionEnabled;
+    
+    // Get default colors from settings
+    const defaultLinkColor = mapLibreState.defaultLinkColor || '#6c8ebf';
+    const defaultLinkWidth = mapLibreState.defaultLinkWidth || 2;
+    
+    // Get nodes with GPS coordinates
+    const geoNodes = state.nodes.filter(n => 
+      n.gpsLat !== null && n.gpsLat !== undefined &&
+      n.gpsLon !== null && n.gpsLon !== undefined
+    );
+    
+    if (geoNodes.length === 0) {
+      showToast('ℹ️ No nodes with GPS coordinates to display');
+      return;
+    }
+    
+    // Create a map of node IDs to their GPS coordinates and data for edge drawing
+    const nodeGpsMap = new Map();
+    const nodeDataMap = new Map();
+    geoNodes.forEach(n => {
+      nodeGpsMap.set(n.id, [n.gpsLon, n.gpsLat]);
+      nodeDataMap.set(n.id, n);
+    });
+    
+    // Collect all edges as GeoJSON features for a single layer (more efficient, no flickering)
+    const edgeFeatures = [];
+    const edgeLabelData = []; // For link labels
+    const edgeDataForSelection = []; // For click detection
+    
+    if (showLinks) {
+      state.edges.forEach((e, idx) => {
+        const fromCoords = nodeGpsMap.get(e.a);
+        const toCoords = nodeGpsMap.get(e.b);
+        
+        if (fromCoords && toCoords) {
+          // Determine edge color: use canvas color if enabled, otherwise default
+          let edgeColor = defaultLinkColor;
+          let edgeWidth = defaultLinkWidth;
+          
+          if (useCanvasColors) {
+            edgeColor = e.stroke || defaultLinkColor;
+            edgeWidth = e.strokeWidth || defaultLinkWidth;
+          }
+          
+          // Highlight if selected
+          const isSelected = mapLibreState.selectedEdge === e.id;
+          if (isSelected) {
+            edgeWidth = Math.max(edgeWidth + 2, 4);
+          }
+          
+          const edgeId = e.id || `edge-${idx}`;
+          
+          edgeFeatures.push({
+            type: 'Feature',
+            properties: {
+              id: edgeId,
+              color: edgeColor,
+              width: edgeWidth,
+              selected: isSelected
+            },
+            geometry: {
+              type: 'LineString',
+              coordinates: [fromCoords, toCoords]
+            }
+          });
+          
+          // Store edge data for click detection
+          edgeDataForSelection.push({
+            id: edgeId,
+            edge: e,
+            fromCoords,
+            toCoords
+          });
+          
+          // Collect label data for this edge - respect individual label settings
+          if (showLinkLabels) {
+            const midLon = (fromCoords[0] + toCoords[0]) / 2;
+            const midLat = (fromCoords[1] + toCoords[1]) / 2;
+            
+            // Build label text based on what's enabled (match main canvas: e.tag, e.latencyMs, e.code)
+            let labelParts = [];
+            if (state.ui.showLinkCode && e.code && e.code.trim()) {
+              labelParts.push(e.code.trim());
+            }
+            if (state.ui.showLinkTag && e.tag && e.tag.trim()) {
+              labelParts.push(e.tag.trim());
+            }
+            if (state.ui.showLatency && typeof e.latencyMs === 'number' && isFinite(e.latencyMs)) {
+              labelParts.push(e.latencyMs + ' ms');
+            }
+            const labelText = labelParts.join(' · ');
+            
+            
+            
+            if (labelText) {
+              edgeLabelData.push({
+                coords: [midLon, midLat],
+                text: labelText,
+                color: edgeColor,
+                edgeId: edgeId,
+                edge: e
+              });
+            }
+          }
+        }
+      });
+    }
+    
+    // Store edge data for selection handling
+    mapLibreState.edgeDataForSelection = edgeDataForSelection;
+    
+    
+    
+    // Add all edges as a single source and layer (prevents flickering)
+    if (edgeFeatures.length > 0) {
+      const edgesSourceId = 'neximap-edges';
+      const edgesLayerId = 'neximap-edges-layer';
+      
+      try {
+        mapLibreState.map.addSource(edgesSourceId, {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: edgeFeatures
+          }
+        });
+        
+        mapLibreState.map.addLayer({
+          id: edgesLayerId,
+          type: 'line',
+          source: edgesSourceId,
+          paint: {
+            'line-color': ['get', 'color'],
+            'line-width': ['get', 'width'],
+            'line-opacity': 0.85
+          },
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+          }
+        });
+        
+        mapLibreState.lines.push(edgesLayerId);
+        mapLibreState.lines.push(edgesSourceId); // Track source for cleanup
+        
+        // Add click handler for edge selection and route finder
+        if (selectionEnabled && !mapLibreState.edgeClickHandlerAdded) {
+          mapLibreState.map.on('click', edgesLayerId, (e) => {
+            if (!mapLibreState.selectionEnabled) return;
+            if (e.features && e.features.length > 0) {
+              const clickedId = e.features[0].properties.id;
+              
+              // Check if route finder is active with link pick modes
+              if (window.routeFinderState && window.routeFinderState.active) {
+                const edge = state.edges.find(ed => ed.id === clickedId || `edge-${state.edges.indexOf(ed)}` === clickedId);
+                if (edge) {
+                  const edgeId = edge.id || clickedId;
+                  if (routeFinderState.pickMode === 'excludeLink') {
+                    // Use same function as main canvas
+                    if (typeof addExcludedLink === 'function') {
+                      addExcludedLink(edgeId);
+                    }
+                    routeFinderState.pickMode = null;
+                    if (typeof updatePickModeButtons === 'function') {
+                      updatePickModeButtons();
+                    }
+                    // Re-render MapLibre
+                    mapLibreState.skipFitBounds = true;
+                    renderMapLibreContent();
+                    return;
+                  }
+                  if (routeFinderState.pickMode === 'mustUseLink') {
+                    // Use same function as main canvas
+                    if (typeof addMustUseLink === 'function') {
+                      addMustUseLink(edgeId);
+                    }
+                    routeFinderState.pickMode = null;
+                    if (typeof updatePickModeButtons === 'function') {
+                      updatePickModeButtons();
+                    }
+                    // Re-render MapLibre
+                    mapLibreState.skipFitBounds = true;
+                    renderMapLibreContent();
+                    return;
+                  }
+                }
+                // Route finder is active but no pick mode - don't select edges
+                return;
+              }
+              
+              // Normal selection (route finder not active)
+              selectEdgeOnMap(clickedId);
+            }
+          });
+          
+          // Change cursor on hover
+          mapLibreState.map.on('mouseenter', edgesLayerId, () => {
+            if (mapLibreState.selectionEnabled) {
+              mapLibreState.map.getCanvas().style.cursor = 'pointer';
+            }
+          });
+          mapLibreState.map.on('mouseleave', edgesLayerId, () => {
+            mapLibreState.map.getCanvas().style.cursor = '';
+          });
+          
+          mapLibreState.edgeClickHandlerAdded = true;
+        }
+      } catch (err) {
+        console.warn('Failed to add edges layer:', err);
+      }
+    }
+    
+    // Add link labels as markers (with selection support)
+    if (showLinkLabels && edgeLabelData.length > 0) {
+      edgeLabelData.forEach(labelInfo => {
+        const labelEl = document.createElement('div');
+        labelEl.className = 'maplibre-link-label';
+        labelEl.dataset.edgeId = labelInfo.edgeId;
+        labelEl.textContent = labelInfo.text;
+        
+        const isSelected = mapLibreState.selectedEdge === labelInfo.edgeId;
+        labelEl.style.cssText = `
+          background: ${isSelected ? '#fef3c7' : 'rgba(255,255,255,0.9)'};
+          padding: 1px 4px;
+          border-radius: 2px;
+          font-size: 9px;
+          font-weight: 500;
+          color: #333;
+          white-space: nowrap;
+          pointer-events: ${selectionEnabled ? 'auto' : 'none'};
+          cursor: ${selectionEnabled ? 'pointer' : 'default'};
+          box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+          border-left: 3px solid ${labelInfo.color};
+          ${isSelected ? 'outline: 2px solid #f59e0b;' : ''}
+        `;
+        
+        // Add click handler for label selection
+        if (selectionEnabled) {
+          labelEl.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            selectEdgeOnMap(labelInfo.edgeId);
+          });
+        }
+        
+        const labelMarker = new maplibregl.Marker({
+          element: labelEl,
+          anchor: 'center'
+        })
+          .setLngLat(labelInfo.coords)
+          .addTo(mapLibreState.map);
+        
+        mapLibreState.markers.push(labelMarker);
+      });
+    }
+    
+    // Draw nodes as markers
+    geoNodes.forEach(n => {
+      // Create marker element
+      const el = document.createElement('div');
+      el.className = 'maplibre-node-marker';
+      el.dataset.nodeId = n.id; // Store node ID for selection and path finder
+      
+      const isSelected = mapLibreState.selectedNode === n.id;
+      
+      // Check if this node is a route finder origin/destination or path node
+      const isRouteOrigin = window.routeFinderState && routeFinderState.originNodeId === n.id;
+      const isRouteDest = window.routeFinderState && routeFinderState.destNodeId === n.id;
+      const isRoutePathNode = window.routeFinderState && routeFinderState.routes.length > 0 && 
+        routeFinderState.routes[routeFinderState.activeRouteIndex]?.path?.includes(n.id) &&
+        !isRouteOrigin && !isRouteDest;
+      const isExcluded = window.routeFinderState && routeFinderState.excludedNodes.has(n.id);
+      const isMustUse = window.routeFinderState && routeFinderState.mustUseNodes.has(n.id);
+      
+      const baseSize = Math.max(16, Math.min(40, (n.r || 20) * 1.2));
+      let size = baseSize;
+      if (isSelected || isRouteOrigin || isRouteDest) size = baseSize + 4;
+      
+      // Determine colors based on state
+      const fill = n.fill || '#dae8fc';
+      let stroke = n.stroke || '#6c8ebf';
+      let strokeWidth = 2;
+      let extraCircle = '';
+      
+      if (isRouteOrigin) {
+        stroke = '#22c55e'; // Green for origin
+        strokeWidth = 4;
+        extraCircle = `<circle cx="${size/2}" cy="${size/2}" r="${size/2 + 3}" fill="none" stroke="#22c55e" stroke-width="2" stroke-dasharray="4,2"/>`;
+      } else if (isRouteDest) {
+        stroke = '#ef4444'; // Red for destination
+        strokeWidth = 4;
+        extraCircle = `<circle cx="${size/2}" cy="${size/2}" r="${size/2 + 3}" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>`;
+      } else if (isRoutePathNode) {
+        stroke = '#f59e0b'; // Amber for path nodes
+        strokeWidth = 3;
+      } else if (isMustUse) {
+        stroke = '#8b5cf6'; // Purple for must-use
+        strokeWidth = 3;
+        extraCircle = `<circle cx="${size/2}" cy="${size/2}" r="${size/2 + 2}" fill="none" stroke="#8b5cf6" stroke-width="1.5"/>`;
+      } else if (isExcluded) {
+        stroke = '#9ca3af'; // Gray for excluded
+        strokeWidth = 2;
+        extraCircle = `<line x1="${size*0.2}" y1="${size*0.2}" x2="${size*0.8}" y2="${size*0.8}" stroke="#ef4444" stroke-width="2"/>
+                       <line x1="${size*0.8}" y1="${size*0.2}" x2="${size*0.2}" y2="${size*0.8}" stroke="#ef4444" stroke-width="2"/>`;
+      } else if (isSelected) {
+        stroke = '#f59e0b';
+        strokeWidth = 4;
+        extraCircle = `<circle cx="${size/2}" cy="${size/2}" r="${size/2 + 2}" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="3,2"/>`;
+      }
+      
+      el.innerHTML = `
+        <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+          <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 2}" 
+                  fill="${fill}" stroke="${stroke}" stroke-width="${strokeWidth}"/>
+          ${extraCircle}
+        </svg>
+      `;
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.cursor = selectionEnabled ? 'pointer' : 'default';
+      
+      // Create the marker
+      const marker = new maplibregl.Marker({
+        element: el,
+        anchor: 'center'
+      })
+        .setLngLat([n.gpsLon, n.gpsLat])
+        .addTo(mapLibreState.map);
+      
+      // Add popup with node info
+      const popupContent = `
+        <div style="font-family: system-ui, sans-serif; font-size: 12px; min-width: 140px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${n.name || n.id}</div>
+          ${n.code ? `<div style="color: #666; font-size: 11px;">Code: ${n.code}</div>` : ''}
+          <div style="color: #888; font-size: 10px; margin-top: 4px;">
+            📍 ${n.gpsLat.toFixed(4)}°, ${n.gpsLon.toFixed(4)}°
+          </div>
+          ${mapLibreState.pathFinderActive ? `<button class="ml-pathfinder-btn" data-node-id="${n.id}" style="margin-top:6px; padding:4px 8px; font-size:10px; cursor:pointer; background:#10b981; color:white; border:none; border-radius:3px;">Select for Path</button>` : ''}
+        </div>
+      `;
+      
+      const popup = new maplibregl.Popup({ offset: 15, closeOnClick: false })
+        .setHTML(popupContent);
+      
+      // Handle path finder node selection from popup
+      popup.on('open', () => {
+        const btn = document.querySelector(`.ml-pathfinder-btn[data-node-id="${n.id}"]`);
+        if (btn) {
+          btn.addEventListener('click', () => {
+            selectNodeForMapLibrePathFinder(n.id);
+            popup.remove();
+          });
+        }
+      });
+      
+      marker.setPopup(popup);
+      
+      // Click handler for selection, route finder, and path finder mode
+      el.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        
+        // Check if main route finder is active - use same handler as main canvas
+        if (window.routeFinderState && window.routeFinderState.active) {
+          // Use the same function as main canvas for consistent behavior
+          if (typeof handleCalculationModeNodeClick === 'function') {
+            handleCalculationModeNodeClick(n.id);
+            // Re-render MapLibre to show the visual feedback (green/red highlighting)
+            mapLibreState.skipFitBounds = true;
+            renderMapLibreContent();
+          }
+          return;
+        }
+        
+        // Check if MapLibre's own path finder is active
+        if (mapLibreState.pathFinderActive) {
+          selectNodeForMapLibrePathFinder(n.id);
+        } else if (mapLibreState.selectionEnabled) {
+          selectNodeOnMap(n.id);
+        }
+      });
+      
+      // Add label if enabled - build label text based on what's enabled
+      if (showNodeLabels) {
+        let labelParts = [];
+        
+        // Node Code
+        if (state.ui.showNodeCode && n.code && n.code.trim()) {
+          labelParts.push(n.code.trim());
+        }
+        // Node Name (only if code not shown, to avoid redundancy - or show both separated)
+        if (state.ui.showNodeName && n.name && n.name.trim()) {
+          // If code is already shown, add name in parentheses; otherwise just show name
+          if (labelParts.length > 0) {
+            labelParts.push('(' + n.name.trim() + ')');
+          } else {
+            labelParts.push(n.name.trim());
+          }
+        }
+        // Node Tags
+        if (state.ui.showNodeTags && n.tags && n.tags.length > 0) {
+          labelParts.push('[' + n.tags.join(', ') + ']');
+        }
+        // Extra Tags
+        if (state.ui.showExtraTags && n.extraTags && n.extraTags.trim()) {
+          labelParts.push(n.extraTags.trim());
+        }
+        
+        const labelText = labelParts.join(' ');
+        
+        if (labelText) {
+          const labelEl = document.createElement('div');
+          labelEl.className = 'maplibre-node-label';
+          labelEl.dataset.nodeId = n.id;
+          labelEl.textContent = labelText;
+          labelEl.style.transform = 'translate(-50%, 8px)';
+          
+          // Highlight if selected
+          if (isSelected) {
+            labelEl.style.background = '#fef3c7';
+            labelEl.style.outline = '2px solid #f59e0b';
+          }
+          
+          const labelMarker = new maplibregl.Marker({
+            element: labelEl,
+            anchor: 'top'
+          })
+            .setLngLat([n.gpsLon, n.gpsLat])
+            .addTo(mapLibreState.map);
+          
+          mapLibreState.markers.push(labelMarker);
+        }
+      }
+      
+      mapLibreState.markers.push(marker);
+    });
+    
+    // If path finder is active and we have a path, draw it
+    if (mapLibreState.pathFinderActive && mapLibreState.currentPath && mapLibreState.currentPath.length > 1) {
+      drawMapLibrePath(mapLibreState.currentPath);
+    }
+    
+    // Fit map to show all nodes (only on initial render, not during selection changes)
+    if (!mapLibreState.pathFinderActive && !mapLibreState.skipFitBounds) {
+      if (geoNodes.length > 1) {
+        const bounds = new maplibregl.LngLatBounds();
+        geoNodes.forEach(n => {
+          bounds.extend([n.gpsLon, n.gpsLat]);
+        });
+        mapLibreState.map.fitBounds(bounds, { padding: 50, maxZoom: 10 });
+      } else if (geoNodes.length === 1) {
+        mapLibreState.map.flyTo({
+          center: [geoNodes[0].gpsLon, geoNodes[0].gpsLat],
+          zoom: 5
+        });
+      }
+    }
+    mapLibreState.skipFitBounds = false; // Reset flag
+  }
+  
+  // Expose renderMapLibreContent globally for label toggle handlers
+  window.renderMapLibreContent = renderMapLibreContent;
+  
+  // ============== MAPLIBRE SELECTION FUNCTIONS ==============
+  
+  // Select a node on the map and show in Inspector
+  function selectNodeOnMap(nodeId) {
+    // Clear previous selection
+    mapLibreState.selectedEdge = null;
+    mapLibreState.selectedNode = nodeId;
+    
+    // Update the global state to sync with Inspector
+    const node = findNode(nodeId);
+    if (node) {
+      state.selected = { type: 'node', id: nodeId };
+      
+      // Update Inspector
+      if (typeof updateInspector === 'function') {
+        updateInspector();
+      }
+      
+      // Re-render to show selection highlight (without re-fitting bounds)
+      mapLibreState.skipFitBounds = true;
+      renderMapLibreContent();
+      
+      showToast(`🔵 Selected: ${node.name || node.code || nodeId}`);
+    }
+  }
+  
+  // Select an edge on the map and show in Inspector
+  function selectEdgeOnMap(edgeId) {
+    // Clear previous selection
+    mapLibreState.selectedNode = null;
+    mapLibreState.selectedEdge = edgeId;
+    
+    // Find the edge
+    const edge = state.edges.find(e => e.id === edgeId || `edge-${state.edges.indexOf(e)}` === edgeId);
+    if (edge) {
+      state.selected = { type: 'edge', id: edge.id || edgeId, a: edge.a, b: edge.b };
+      
+      // Update Inspector
+      if (typeof updateInspector === 'function') {
+        updateInspector();
+      }
+      
+      // Re-render to show selection highlight (without re-fitting bounds)
+      mapLibreState.skipFitBounds = true;
+      renderMapLibreContent();
+      
+      const nodeA = findNode(edge.a);
+      const nodeB = findNode(edge.b);
+      const label = edge.label || edge.tag || '';
+      showToast(`🔗 Selected link: ${nodeA?.name || edge.a} ↔ ${nodeB?.name || edge.b}${label ? ' (' + label + ')' : ''}`);
+    }
+  }
+  
+  // Clear selection on map
+  function clearMapSelection() {
+    mapLibreState.selectedNode = null;
+    mapLibreState.selectedEdge = null;
+    state.selected = null;
+    
+    if (typeof updateInspector === 'function') {
+      updateInspector();
+    }
+    
+    mapLibreState.skipFitBounds = true;
+    renderMapLibreContent();
+  }
+  
+  // Click on empty map area to deselect
+  function setupMapClickToDeselect() {
+    if (!mapLibreState.map || mapLibreState.deselectHandlerAdded) return;
+    
+    mapLibreState.map.on('click', (e) => {
+      // Only deselect if not clicking on a feature
+      const features = mapLibreState.map.queryRenderedFeatures(e.point, { layers: ['neximap-edges-layer'] });
+      if (features.length === 0 && mapLibreState.selectionEnabled) {
+        // Check if we clicked on a marker
+        const target = e.originalEvent?.target;
+        if (target && !target.closest('.maplibre-node-marker') && !target.closest('.maplibre-link-label')) {
+          clearMapSelection();
+        }
+      }
+    });
+    
+    mapLibreState.deselectHandlerAdded = true;
+  }
+  
+  // ============== END MAPLIBRE SELECTION FUNCTIONS ==============
+  
+  // ============== MAPLIBRE PATH FINDER ==============
+  
+  // Initialize path finder state in mapLibreState
+  mapLibreState.pathFinderActive = false;
+  mapLibreState.pathFinderSource = null;
+  mapLibreState.pathFinderTarget = null;
+  mapLibreState.currentPath = null;
+  
+  // Select a node for path finding
+  function selectNodeForMapLibrePathFinder(nodeId) {
+    if (!mapLibreState.pathFinderActive) return;
+    
+    if (!mapLibreState.pathFinderSource) {
+      mapLibreState.pathFinderSource = nodeId;
+      const node = findNode(nodeId);
+      showToast(`🟢 Source: ${node?.name || node?.code || nodeId} — Now select destination`);
+      highlightMapLibreNode(nodeId, '#22c55e'); // Green for source
+    } else if (!mapLibreState.pathFinderTarget) {
+      if (nodeId === mapLibreState.pathFinderSource) {
+        showToast('⚠️ Please select a different node as destination');
+        return;
+      }
+      mapLibreState.pathFinderTarget = nodeId;
+      const node = findNode(nodeId);
+      showToast(`🔴 Destination: ${node?.name || node?.code || nodeId} — Calculating path...`);
+      highlightMapLibreNode(nodeId, '#ef4444'); // Red for target
+      
+      // Calculate and display path
+      calculateMapLibrePath();
+    } else {
+      // Reset and start new path
+      mapLibreState.pathFinderSource = nodeId;
+      mapLibreState.pathFinderTarget = null;
+      mapLibreState.currentPath = null;
+      renderMapLibreContent();
+      const node = findNode(nodeId);
+      showToast(`🟢 New Source: ${node?.name || node?.code || nodeId} — Select destination`);
+      highlightMapLibreNode(nodeId, '#22c55e');
+    }
+  }
+  
+  // Highlight a node on the map
+  function highlightMapLibreNode(nodeId, color) {
+    const markerEl = document.querySelector(`.maplibre-node-marker[data-node-id="${nodeId}"]`);
+    if (markerEl) {
+      const circle = markerEl.querySelector('circle');
+      if (circle) {
+        circle.setAttribute('stroke', color);
+        circle.setAttribute('stroke-width', '4');
+      }
+    }
+  }
+  
+  // Calculate the shortest path using the existing pathfinder logic
+  function calculateMapLibrePath() {
+    if (!mapLibreState.pathFinderSource || !mapLibreState.pathFinderTarget) return;
+    
+    // Use the existing route finder if available
+    if (typeof window.routeFinderState !== 'undefined' && typeof findShortestPath === 'function') {
+      const path = findShortestPath(mapLibreState.pathFinderSource, mapLibreState.pathFinderTarget);
+      if (path && path.length > 0) {
+        mapLibreState.currentPath = path;
+        drawMapLibrePath(path);
+        
+        // Calculate total latency/distance
+        let totalLatency = 0;
+        for (let i = 0; i < path.length - 1; i++) {
+          const edge = state.edges.find(e => 
+            (e.a === path[i] && e.b === path[i+1]) || 
+            (e.b === path[i] && e.a === path[i+1])
+          );
+          if (edge && edge.latency) {
+            totalLatency += parseFloat(edge.latency) || 0;
+          }
+        }
+        
+        const sourceNode = findNode(mapLibreState.pathFinderSource);
+        const targetNode = findNode(mapLibreState.pathFinderTarget);
+        showToast(`✅ Path found: ${path.length} nodes, ${totalLatency > 0 ? totalLatency.toFixed(1) + ' ms' : 'distance calculated'}`);
+      } else {
+        showToast('❌ No path found between these nodes');
+        mapLibreState.currentPath = null;
+      }
+    } else {
+      // Simple BFS pathfinding if route finder not available
+      const path = simpleBFSPath(mapLibreState.pathFinderSource, mapLibreState.pathFinderTarget);
+      if (path) {
+        mapLibreState.currentPath = path;
+        drawMapLibrePath(path);
+        showToast(`✅ Path found: ${path.length} nodes`);
+      } else {
+        showToast('❌ No path found between these nodes');
+      }
+    }
+  }
+  
+  // Simple BFS pathfinding fallback
+  function simpleBFSPath(startId, endId) {
+    const visited = new Set();
+    const queue = [[startId]];
+    
+    while (queue.length > 0) {
+      const path = queue.shift();
+      const node = path[path.length - 1];
+      
+      if (node === endId) return path;
+      if (visited.has(node)) continue;
+      visited.add(node);
+      
+      // Find connected nodes
+      state.edges.forEach(e => {
+        let neighbor = null;
+        if (e.a === node && !visited.has(e.b)) neighbor = e.b;
+        if (e.b === node && !visited.has(e.a)) neighbor = e.a;
+        if (neighbor) {
+          queue.push([...path, neighbor]);
+        }
+      });
+    }
+    return null;
+  }
+  
+  // Draw the path on the MapLibre map
+  function drawMapLibrePath(path) {
+    if (!mapLibreState.map || !path || path.length < 2) return;
+    
+    // Remove existing path layer
+    try {
+      if (mapLibreState.map.getLayer('neximap-path-layer')) {
+        mapLibreState.map.removeLayer('neximap-path-layer');
+      }
+      if (mapLibreState.map.getSource('neximap-path')) {
+        mapLibreState.map.removeSource('neximap-path');
+      }
+    } catch(e) {}
+    
+    // Build path coordinates
+    const coordinates = [];
+    path.forEach(nodeId => {
+      const node = findNode(nodeId);
+      if (node && node.gpsLat != null && node.gpsLon != null) {
+        coordinates.push([node.gpsLon, node.gpsLat]);
+      }
+    });
+    
+    if (coordinates.length < 2) return;
+    
+    // Add path source and layer
+    mapLibreState.map.addSource('neximap-path', {
+      type: 'geojson',
+      data: {
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: coordinates
+        }
+      }
+    });
+    
+    mapLibreState.map.addLayer({
+      id: 'neximap-path-layer',
+      type: 'line',
+      source: 'neximap-path',
+      paint: {
+        'line-color': '#f59e0b',
+        'line-width': 5,
+        'line-opacity': 0.9
+      },
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round'
+      }
+    });
+    
+    // Fit bounds to show the path
+    const bounds = new maplibregl.LngLatBounds();
+    coordinates.forEach(coord => bounds.extend(coord));
+    mapLibreState.map.fitBounds(bounds, { padding: 80, maxZoom: 8 });
+  }
+  
+  // Toggle MapLibre path finder mode
+  function toggleMapLibrePathFinder(active) {
+    mapLibreState.pathFinderActive = active;
+    mapLibreState.pathFinderSource = null;
+    mapLibreState.pathFinderTarget = null;
+    mapLibreState.currentPath = null;
+    
+    // Update UI
+    const btn = document.getElementById('mlPathFinderBtn');
+    if (btn) {
+      btn.style.background = active ? '#10b981' : '';
+      btn.style.color = active ? 'white' : '#10b981';
+      btn.style.borderRadius = active ? '4px' : '';
+      btn.textContent = active ? '✓ Path Finder Active' : '🔍 Path Finder on Map';
+    }
+    
+    if (active) {
+      showToast('🔍 Path Finder: Click on a node to set as source');
+    } else {
+      // Remove path layer
+      try {
+        if (mapLibreState.map?.getLayer('neximap-path-layer')) {
+          mapLibreState.map.removeLayer('neximap-path-layer');
+        }
+        if (mapLibreState.map?.getSource('neximap-path')) {
+          mapLibreState.map.removeSource('neximap-path');
+        }
+      } catch(e) {}
+    }
+    
+    renderMapLibreContent();
+  }
+  
+  // Path Finder button handler
+  const mlPathFinderBtn = document.getElementById('mlPathFinderBtn');
+  if (mlPathFinderBtn) {
+    mlPathFinderBtn.addEventListener('click', () => {
+      toggleMapLibrePathFinder(!mapLibreState.pathFinderActive);
+    });
+  }
+  
+  // Display option toggle handlers
+  const mlShowNodeLabels = document.getElementById('mlShowNodeLabels');
+  const mlShowLinkLabels = document.getElementById('mlShowLinkLabels');
+  const mlShowLinks = document.getElementById('mlShowLinks');
+  const mlEnableSelection = document.getElementById('mlEnableSelection');
+  const mlUseCanvasColors = document.getElementById('mlUseCanvasColors');
+  const mlDefaultLinkColor = document.getElementById('mlDefaultLinkColor');
+  const mlDefaultLinkColorHex = document.getElementById('mlDefaultLinkColorHex');
+  const mlDefaultLinkWidth = document.getElementById('mlDefaultLinkWidth');
+  const mlDefaultLinkWidthVal = document.getElementById('mlDefaultLinkWidthVal');
+  
+  // Function to save MapLibre settings
+  function saveMapLibreSettings() {
+    try {
+      localStorage.setItem('neximap-maplibre-settings', JSON.stringify({
+        defaultLinkColor: mapLibreState.defaultLinkColor,
+        defaultLinkWidth: mapLibreState.defaultLinkWidth,
+        useCanvasColors: mapLibreState.useCanvasColors
+      }));
+    } catch(e) {}
+  }
+  
+  // Initialize UI from saved settings
+  function initMapLibreUI() {
+    if (mlDefaultLinkColor) mlDefaultLinkColor.value = mapLibreState.defaultLinkColor;
+    if (mlDefaultLinkColorHex) mlDefaultLinkColorHex.textContent = mapLibreState.defaultLinkColor;
+    if (mlDefaultLinkWidth) mlDefaultLinkWidth.value = mapLibreState.defaultLinkWidth;
+    if (mlDefaultLinkWidthVal) mlDefaultLinkWidthVal.textContent = mapLibreState.defaultLinkWidth + 'px';
+    if (mlUseCanvasColors) mlUseCanvasColors.checked = mapLibreState.useCanvasColors;
+  }
+  initMapLibreUI();
+  
+  if (mlShowNodeLabels) {
+    mlShowNodeLabels.addEventListener('change', () => {
+      if (mapLibreState.active) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  if (mlShowLinkLabels) {
+    mlShowLinkLabels.addEventListener('change', () => {
+      if (mapLibreState.active) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  if (mlShowLinks) {
+    mlShowLinks.addEventListener('change', () => {
+      if (mapLibreState.active) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  if (mlEnableSelection) {
+    mlEnableSelection.addEventListener('change', () => {
+      mapLibreState.selectionEnabled = mlEnableSelection.checked;
+      if (!mlEnableSelection.checked) {
+        clearMapSelection();
+      }
+    });
+  }
+  if (mlUseCanvasColors) {
+    mlUseCanvasColors.addEventListener('change', () => {
+      mapLibreState.useCanvasColors = mlUseCanvasColors.checked;
+      saveMapLibreSettings();
+      if (mapLibreState.active) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  if (mlDefaultLinkColor) {
+    mlDefaultLinkColor.addEventListener('input', () => {
+      mapLibreState.defaultLinkColor = mlDefaultLinkColor.value;
+      if (mlDefaultLinkColorHex) mlDefaultLinkColorHex.textContent = mlDefaultLinkColor.value;
+      saveMapLibreSettings();
+      if (mapLibreState.active && !mapLibreState.useCanvasColors) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  if (mlDefaultLinkWidth) {
+    mlDefaultLinkWidth.addEventListener('input', () => {
+      mapLibreState.defaultLinkWidth = parseFloat(mlDefaultLinkWidth.value);
+      if (mlDefaultLinkWidthVal) mlDefaultLinkWidthVal.textContent = mlDefaultLinkWidth.value + 'px';
+      saveMapLibreSettings();
+      if (mapLibreState.active && !mapLibreState.useCanvasColors) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+    });
+  }
+  
+  // ============== END MAPLIBRE PATH FINDER ==============
+  
+  // Toggle MapLibre view
+  function toggleMapLibreView(active) {
+    mapLibreState.active = active;
+    
+    const mapContainer = document.getElementById('maplibreContainer');
+    const svgContainer = document.getElementById('svgContainer');
+    const projPanel = document.getElementById('projectionPanel');
+    
+    // Update radio buttons
+    const stdRadio = document.getElementById('viewModeStandard');
+    const geoRadio = document.getElementById('viewModeGeo');
+    const mapLibreRadio = document.getElementById('viewModeMapLibre');
+    
+    if (active) {
+      // Determine what view we're coming from
+      const fromView = geoViewState.active ? 'geoStatic' : 'canvas';
+      
+      // Deactivate other views
+      geoViewState.active = false;
+      
+      // Switch label settings to geoDynamic
+      if (typeof switchViewLabelSettings === 'function') {
+        switchViewLabelSettings(fromView, 'geoDynamic');
+      }
+      
+      // Show MapLibre, hide SVG
+      if (mapContainer) mapContainer.classList.add('active');
+      if (svgContainer) svgContainer.style.display = 'none';
+      if (projPanel) projPanel.style.display = 'none';
+      
+      // Update radios
+      if (stdRadio) stdRadio.checked = false;
+      if (geoRadio) geoRadio.checked = false;
+      if (mapLibreRadio) mapLibreRadio.checked = true;
+      
+      // Initialize and render
+      initMapLibre();
+      if (mapLibreState.map) {
+        mapLibreState.map.resize();
+        setupMapClickToDeselect();
+        renderMapLibreContent();
+        
+        // Re-render route finder highlights after MapLibre is ready
+        if (typeof routeFinderState !== 'undefined' && routeFinderState.active && routeFinderState.routes.length > 0) {
+          setTimeout(() => highlightActiveRoute(), 300);
+        }
+      }
+      
+      showToast('🗺️ Geo Dynamic Map — click to select, Inspector shows details');
+    } else {
+      // Switch label settings back to canvas (will be updated if going to geoStatic)
+      if (typeof switchViewLabelSettings === 'function') {
+        switchViewLabelSettings('geoDynamic', 'canvas');
+      }
+      
+      // Hide MapLibre, show SVG
+      if (mapContainer) mapContainer.classList.remove('active');
+      if (svgContainer) svgContainer.style.display = '';
+      
+      // Clear MapLibre route path when leaving
+      clearMapLibreRoutePath();
+    }
+  }
+  
+  // Event handlers for MapLibre view mode
+  const viewModeMapLibre = document.getElementById('viewModeMapLibre');
+  if (viewModeMapLibre) {
+    viewModeMapLibre.addEventListener('change', () => {
+      if (viewModeMapLibre.checked) {
+        toggleMapLibreView(true);
+      }
+    });
+  }
+  
+  // Update standard view handler to deactivate MapLibre
+  const viewModeStd = document.getElementById('viewModeStandard');
+  if (viewModeStd) {
+    const origHandler = viewModeStd.onchange;
+    viewModeStd.addEventListener('change', () => {
+      if (viewModeStd.checked) {
+        toggleMapLibreView(false);
+        toggleGeoView(false);
+        render();
+      }
+    });
+  }
+  
+  // Update geo view handler to deactivate MapLibre
+  const viewModeGeoRadio = document.getElementById('viewModeGeo');
+  if (viewModeGeoRadio) {
+    viewModeGeoRadio.addEventListener('change', () => {
+      if (viewModeGeoRadio.checked) {
+        toggleMapLibreView(false);
+        toggleGeoView(true);
+      }
+    });
+  }
+  
+  // Map style radio handlers
+  const mapStyleLiberty = document.getElementById('mapStyleLiberty');
+  const mapStyleBright = document.getElementById('mapStyleBright');
+  const mapStylePositron = document.getElementById('mapStylePositron');
+  const mapStyleDarkMatter = document.getElementById('mapStyleDarkMatter');
+  
+  if (mapStyleLiberty) {
+    mapStyleLiberty.addEventListener('change', () => {
+      if (mapStyleLiberty.checked) changeMapLibreStyle('liberty');
+    });
+  }
+  if (mapStyleBright) {
+    mapStyleBright.addEventListener('change', () => {
+      if (mapStyleBright.checked) changeMapLibreStyle('bright');
+    });
+  }
+  if (mapStylePositron) {
+    mapStylePositron.addEventListener('change', () => {
+      if (mapStylePositron.checked) changeMapLibreStyle('positron');
+    });
+  }
+  if (mapStyleDarkMatter) {
+    mapStyleDarkMatter.addEventListener('change', () => {
+      if (mapStyleDarkMatter.checked) changeMapLibreStyle('darkMatter');
+    });
+  }
+  
+  // Load saved style preference
+  try {
+    const savedStyle = localStorage.getItem('neximap-maplibre-style');
+    if (savedStyle && mapLibreState.styles[savedStyle]) {
+      mapLibreState.style = savedStyle;
+      const radioId = 'mapStyle' + savedStyle.charAt(0).toUpperCase() + savedStyle.slice(1);
+      const radio = document.getElementById(radioId);
+      if (radio) radio.checked = true;
+    }
+  } catch(e) {}
+  
+  // Expose for external updates
+  window.renderMapLibreContent = renderMapLibreContent;
+  window.mapLibreState = mapLibreState;
+  
+  // ============== END MAPLIBRE INTERACTIVE MAP ==============
   
   // ============== END GEOGRAPHIC VIEW ==============
 
