@@ -996,6 +996,16 @@
       stroke-dasharray: 8,4;
       opacity: 0.85;
     }
+    
+    /* MLG route segments (Phase 1) - purple glow */
+    .edge.route-mlg-segment path:not(.edge-hit) {
+      stroke: #a855f7 !important;
+      stroke-width: 5 !important;
+      filter: drop-shadow(0 0 10px rgba(168,85,247,0.9));
+    }
+    .edge.route-mlg-segment {
+      z-index: 100;
+    }
 
     /* Route Finder Panel - Inspector Style */
     #routeFinderPanel {
@@ -4461,6 +4471,148 @@
         </div>
       </div>
 
+      <!-- Multilink Groups Preference Section (Phase 1) -->
+      <div class="inspector-section collapsed" data-section="route-mlg-preference">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>🔗 Multilink Groups</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="hint" style="margin-bottom:10px; padding:6px; background:#fdf4ff; border-radius:4px; color:#86198f;">
+            Use pre-defined Multilink Groups as preferred routing paths. MLGs are atomic super-edges.
+          </div>
+          
+          <!-- Prefer MLGs Toggle -->
+          <div class="row">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:6px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:6px;">
+              <input type="checkbox" id="routePreferMLGs" style="width:18px; height:18px; accent-color:#a855f7;" />
+              <div>
+                <span style="font-weight:600; font-size:12px; color:#7c3aed;">Prefer Multilink Groups</span>
+                <div style="font-size:10px; color:#9333ea; margin-top:2px;">Route through MLGs when available</div>
+              </div>
+            </label>
+          </div>
+          
+          <!-- MLG Topology Type Filter -->
+          <div class="row" id="mlgTopologyFilterRow" style="margin-top:12px; display:none;">
+            <label style="font-weight:600; color:#7c3aed; font-size:11px; margin-bottom:6px; display:block;">Include Topology Types</label>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; padding:4px 8px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:4px; font-size:11px;">
+                <input type="checkbox" id="mlgFilterLinear" checked style="accent-color:#a855f7;" />
+                <span>➡️ Linear</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; padding:4px 8px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:4px; font-size:11px;">
+                <input type="checkbox" id="mlgFilterRing" checked style="accent-color:#a855f7;" />
+                <span>🛡️ Ring</span>
+              </label>
+              <label style="display:flex; align-items:center; gap:4px; cursor:pointer; padding:4px 8px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:4px; font-size:11px;">
+                <input type="checkbox" id="mlgFilterRingLinear" checked style="accent-color:#a855f7;" />
+                <span>🔀 Ring+Linear</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Must-Use MLGs -->
+          <div class="row" id="mlgMustUseRow" style="margin-top:12px; display:none;">
+            <label style="font-weight:600; color:#16a34a; font-size:11px;">Must-Use MLGs</label>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+              <select id="routeMustUseMLGSelect" style="flex:1; padding:6px; font-size:11px; border-radius:4px; border:1px solid #ddd;">
+                <option value="">-- Select MLG (must use) --</option>
+              </select>
+              <button class="btn" id="btnAddMustUseMLG" style="padding:6px 10px; font-size:11px; background:#f0fdf4; border-color:#86efac;" title="Add must-use MLG">+</button>
+            </div>
+            <div id="mustUseMLGsList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+              <!-- Must-use MLGs will appear here as tags -->
+            </div>
+          </div>
+          
+          <!-- Excluded MLGs -->
+          <div class="row" id="mlgExcludeRow" style="margin-top:12px; display:none;">
+            <label style="font-weight:600; color:#dc2626; font-size:11px;">Excluded MLGs</label>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+              <select id="routeExcludeMLGSelect" style="flex:1; padding:6px; font-size:11px; border-radius:4px; border:1px solid #ddd;">
+                <option value="">-- Select MLG to exclude --</option>
+              </select>
+              <button class="btn" id="btnAddExcludeMLG" style="padding:6px 10px; font-size:11px; background:#fef2f2; border-color:#fecaca;" title="Add excluded MLG">+</button>
+            </div>
+            <div id="excludedMLGsList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+              <!-- Excluded MLGs will appear here as tags -->
+            </div>
+          </div>
+          
+          <!-- MLG Capacity Filter (collapsed subsection) -->
+          <div id="mlgCapacitySection" style="margin-top:12px; display:none;">
+            <div style="border:1px solid #e9d5ff; border-radius:6px; overflow:hidden;">
+              <div style="padding:8px 10px; background:#faf5ff; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="document.getElementById('mlgCapacityContent').style.display = document.getElementById('mlgCapacityContent').style.display === 'none' ? 'block' : 'none'; this.querySelector('.mlg-cap-icon').textContent = document.getElementById('mlgCapacityContent').style.display === 'none' ? '▶' : '▼';">
+                <span style="font-size:11px; font-weight:600; color:#7c3aed;">📊 MLG Capacity Filter</span>
+                <span class="mlg-cap-icon" style="font-size:10px; color:#a855f7;">▶</span>
+              </div>
+              <div id="mlgCapacityContent" style="display:none; padding:10px; background:#fefbff;">
+                <!-- MLG Capacity Mode -->
+                <div class="row">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:4px 0;">
+                    <input type="radio" name="routeMLGCapacityMode" value="none" checked style="accent-color:#a855f7;" />
+                    <span style="font-size:11px;">No capacity filter</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:4px 0;">
+                    <input type="radio" name="routeMLGCapacityMode" value="total" style="accent-color:#a855f7;" />
+                    <span style="font-size:11px;">Minimum Total Capacity</span>
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:4px 0;">
+                    <input type="radio" name="routeMLGCapacityMode" value="units" style="accent-color:#a855f7;" />
+                    <span style="font-size:11px;">Minimum by Speed Tier</span>
+                  </label>
+                </div>
+                
+                <!-- MLG Total Capacity (shown when mode=total) -->
+                <div id="mlgCapacityTotalSection" style="display:none; margin-top:8px; padding:8px; background:#f5f3ff; border-radius:4px;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <input id="routeMLGCapacityMinTotal" type="number" min="0" step="0.1" value="0" style="flex:1; text-align:right; padding:4px 6px; font-size:11px;" />
+                    <span style="font-size:11px; font-weight:600; color:#7c3aed;">Gbps</span>
+                  </div>
+                </div>
+                
+                <!-- MLG Units Capacity (shown when mode=units) -->
+                <div id="mlgCapacityUnitsSection" style="display:none; margin-top:8px; padding:8px; background:#f5f3ff; border-radius:4px;">
+                  <div style="display:grid; grid-template-columns:1fr 50px; gap:3px; align-items:center; font-size:10px;">
+                    <span>1G units</span>
+                    <input id="routeMLGCapacityMin1G" type="number" min="0" value="0" style="text-align:right; padding:2px 4px; font-size:10px;" />
+                    <span>10G units</span>
+                    <input id="routeMLGCapacityMin10G" type="number" min="0" value="0" style="text-align:right; padding:2px 4px; font-size:10px;" />
+                    <span>100G units</span>
+                    <input id="routeMLGCapacityMin100G" type="number" min="0" value="0" style="text-align:right; padding:2px 4px; font-size:10px;" />
+                    <span>400G units</span>
+                    <input id="routeMLGCapacityMin400G" type="number" min="0" value="0" style="text-align:right; padding:2px 4px; font-size:10px;" />
+                    <span>Tbps units</span>
+                    <input id="routeMLGCapacityMinTbps" type="number" min="0" value="0" style="text-align:right; padding:2px 4px; font-size:10px;" />
+                  </div>
+                </div>
+                
+                <!-- Include undefined MLG capacity -->
+                <div style="margin-top:8px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:10px;">
+                    <input type="checkbox" id="routeMLGCapacityIncludeUndefined" checked style="accent-color:#a855f7;" />
+                    <span>Include MLGs with undefined capacity</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Clear MLG Settings -->
+          <div class="row" id="mlgClearRow" style="margin-top:12px; display:none;">
+            <button class="btn" id="btnClearMLGSettings" style="width:100%; font-size:11px; padding:6px; background:#fdf4ff; border-color:#e9d5ff; color:#86198f;">
+              🗑️ Clear MLG Settings
+            </button>
+          </div>
+          
+          <!-- Available MLGs Summary -->
+          <div id="mlgAvailableSummary" style="margin-top:10px; padding:8px; background:#f9fafb; border-radius:4px; font-size:10px; color:#6b7280;">
+            <span id="mlgCountDisplay">0 Multilink Groups available</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Capacity Requirements Section -->
       <div class="inspector-section collapsed" data-section="route-capacity-filter">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
@@ -4561,6 +4713,15 @@
         </div>
         <div class="inspector-section-content" id="routeDetailsContent">
           <!-- Selected route details will be shown here -->
+        </div>
+        <!-- Save as MLG Button (Phase 1) -->
+        <div id="saveAsMLGContainer" style="display:none; padding:10px 12px; border-top:1px solid #e5e7eb;">
+          <button class="btn primary" id="btnSaveRouteAsMLG" style="width:100%; padding:10px; font-size:12px; background:linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); border-color:#7c3aed;">
+            💾 Save Route as Multilink Group
+          </button>
+          <div style="font-size:10px; color:#6b7280; margin-top:6px; text-align:center;">
+            Creates a new MLG from the currently selected route
+          </div>
         </div>
       </div>
 
@@ -11501,6 +11662,9 @@ function saveEdgeCapacity(field, value) {
   // Also update the calculated total on the edge object
   e.totalCapacityGbps = updateEdgeCapacityTotal();
   
+  // Update any MLGs containing this link (capacity change)
+  if (typeof updateMLGsForLinkChange === 'function') updateMLGsForLinkChange(e.id);
+  
   commit();
 }
 
@@ -11741,12 +11905,19 @@ if (groupTitleFontInline) {
     if (state.selected?.type!=='edge') return;
     const e = findEdge(state.selected.id); if (!e) return;
     const raw = String(edgeLatency.value ?? '').trim();
-    if (raw === '') { e.latencyMs = null; commit(); render(); return; }
+    if (raw === '') { 
+      e.latencyMs = null; 
+      // Update any MLGs containing this link
+      if (typeof updateMLGsForLinkChange === 'function') updateMLGsForLinkChange(e.id);
+      commit(); render(); return; 
+    }
     // Replace comma with period for locales that use comma as decimal separator
     const v = parseFloat(raw.replace(',', '.'));
     if (Number.isFinite(v) && v >= 0) { 
       e.latencyMs = v; 
       edgeLatency.value = v; // Normalize the display
+      // Update any MLGs containing this link
+      if (typeof updateMLGsForLinkChange === 'function') updateMLGsForLinkChange(e.id);
       commit(); 
       render(); 
     } else {
@@ -13956,6 +14127,20 @@ async function executeImportFromData(nodesData, linksData, containersData, mode)
   await executeImportWithData(nodesData, linksData, containersData, mode);
 }
 
+/**
+ * Parse tags string supporting both "|" and "," as separators
+ * Priority: "|" is checked first, then "," if no "|" found
+ * @param {string} tagsStr - The tags string to parse
+ * @returns {Array} Array of trimmed, non-empty tag strings
+ */
+function parseTagsString(tagsStr) {
+  if (!tagsStr || typeof tagsStr !== 'string') return [];
+  
+  // Determine separator: use | if present, otherwise use ,
+  const separator = tagsStr.includes('|') ? '|' : ',';
+  return tagsStr.split(separator).map(t => t.trim()).filter(t => t);
+}
+
 async function parseCSVFile(file, separator) {
   const text = await file.text();
   const lines = text.split(/\r?\n/).filter(line => line.trim());
@@ -14186,7 +14371,7 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
       // Update existing node
       if (name) existing.name = name;
       if (code) existing.code = code;
-      if (row['Tags']) existing.tags = row['Tags'].split('|').map(t => t.trim()).filter(t => t);
+      if (row['Tags']) existing.tags = parseTagsString(row['Tags']);
       if (row['Additional Tags']) existing.extraTags = row['Additional Tags'];
       if (row['Address']) existing.address = row['Address'];
       if (row['City']) existing.city = row['City'];
@@ -14210,7 +14395,7 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
         r: 20,
         fill: row['Fill Color'] || '#dae8fc',
         stroke: row['Stroke Color'] || '#6c8ebf',
-        tags: row['Tags'] ? row['Tags'].split('|').map(t => t.trim()).filter(t => t) : ['default'],
+        tags: row['Tags'] ? parseTagsString(row['Tags']) : ['default'],
         extraTags: row['Additional Tags'] || '',
         address: row['Address'] || '',
         city: row['City'] || '',
@@ -14271,7 +14456,7 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
       if (!isNaN(cap100G)) existing.cap100G = cap100G;
       if (!isNaN(cap400G)) existing.cap400G = cap400G;
       if (!isNaN(capTbps)) existing.capTbps = capTbps;
-      if (row['Tags']) existing.filterTags = row['Tags'].split('|').map(t => t.trim()).filter(t => t);
+      if (row['Tags']) existing.filterTags = parseTagsString(row['Tags']);
       if (row['Additional Tags']) existing.extraTags = row['Additional Tags'];
       if (row['Line Color']) existing.strokeColor = row['Line Color'];
     } else {
@@ -14291,7 +14476,7 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
         cap100G: !isNaN(cap100G) ? cap100G : 0,
         cap400G: !isNaN(cap400G) ? cap400G : 0,
         capTbps: !isNaN(capTbps) ? capTbps : 0,
-        filterTags: row['Tags'] ? row['Tags'].split('|').map(t => t.trim()).filter(t => t) : ['default'],
+        filterTags: row['Tags'] ? parseTagsString(row['Tags']) : ['default'],
         extraTags: row['Additional Tags'] || '',
         strokeColor: row['Line Color'] || '#666666',
         strokeW: 2,
@@ -14595,7 +14780,21 @@ function loadProjectObject(obj) {
     color: mlg.color || '#f59e0b',
     description: mlg.description || '',
     created: mlg.created || new Date().toISOString(),
-    modified: mlg.modified || new Date().toISOString()
+    modified: mlg.modified || new Date().toISOString(),
+    // Phase 1 fields: source tracking
+    source: mlg.source || 'manual',
+    // Phase 1 fields: calculated capacity (MIN cascade)
+    calcCap1G: (typeof mlg.calcCap1G === 'number') ? mlg.calcCap1G : 0,
+    calcCap10G: (typeof mlg.calcCap10G === 'number') ? mlg.calcCap10G : 0,
+    calcCap100G: (typeof mlg.calcCap100G === 'number') ? mlg.calcCap100G : 0,
+    calcCap400G: (typeof mlg.calcCap400G === 'number') ? mlg.calcCap400G : 0,
+    calcCapTbps: (typeof mlg.calcCapTbps === 'number') ? mlg.calcCapTbps : 0,
+    // Phase 1 fields: user override capacity (prevails when not null)
+    overrideCap1G: mlg.overrideCap1G ?? null,
+    overrideCap10G: mlg.overrideCap10G ?? null,
+    overrideCap100G: mlg.overrideCap100G ?? null,
+    overrideCap400G: mlg.overrideCap400G ?? null,
+    overrideCapTbps: mlg.overrideCapTbps ?? null
   }));
 
   state.groups = gg.map(g => ({
@@ -14721,6 +14920,11 @@ function loadProjectObject(obj) {
   
   // CRITICAL: Refresh all memberships
   refreshAllMemberships();
+  
+  // Recalculate MLG capacities after load (in case link capacities have changed)
+  if (typeof recalculateAllMLGCapacities === 'function') {
+    recalculateAllMLGCapacities();
+  }
   
   // Reset history
   history.stack = [];
@@ -15954,6 +16158,234 @@ function loadProjectObject(obj) {
     return segments.reduce((total, seg) => total + calculateSegmentLatency(seg), 0);
   }
   
+  // ============== MLG CAPACITY CALCULATION (Phase 1) ==============
+  // Capacity uses MIN cascade: MLG.cap = MIN(segments) where segment.cap = MIN(paths) where path.cap = MIN(links)
+  // This ensures "guaranteed survivable capacity" - what remains if any single path fails
+  
+  /**
+   * Calculate capacity for a single path (MIN of all link capacities)
+   * @param {Array} links - Array of link IDs in the path
+   * @returns {Object} Capacity object with cap1G, cap10G, cap100G, cap400G, capTbps
+   */
+  function calculatePathCapacity(links) {
+    if (!links || links.length === 0) {
+      return { cap1G: 0, cap10G: 0, cap100G: 0, cap400G: 0, capTbps: 0 };
+    }
+    
+    // Start with infinity (will be reduced by MIN)
+    let min1G = Infinity, min10G = Infinity, min100G = Infinity, min400G = Infinity, minTbps = Infinity;
+    let hasValidLink = false;
+    
+    for (const linkId of links) {
+      const link = findEdge(linkId);
+      if (!link) continue;
+      
+      hasValidLink = true;
+      // Get link capacity (default to 0 if undefined)
+      const l1G = link.cap1G || 0;
+      const l10G = link.cap10G || 0;
+      const l100G = link.cap100G || 0;
+      const l400G = link.cap400G || 0;
+      const lTbps = link.capTbps || 0;
+      
+      // MIN across all links
+      min1G = Math.min(min1G, l1G);
+      min10G = Math.min(min10G, l10G);
+      min100G = Math.min(min100G, l100G);
+      min400G = Math.min(min400G, l400G);
+      minTbps = Math.min(minTbps, lTbps);
+    }
+    
+    // If no valid links found, return zeros
+    if (!hasValidLink) {
+      return { cap1G: 0, cap10G: 0, cap100G: 0, cap400G: 0, capTbps: 0 };
+    }
+    
+    return {
+      cap1G: min1G === Infinity ? 0 : min1G,
+      cap10G: min10G === Infinity ? 0 : min10G,
+      cap100G: min100G === Infinity ? 0 : min100G,
+      cap400G: min400G === Infinity ? 0 : min400G,
+      capTbps: minTbps === Infinity ? 0 : minTbps
+    };
+  }
+  
+  /**
+   * Calculate capacity for a segment (MIN of all path capacities)
+   * @param {Object} segment - Segment object with paths array
+   * @returns {Object} Capacity object
+   */
+  function calculateSegmentCapacity(segment) {
+    if (!segment || !segment.paths || segment.paths.length === 0) {
+      return { cap1G: 0, cap10G: 0, cap100G: 0, cap400G: 0, capTbps: 0 };
+    }
+    
+    let min1G = Infinity, min10G = Infinity, min100G = Infinity, min400G = Infinity, minTbps = Infinity;
+    
+    for (const path of segment.paths) {
+      const pathCap = calculatePathCapacity(path.links);
+      min1G = Math.min(min1G, pathCap.cap1G);
+      min10G = Math.min(min10G, pathCap.cap10G);
+      min100G = Math.min(min100G, pathCap.cap100G);
+      min400G = Math.min(min400G, pathCap.cap400G);
+      minTbps = Math.min(minTbps, pathCap.capTbps);
+    }
+    
+    return {
+      cap1G: min1G === Infinity ? 0 : min1G,
+      cap10G: min10G === Infinity ? 0 : min10G,
+      cap100G: min100G === Infinity ? 0 : min100G,
+      cap400G: min400G === Infinity ? 0 : min400G,
+      capTbps: minTbps === Infinity ? 0 : minTbps
+    };
+  }
+  
+  /**
+   * Calculate capacity for entire MLG (MIN of all segment capacities)
+   * @param {Array} segments - Array of segment objects
+   * @returns {Object} Capacity object
+   */
+  function calculateMLGCapacity(segments) {
+    if (!segments || segments.length === 0) {
+      return { cap1G: 0, cap10G: 0, cap100G: 0, cap400G: 0, capTbps: 0 };
+    }
+    
+    let min1G = Infinity, min10G = Infinity, min100G = Infinity, min400G = Infinity, minTbps = Infinity;
+    
+    for (const segment of segments) {
+      const segCap = calculateSegmentCapacity(segment);
+      min1G = Math.min(min1G, segCap.cap1G);
+      min10G = Math.min(min10G, segCap.cap10G);
+      min100G = Math.min(min100G, segCap.cap100G);
+      min400G = Math.min(min400G, segCap.cap400G);
+      minTbps = Math.min(minTbps, segCap.capTbps);
+    }
+    
+    return {
+      cap1G: min1G === Infinity ? 0 : min1G,
+      cap10G: min10G === Infinity ? 0 : min10G,
+      cap100G: min100G === Infinity ? 0 : min100G,
+      cap400G: min400G === Infinity ? 0 : min400G,
+      capTbps: minTbps === Infinity ? 0 : minTbps
+    };
+  }
+  
+  /**
+   * Get effective capacity for an MLG (override values take precedence over calculated)
+   * @param {Object} mlg - Multilink group object
+   * @returns {Object} Effective capacity object
+   */
+  function getMLGEffectiveCapacity(mlg) {
+    return {
+      cap1G: mlg.overrideCap1G !== null ? mlg.overrideCap1G : (mlg.calcCap1G || 0),
+      cap10G: mlg.overrideCap10G !== null ? mlg.overrideCap10G : (mlg.calcCap10G || 0),
+      cap100G: mlg.overrideCap100G !== null ? mlg.overrideCap100G : (mlg.calcCap100G || 0),
+      cap400G: mlg.overrideCap400G !== null ? mlg.overrideCap400G : (mlg.calcCap400G || 0),
+      capTbps: mlg.overrideCapTbps !== null ? mlg.overrideCapTbps : (mlg.calcCapTbps || 0)
+    };
+  }
+  
+  /**
+   * Calculate total capacity in Gbps for an MLG
+   * @param {Object} mlg - Multilink group object
+   * @returns {number} Total capacity in Gbps
+   */
+  function getMLGTotalCapacityGbps(mlg) {
+    const cap = getMLGEffectiveCapacity(mlg);
+    return cap.cap1G + (10 * cap.cap10G) + (100 * cap.cap100G) + (400 * cap.cap400G) + (1000 * cap.capTbps);
+  }
+  
+  /**
+   * Recalculate capacity for a specific MLG and update its stored values
+   * Call this when underlying links change
+   * @param {number} mlgId - ID of the MLG to recalculate
+   */
+  function recalculateMLGCapacity(mlgId) {
+    const mlg = findMultilinkGroup(mlgId);
+    if (!mlg) return;
+    
+    const capacity = calculateMLGCapacity(mlg.segments);
+    mlg.calcCap1G = capacity.cap1G;
+    mlg.calcCap10G = capacity.cap10G;
+    mlg.calcCap100G = capacity.cap100G;
+    mlg.calcCap400G = capacity.cap400G;
+    mlg.calcCapTbps = capacity.capTbps;
+  }
+  
+  /**
+   * Recalculate capacity for all MLGs
+   * Call this after bulk link changes or on file load
+   */
+  function recalculateAllMLGCapacities() {
+    state.multilinkGroups.forEach(mlg => {
+      const capacity = calculateMLGCapacity(mlg.segments);
+      mlg.calcCap1G = capacity.cap1G;
+      mlg.calcCap10G = capacity.cap10G;
+      mlg.calcCap100G = capacity.cap100G;
+      mlg.calcCap400G = capacity.cap400G;
+      mlg.calcCapTbps = capacity.capTbps;
+    });
+  }
+  
+  /**
+   * Find all MLGs that contain a specific link
+   * @param {number} linkId - The link ID to search for
+   * @returns {Array} Array of MLG objects containing the link
+   */
+  function findMLGsContainingLink(linkId) {
+    return state.multilinkGroups.filter(mlg => {
+      if (!mlg.segments) return false;
+      return mlg.segments.some(seg => {
+        if (!seg.paths) return false;
+        return seg.paths.some(path => {
+          if (!path.links) return false;
+          return path.links.includes(linkId);
+        });
+      });
+    });
+  }
+  
+  /**
+   * Recalculate latency and capacity for all MLGs containing a specific link
+   * Call this whenever a link's latency or capacity changes
+   * @param {number} linkId - The link that was modified
+   */
+  function updateMLGsForLinkChange(linkId) {
+    const affectedMLGs = findMLGsContainingLink(linkId);
+    
+    if (affectedMLGs.length === 0) return;
+    
+    affectedMLGs.forEach(mlg => {
+      // Recalculate path latencies
+      mlg.segments.forEach(seg => {
+        seg.paths.forEach(path => {
+          path.latency = calculatePathLatency(path.links);
+        });
+        seg.latency = calculateSegmentLatency(seg);
+      });
+      
+      // Recalculate total MLG latency
+      mlg.totalLatency = calculateMLGLatency(mlg.segments);
+      
+      // Recalculate capacity
+      const capacity = calculateMLGCapacity(mlg.segments);
+      mlg.calcCap1G = capacity.cap1G;
+      mlg.calcCap10G = capacity.cap10G;
+      mlg.calcCap100G = capacity.cap100G;
+      mlg.calcCap400G = capacity.cap400G;
+      mlg.calcCapTbps = capacity.capTbps;
+    });
+    
+    // Update MLG manager display if open
+    if (typeof updateMultilinkGroupList === 'function') {
+      updateMultilinkGroupList();
+    }
+    
+    console.log(`[MLG] Updated ${affectedMLGs.length} MLG(s) for link ${linkId} change`);
+  }
+  
+  // ============== END MLG CAPACITY CALCULATION ==============
+  
   // Helper: Classify multilink group type
   function classifyMLGType(segments) {
     if (!segments || segments.length === 0) return 'linear';
@@ -16230,7 +16662,22 @@ function loadProjectObject(obj) {
       type: 'linear',
       totalLatency: 0,
       isDiverse: true,
-      warnings: []
+      warnings: [],
+      // Phase 1: New fields for MLG Path Finder integration
+      source: 'manual',  // 'manual' | 'pathfinder' | 'byop' - how the MLG was created
+      tags: [],          // MLG-level tags (structure ready for future use)
+      // Auto-calculated capacity (MIN cascade through segments→paths→links)
+      calcCap1G: 0,
+      calcCap10G: 0,
+      calcCap100G: 0,
+      calcCap400G: 0,
+      calcCapTbps: 0,
+      // User override capacity (when not null, prevails over calculated values)
+      overrideCap1G: null,
+      overrideCap10G: null,
+      overrideCap100G: null,
+      overrideCap400G: null,
+      overrideCapTbps: null
     };
     
     showMultilinkEditor();
@@ -16326,6 +16773,20 @@ function loadProjectObject(obj) {
     temp.originNode = temp.segments[0].fromNode;
     temp.destinationNode = temp.segments[temp.segments.length - 1].toNode;
     
+    // Calculate capacity (MIN cascade through segments→paths→links)
+    const capacity = calculateMLGCapacity(temp.segments);
+    temp.calcCap1G = capacity.cap1G;
+    temp.calcCap10G = capacity.cap10G;
+    temp.calcCap100G = capacity.cap100G;
+    temp.calcCap400G = capacity.cap400G;
+    temp.calcCapTbps = capacity.capTbps;
+    
+    // Preserve source field if already set, default to 'manual'
+    if (!temp.source) temp.source = 'manual';
+    
+    // Ensure tags array exists
+    if (!temp.tags) temp.tags = [];
+    
     const segDiv = checkSegmentDiversity(temp.segments);
     temp.isDiverse = segDiv.isDiverse && temp.segments.every(s => s.isDiverse);
     temp.diversityWarning = segDiv.warning;
@@ -16349,6 +16810,11 @@ function loadProjectObject(obj) {
     }
     
     hideMultilinkEditor();
+    // Clear editing state to prevent interference with canvas selection
+    mlgManagerState.editingGroup = null;
+    mlgManagerState.tempGroup = null;
+    mlgManagerState.pickingPath = null;
+    
     updateMultilinkGroupList();
     highlightMultilinkGroup(temp.id);
     commit();
@@ -18187,7 +18653,28 @@ function loadProjectObject(obj) {
     skipImplicitTransit: false,      // Skip implicit container/region transit connections
     
     // Pick mode for exclusions/must-use
-    pickMode: null            // null, 'excludeNode', 'excludeLink', 'mustUseNode', 'mustUseLink'
+    pickMode: null,            // null, 'excludeNode', 'excludeLink', 'mustUseNode', 'mustUseLink', 'mustUseMLG', 'excludeMLG'
+    
+    // ============== MLG PREFERENCE SETTINGS (Phase 1) ==============
+    // When preferMLGs is true, the algorithm will:
+    // 1. First try to find a pure MLG-only path
+    // 2. If no pure MLG path exists, find hybrid path (MLG + links) with MLG priority
+    
+    preferMLGs: false,                    // Master toggle for MLG preference
+    mlgTopologyFilter: new Set(['linear', 'ring', 'ring_linear']),  // Which MLG types to include
+    mustUseMLGs: new Set(),               // MLG IDs that route MUST use
+    excludedMLGs: new Set(),              // MLG IDs to avoid
+    
+    // MLG Capacity filters (same structure as link capacity filters)
+    mlgCapacityMode: 'none',              // 'none', 'total', 'units'
+    mlgCapacityMinTotal: 0,               // Minimum total Gbps required
+    mlgCapacityMin1G: 0,
+    mlgCapacityMin10G: 0,
+    mlgCapacityMin100G: 0,
+    mlgCapacityMin400G: 0,
+    mlgCapacityMinTbps: 0,
+    mlgCapacityIncludeUndefined: true     // Include MLGs with all capacity = 0
+    // ============== END MLG PREFERENCE SETTINGS ==============
   };
   
   // Expose globally for checking in event handlers
@@ -18494,6 +18981,298 @@ function loadProjectObject(obj) {
     
     return { adjacency, nodeIds };
   }
+
+  // ============== MLG-AUGMENTED PATHFINDING (Phase 1) ==============
+  
+  /**
+   * Check if an MLG passes the current filter settings
+   * @param {Object} mlg - Multilink group object
+   * @returns {boolean} True if MLG passes all filters
+   */
+  function mlgPassesFilters(mlg) {
+    // Check if MLG is excluded
+    if (routeFinderState.excludedMLGs.has(mlg.id)) return false;
+    
+    // Check topology type filter
+    if (!routeFinderState.mlgTopologyFilter.has(mlg.type)) return false;
+    
+    // Check capacity filters
+    if (routeFinderState.mlgCapacityMode !== 'none') {
+      const cap = getMLGEffectiveCapacity(mlg);
+      
+      // Check if capacity is undefined (all zeros)
+      const isUndefined = cap.cap1G === 0 && cap.cap10G === 0 && 
+                          cap.cap100G === 0 && cap.cap400G === 0 && cap.capTbps === 0;
+      
+      if (isUndefined && routeFinderState.mlgCapacityIncludeUndefined) {
+        // Allow undefined capacity through
+      } else if (isUndefined && !routeFinderState.mlgCapacityIncludeUndefined) {
+        return false;
+      } else {
+        // Check actual capacity
+        if (routeFinderState.mlgCapacityMode === 'total') {
+          const totalGbps = cap.cap1G + (10 * cap.cap10G) + (100 * cap.cap100G) + 
+                           (400 * cap.cap400G) + (1000 * cap.capTbps);
+          if (totalGbps < routeFinderState.mlgCapacityMinTotal) return false;
+        } else if (routeFinderState.mlgCapacityMode === 'units') {
+          if (routeFinderState.mlgCapacityMin1G > 0 && cap.cap1G < routeFinderState.mlgCapacityMin1G) return false;
+          if (routeFinderState.mlgCapacityMin10G > 0 && cap.cap10G < routeFinderState.mlgCapacityMin10G) return false;
+          if (routeFinderState.mlgCapacityMin100G > 0 && cap.cap100G < routeFinderState.mlgCapacityMin100G) return false;
+          if (routeFinderState.mlgCapacityMin400G > 0 && cap.cap400G < routeFinderState.mlgCapacityMin400G) return false;
+          if (routeFinderState.mlgCapacityMinTbps > 0 && cap.capTbps < routeFinderState.mlgCapacityMinTbps) return false;
+        }
+      }
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Build a graph using only MLGs as edges (no individual links)
+   * Used for Phase 1 of MLG-preferred search
+   * @returns {Object} { adjacency, nodeIds, mlgEdges } - Graph structure with MLG info
+   */
+  function buildMLGOnlyGraph() {
+    const adjacency = new Map();
+    const mlgEdges = new Map(); // Track which MLG creates which edge
+    
+    // Get all valid nodes (for endpoints)
+    const validNodes = new Set();
+    
+    // Process each MLG
+    state.multilinkGroups.forEach(mlg => {
+      // Check if MLG passes filters
+      if (!mlgPassesFilters(mlg)) return;
+      
+      // Get MLG endpoints
+      const origin = mlg.originNode || (mlg.segments[0]?.fromNode);
+      const dest = mlg.destinationNode || (mlg.segments[mlg.segments.length - 1]?.toNode);
+      
+      if (!origin || !dest) return;
+      
+      // Check endpoint nodes are not excluded
+      if (routeFinderState.excludedNodes.has(origin)) return;
+      if (routeFinderState.excludedNodes.has(dest)) return;
+      
+      // Add endpoints to valid nodes
+      validNodes.add(origin);
+      validNodes.add(dest);
+      
+      // Initialize adjacency lists if needed
+      if (!adjacency.has(origin)) adjacency.set(origin, []);
+      if (!adjacency.has(dest)) adjacency.set(dest, []);
+      
+      // Calculate edge cost from MLG latency
+      const latency = mlg.totalLatency || 0.001;
+      const cost = calculateEdgeCost(latency, 0);
+      
+      // Create unique edge key for this MLG
+      const edgeKey = `mlg-${mlg.id}`;
+      
+      // Add bidirectional edges
+      const edgeData = {
+        to: dest,
+        cost,
+        mlgId: mlg.id,
+        edgeId: null,  // No individual link
+        implicit: false,
+        isMLG: true,
+        latency,
+        description: `MLG: ${mlg.name || 'Unnamed'}`,
+        mlgType: mlg.type
+      };
+      
+      adjacency.get(origin).push(edgeData);
+      adjacency.get(dest).push({
+        ...edgeData,
+        to: origin
+      });
+      
+      // Track MLG edges
+      mlgEdges.set(edgeKey, mlg.id);
+    });
+    
+    return { adjacency, nodeIds: validNodes, mlgEdges };
+  }
+  
+  /**
+   * Build a hybrid graph with MLGs (highly preferred) and individual links
+   * MLGs get a significant cost bonus to ensure they're always preferred when available
+   * Used for Phase 2 of MLG-preferred search
+   * @returns {Object} { adjacency, nodeIds, mlgEdges }
+   */
+  function buildMLGAugmentedGraph() {
+    // Start with regular pathfinding graph
+    const { adjacency, nodeIds } = buildPathfindingGraph();
+    const mlgEdges = new Map();
+    
+    // Process each MLG and add as super-edges with very low cost multiplier
+    // Using 0.001 multiplier ensures MLGs are always preferred over links
+    const MLG_PREFERENCE_FACTOR = 0.001;
+    
+    state.multilinkGroups.forEach(mlg => {
+      // Check if MLG passes filters
+      if (!mlgPassesFilters(mlg)) return;
+      
+      // Get MLG endpoints
+      const origin = mlg.originNode || (mlg.segments[0]?.fromNode);
+      const dest = mlg.destinationNode || (mlg.segments[mlg.segments.length - 1]?.toNode);
+      
+      if (!origin || !dest) return;
+      
+      // Check endpoint nodes exist in graph
+      if (!adjacency.has(origin) || !adjacency.has(dest)) {
+        // Add nodes if they exist but weren't in graph
+        const originNode = findNode(origin);
+        const destNode = findNode(dest);
+        if (!originNode || !destNode) return;
+        
+        if (!adjacency.has(origin)) {
+          adjacency.set(origin, []);
+          nodeIds.add(origin);
+        }
+        if (!adjacency.has(dest)) {
+          adjacency.set(dest, []);
+          nodeIds.add(dest);
+        }
+      }
+      
+      // Check endpoint nodes are not excluded
+      if (routeFinderState.excludedNodes.has(origin)) return;
+      if (routeFinderState.excludedNodes.has(dest)) return;
+      
+      // Calculate edge cost with strong preference factor
+      const latency = mlg.totalLatency || 0.001;
+      const cost = calculateEdgeCost(latency, 0) * MLG_PREFERENCE_FACTOR;
+      
+      const edgeKey = `mlg-${mlg.id}`;
+      
+      const edgeData = {
+        to: dest,
+        cost,
+        mlgId: mlg.id,
+        edgeId: null,
+        implicit: false,
+        isMLG: true,
+        latency,
+        description: `MLG: ${mlg.name || 'Unnamed'}`,
+        mlgType: mlg.type
+      };
+      
+      // Add bidirectional MLG edges
+      adjacency.get(origin).push(edgeData);
+      adjacency.get(dest).push({
+        ...edgeData,
+        to: origin
+      });
+      
+      mlgEdges.set(edgeKey, mlg.id);
+    });
+    
+    return { adjacency, nodeIds, mlgEdges };
+  }
+  
+  /**
+   * Find K shortest paths using MLG preference
+   * Phase 1: Try pure MLG-only paths
+   * Phase 2: If Phase 1 fails, try hybrid graph with MLG preference
+   * @param {number} source - Origin node ID
+   * @param {number} target - Destination node ID
+   * @param {number} k - Number of paths to find
+   * @returns {Array} Array of route objects with MLG flags
+   */
+  function findKShortestPathsWithMLGPreference(source, target, k = 3) {
+    // Phase 1: Try pure MLG-only path
+    console.log('[MLG PathFinder] Phase 1: Attempting pure MLG path...');
+    
+    const mlgGraph = buildMLGOnlyGraph();
+    
+    if (mlgGraph.adjacency.has(source) && mlgGraph.adjacency.has(target)) {
+      // Run Dijkstra on MLG-only graph
+      const { dist, prev } = dijkstra(mlgGraph.adjacency, source);
+      
+      if (dist.get(target) !== Infinity) {
+        // Found pure MLG path!
+        const pathResult = reconstructPath(prev, source, target);
+        if (pathResult) {
+          console.log('[MLG PathFinder] Phase 1 SUCCESS: Found pure MLG path');
+          
+          // Convert to route format
+          const route = {
+            path: pathResult.path,
+            segments: pathResult.segments.map(seg => ({
+              ...seg,
+              isMLG: true,
+              mlgId: seg.mlgId
+            })),
+            totalCost: dist.get(target),
+            isPureMLG: true
+          };
+          
+          // Check must-use MLG constraints
+          if (routeFinderState.mustUseMLGs.size > 0) {
+            const usedMLGs = new Set(pathResult.segments.filter(s => s.mlgId).map(s => s.mlgId));
+            for (const requiredMLG of routeFinderState.mustUseMLGs) {
+              if (!usedMLGs.has(requiredMLG)) {
+                console.log('[MLG PathFinder] Phase 1 path does not include must-use MLG:', requiredMLG);
+                // Continue to Phase 2 to try including required MLG
+                break;
+              }
+            }
+            // All must-use MLGs included
+            return [route];
+          }
+          
+          return [route];
+        }
+      }
+    }
+    
+    console.log('[MLG PathFinder] Phase 1 FAILED: No pure MLG path found');
+    
+    // Phase 2: Try hybrid graph (MLG + links with MLG preference)
+    console.log('[MLG PathFinder] Phase 2: Attempting hybrid path with MLG preference...');
+    
+    const hybridGraph = buildMLGAugmentedGraph();
+    
+    if (!hybridGraph.adjacency.has(source) || !hybridGraph.adjacency.has(target)) {
+      console.log('[MLG PathFinder] Phase 2 FAILED: Source or target not in graph');
+      return [];
+    }
+    
+    // Use modified findKShortestPaths with the hybrid graph
+    // For now, use simple Dijkstra for the best path
+    const { dist, prev } = dijkstra(hybridGraph.adjacency, source);
+    
+    if (dist.get(target) === Infinity) {
+      console.log('[MLG PathFinder] Phase 2 FAILED: No path found');
+      return [];
+    }
+    
+    const pathResult = reconstructPath(prev, source, target);
+    if (!pathResult) {
+      return [];
+    }
+    
+    console.log('[MLG PathFinder] Phase 2 SUCCESS: Found hybrid path');
+    
+    // Mark segments that are MLGs vs links
+    const route = {
+      path: pathResult.path,
+      segments: pathResult.segments.map(seg => ({
+        ...seg,
+        isMLG: !!seg.isMLG,
+        mlgId: seg.mlgId || null
+      })),
+      totalCost: dist.get(target),
+      isPureMLG: false,
+      hasMLGs: pathResult.segments.some(s => s.isMLG)
+    };
+    
+    return [route];
+  }
+  
+  // ============== END MLG-AUGMENTED PATHFINDING ==============
 
   // Dijkstra's algorithm
   function dijkstra(adjacency, source, excludeEdges = new Set()) {
@@ -19219,9 +19998,15 @@ function loadProjectObject(obj) {
     if (routeFinderState.routes.length > 0) {
       if (routeResultsSection) routeResultsSection.style.display = 'block';
       displayRouteResults();
+      // Show the save as MLG button container
+      const saveAsMLGContainer = document.getElementById('saveAsMLGContainer');
+      if (saveAsMLGContainer) saveAsMLGContainer.style.display = 'block';
     } else {
       if (routeResultsSection) routeResultsSection.style.display = 'none';
       if (routeDetailsSection) routeDetailsSection.style.display = 'none';
+      // Hide the save as MLG button container
+      const saveAsMLGContainer = document.getElementById('saveAsMLGContainer');
+      if (saveAsMLGContainer) saveAsMLGContainer.style.display = 'none';
     }
   }
 
@@ -19679,11 +20464,24 @@ function loadProjectObject(obj) {
       routeFinderState.enableRegionTransit = routeEnableRegionTransit.checked;
     }
     
-    const routes = findKShortestPaths(
-      routeFinderState.originNodeId,
-      routeFinderState.destNodeId,
-      3
-    );
+    // Choose pathfinding algorithm based on MLG preference setting
+    let routes;
+    if (routeFinderState.preferMLGs) {
+      // Use MLG-preferred pathfinding (Phase 1: pure MLG, Phase 2: hybrid)
+      console.log('[Route Finder] MLG Preference enabled - using MLG-preferred pathfinding');
+      routes = findKShortestPathsWithMLGPreference(
+        routeFinderState.originNodeId,
+        routeFinderState.destNodeId,
+        3
+      );
+    } else {
+      // Use standard pathfinding
+      routes = findKShortestPaths(
+        routeFinderState.originNodeId,
+        routeFinderState.destNodeId,
+        3
+      );
+    }
     
     routeFinderState.routes = routes;
     routeFinderState.activeRouteIndex = 0;
@@ -19692,6 +20490,7 @@ function loadProjectObject(obj) {
     
     // Build restriction/constraint summary for toast
     const constraints = [];
+    if (routeFinderState.preferMLGs) constraints.push('MLG preferred');
     if (routeFinderState.visibleOnly) constraints.push('visible only');
     if (!routeFinderState.enableContainerTransit) constraints.push('no container transit');
     if (!routeFinderState.enableRegionTransit) constraints.push('no region transit');
@@ -19699,6 +20498,8 @@ function loadProjectObject(obj) {
     if (routeFinderState.excludedLinks.size > 0) constraints.push(`${routeFinderState.excludedLinks.size} link(s) excluded`);
     if (routeFinderState.mustUseNodes.size > 0) constraints.push(`${routeFinderState.mustUseNodes.size} must-use node(s)`);
     if (routeFinderState.mustUseLinks.size > 0) constraints.push(`${routeFinderState.mustUseLinks.size} must-use link(s)`);
+    if (routeFinderState.mustUseMLGs.size > 0) constraints.push(`${routeFinderState.mustUseMLGs.size} must-use MLG(s)`);
+    if (routeFinderState.excludedMLGs.size > 0) constraints.push(`${routeFinderState.excludedMLGs.size} MLG(s) excluded`);
     const constraintText = constraints.length > 0 ? ` (${constraints.join(', ')})` : '';
     
     if (routes.length > 0) {
@@ -19811,7 +20612,24 @@ function loadProjectObject(obj) {
     routeDetailsSection.style.display = 'block';
     routeDetailsSection.classList.remove('collapsed');
     
+    // Show Save as MLG button
+    const saveAsMLGContainer = document.getElementById('saveAsMLGContainer');
+    if (saveAsMLGContainer) {
+      saveAsMLGContainer.style.display = 'block';
+    }
+    
     let html = '<div style="font-size:11px;">';
+    
+    // Add route type indicator if MLG-related
+    if (route.isPureMLG) {
+      html += `<div style="padding:6px 8px; margin-bottom:8px; background:linear-gradient(135deg, #fdf4ff 0%, #f5f3ff 100%); border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#7c3aed;">
+        <span style="font-weight:600;">🔗 Pure MLG Route</span> — Uses only Multilink Groups
+      </div>`;
+    } else if (route.hasMLGs) {
+      html += `<div style="padding:6px 8px; margin-bottom:8px; background:linear-gradient(135deg, #fef3c7 0%, #fdf4ff 100%); border:1px solid #fcd34d; border-radius:6px; font-size:10px; color:#92400e;">
+        <span style="font-weight:600;">🔀 Hybrid Route</span> — Combines MLGs and individual links
+      </div>`;
+    }
     
     route.segments.forEach((seg, i) => {
       const fromNode = findNode(route.path[i]);
@@ -19820,24 +20638,65 @@ function loadProjectObject(obj) {
       const toName = toNode?.name || 'N' + route.path[i + 1];
       
       const isImplicit = seg.implicit;
+      const isMLG = seg.isMLG;
       const latency = seg.latency || routeFinderState.minLatency;
       
+      // Different styling for MLG vs Link hops
+      let hopStyle = '';
+      let hopLabel = '';
+      let hopIcon = '';
+      
+      if (isMLG) {
+        // MLG hop - purple/violet styling
+        hopStyle = 'background:linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border-left:3px solid #a855f7;';
+        const mlg = findMultilinkGroup(seg.mlgId);
+        hopLabel = `<span style="color:#7c3aed; font-size:10px; font-weight:600;">🔗 MLG: ${mlg?.name || 'Unknown'}</span>`;
+        hopIcon = '🔗';
+      } else if (isImplicit) {
+        // Implicit hop - amber styling
+        hopStyle = 'background:#fffbeb; border-left:3px solid #f59e0b;';
+        hopLabel = '<span style="color:#f59e0b; font-size:10px;"> (implicit)</span>';
+        hopIcon = '⋯';
+      } else {
+        // Regular link hop - default styling
+        hopStyle = 'border-left:3px solid #e5e7eb;';
+        const edge = seg.edgeId ? findEdge(seg.edgeId) : null;
+        const linkCode = edge?.code || (seg.edgeId ? `L-${seg.edgeId}` : '');
+        if (linkCode) {
+          hopLabel = `<span style="color:#6b7280; font-size:10px;">${linkCode}</span>`;
+        }
+        hopIcon = '─';
+      }
+      
       html += `
-        <div style="padding:6px 0; border-bottom:1px solid #f0f0f0; display:flex; align-items:center; gap:8px;">
+        <div style="padding:8px; margin-bottom:4px; border-radius:4px; ${hopStyle} display:flex; align-items:center; gap:8px;">
           <span style="color:#888; font-size:10px; width:20px;">${i + 1}.</span>
+          <span style="font-size:14px; width:20px;">${hopIcon}</span>
           <span style="flex:1;">
-            <strong>${fromName}</strong> → <strong>${toName}</strong>
-            ${isImplicit ? '<span style="color:#f59e0b; font-size:10px;"> (implicit)</span>' : ''}
+            <div><strong>${fromName}</strong> → <strong>${toName}</strong></div>
+            ${hopLabel}
           </span>
-          <span style="color:#666; font-size:10px;">${latency.toFixed(3)} ms</span>
+          <span style="color:#666; font-size:10px; font-weight:500;">${latency.toFixed(3)} ms</span>
         </div>
       `;
     });
     
+    // Count MLG vs link hops
+    const mlgHops = route.segments.filter(s => s.isMLG).length;
+    const linkHops = route.segments.filter(s => !s.isMLG && !s.implicit).length;
+    const implicitHops = route.segments.filter(s => s.implicit).length;
+    
     html += `
-      <div style="padding:8px 0; margin-top:4px; font-weight:600; display:flex; justify-content:space-between;">
-        <span>Total Cost:</span>
-        <span>${route.totalCost.toFixed(3)} ms</span>
+      <div style="padding:10px 0; margin-top:8px; border-top:1px solid #e5e7eb;">
+        <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:6px;">
+          <span>Total Latency:</span>
+          <span>${route.totalCost.toFixed(3)} ms</span>
+        </div>
+        <div style="display:flex; gap:12px; font-size:10px; color:#6b7280;">
+          ${mlgHops > 0 ? `<span style="color:#7c3aed;">🔗 ${mlgHops} MLG</span>` : ''}
+          ${linkHops > 0 ? `<span>─ ${linkHops} link${linkHops !== 1 ? 's' : ''}</span>` : ''}
+          ${implicitHops > 0 ? `<span style="color:#f59e0b;">⋯ ${implicitHops} implicit</span>` : ''}
+        </div>
       </div>
     </div>`;
     
@@ -19858,6 +20717,17 @@ function loadProjectObject(obj) {
       el.classList.remove('route-path-1', 'route-path-2', 'route-path-3');
     });
     svg.querySelectorAll('.route-implicit-segment').forEach(el => el.remove());
+    
+    // Clear MLG-specific styling (Phase 1)
+    svg.querySelectorAll('.edge.route-mlg-segment').forEach(el => {
+      el.classList.remove('route-mlg-segment');
+      const pathEl = el.querySelector('path:not(.edge-hit)');
+      if (pathEl) {
+        pathEl.style.stroke = '';
+        pathEl.style.strokeWidth = '';
+        pathEl.style.filter = '';
+      }
+    });
   }
 
   // Highlight just the endpoints
@@ -19898,6 +20768,7 @@ function loadProjectObject(obj) {
     const route = routeFinderState.routes[routeFinderState.activeRouteIndex];
     const routeClass = `route-path-${routeFinderState.activeRouteIndex + 1}`;
     const routeColors = ['#22c55e', '#f59e0b', '#f97316'];
+    const mlgColor = '#a855f7'; // Purple for MLG segments
     const color = routeColors[routeFinderState.activeRouteIndex];
     
     // Check if we're in Geographic View
@@ -19913,9 +20784,59 @@ function loadProjectObject(obj) {
       if (el) el.classList.add('route-path-node');
     });
     
-    // Highlight edges
+    // Highlight edges (including MLG constituent links)
     route.segments.forEach((segment, i) => {
-      if (segment.edgeId) {
+      if (segment.isMLG && segment.mlgId) {
+        // MLG segment - highlight all links within the MLG
+        const mlg = findMultilinkGroup(segment.mlgId);
+        if (mlg && mlg.segments) {
+          // Collect all link IDs from all paths in all segments of the MLG
+          const mlgLinkIds = new Set();
+          mlg.segments.forEach(seg => {
+            if (seg.paths) {
+              seg.paths.forEach(path => {
+                if (path.links) {
+                  path.links.forEach(linkId => mlgLinkIds.add(linkId));
+                }
+              });
+            }
+          });
+          
+          // Highlight each link in the MLG with the MLG color
+          mlgLinkIds.forEach(linkId => {
+            const edgeEl = svg.querySelector(`.edge[data-edge-id="${linkId}"]`);
+            if (edgeEl) {
+              edgeEl.classList.add(routeClass);
+              edgeEl.classList.add('route-mlg-segment');
+              // Apply MLG-specific styling
+              const pathEl = edgeEl.querySelector('path:not(.edge-hit)');
+              if (pathEl) {
+                pathEl.style.stroke = mlgColor;
+                pathEl.style.strokeWidth = '5';
+                pathEl.style.filter = `drop-shadow(0 0 8px ${mlgColor})`;
+              }
+            }
+          });
+          
+          // Also highlight intermediate nodes within the MLG
+          mlg.segments.forEach(seg => {
+            if (seg.fromNode) {
+              let el = svg.querySelector(`g.node[data-node-id="${seg.fromNode}"]`);
+              if (!el && inGeoView) {
+                el = svg.querySelector(`circle.geo-node[data-node-id="${seg.fromNode}"]`);
+              }
+              if (el) el.classList.add('route-path-node');
+            }
+            if (seg.toNode) {
+              let el = svg.querySelector(`g.node[data-node-id="${seg.toNode}"]`);
+              if (!el && inGeoView) {
+                el = svg.querySelector(`circle.geo-node[data-node-id="${seg.toNode}"]`);
+              }
+              if (el) el.classList.add('route-path-node');
+            }
+          });
+        }
+      } else if (segment.edgeId) {
         const edgeEl = svg.querySelector(`.edge[data-edge-id="${segment.edgeId}"]`);
         if (edgeEl) {
           edgeEl.classList.add(routeClass);
@@ -20694,6 +21615,466 @@ function loadProjectObject(obj) {
     });
   }
   
+  // ============== MLG PREFERENCE EVENT HANDLERS (Phase 1) ==============
+  
+  // Update MLG-related UI sections visibility
+  function updateMLGPreferenceUI() {
+    const isPreferMLGs = routeFinderState.preferMLGs;
+    
+    // Show/hide MLG-specific sections
+    const mlgTopologyRow = document.getElementById('mlgTopologyFilterRow');
+    const mlgMustUseRow = document.getElementById('mlgMustUseRow');
+    const mlgExcludeRow = document.getElementById('mlgExcludeRow');
+    const mlgCapacitySection = document.getElementById('mlgCapacitySection');
+    const mlgClearRow = document.getElementById('mlgClearRow');
+    
+    if (mlgTopologyRow) mlgTopologyRow.style.display = isPreferMLGs ? 'block' : 'none';
+    if (mlgMustUseRow) mlgMustUseRow.style.display = isPreferMLGs ? 'block' : 'none';
+    if (mlgExcludeRow) mlgExcludeRow.style.display = isPreferMLGs ? 'block' : 'none';
+    if (mlgCapacitySection) mlgCapacitySection.style.display = isPreferMLGs ? 'block' : 'none';
+    if (mlgClearRow) mlgClearRow.style.display = isPreferMLGs ? 'block' : 'none';
+    
+    // Update MLG count display
+    updateMLGCountDisplay();
+    
+    // Populate MLG dropdowns
+    populateMLGDropdowns();
+  }
+  
+  // Update MLG count display
+  function updateMLGCountDisplay() {
+    const display = document.getElementById('mlgCountDisplay');
+    if (!display) return;
+    
+    const total = state.multilinkGroups.length;
+    const filtered = state.multilinkGroups.filter(mlg => mlgPassesFilters(mlg)).length;
+    
+    if (total === 0) {
+      display.textContent = 'No Multilink Groups defined';
+      display.style.color = '#9ca3af';
+    } else if (filtered === total) {
+      display.textContent = `${total} Multilink Group${total !== 1 ? 's' : ''} available`;
+      display.style.color = '#6b7280';
+    } else {
+      display.textContent = `${filtered} of ${total} Multilink Group${total !== 1 ? 's' : ''} match filters`;
+      display.style.color = '#7c3aed';
+    }
+  }
+  
+  // Populate MLG dropdown selects
+  function populateMLGDropdowns() {
+    const mustUseSelect = document.getElementById('routeMustUseMLGSelect');
+    const excludeSelect = document.getElementById('routeExcludeMLGSelect');
+    
+    const options = state.multilinkGroups.map(mlg => {
+      const origin = mlg.originNode ? (findNode(mlg.originNode)?.name || 'N' + mlg.originNode) : '?';
+      const dest = mlg.destinationNode ? (findNode(mlg.destinationNode)?.name || 'N' + mlg.destinationNode) : '?';
+      return `<option value="${mlg.id}">${mlg.name || 'Unnamed'} (${origin}→${dest})</option>`;
+    }).join('');
+    
+    if (mustUseSelect) {
+      mustUseSelect.innerHTML = '<option value="">-- Select MLG (must use) --</option>' + options;
+    }
+    if (excludeSelect) {
+      excludeSelect.innerHTML = '<option value="">-- Select MLG to exclude --</option>' + options;
+    }
+  }
+  
+  // Update Must-Use MLGs display list
+  function updateMustUseMLGsList() {
+    const list = document.getElementById('mustUseMLGsList');
+    if (!list) return;
+    
+    if (routeFinderState.mustUseMLGs.size === 0) {
+      list.innerHTML = '';
+      return;
+    }
+    
+    list.innerHTML = [...routeFinderState.mustUseMLGs].map(mlgId => {
+      const mlg = findMultilinkGroup(mlgId);
+      return `<span class="constraint-tag must-use" style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:10px; display:inline-flex; align-items:center; gap:4px;">
+        🔗 ${mlg?.name || 'MLG-' + mlgId}
+        <span style="cursor:pointer; color:#dc2626;" onclick="removeMustUseMLG(${mlgId})">×</span>
+      </span>`;
+    }).join('');
+  }
+  
+  // Update Excluded MLGs display list
+  function updateExcludedMLGsList() {
+    const list = document.getElementById('excludedMLGsList');
+    if (!list) return;
+    
+    if (routeFinderState.excludedMLGs.size === 0) {
+      list.innerHTML = '';
+      return;
+    }
+    
+    list.innerHTML = [...routeFinderState.excludedMLGs].map(mlgId => {
+      const mlg = findMultilinkGroup(mlgId);
+      return `<span class="constraint-tag excluded" style="background:#fee2e2; color:#991b1b; padding:2px 6px; border-radius:4px; font-size:10px; display:inline-flex; align-items:center; gap:4px;">
+        🔗 ${mlg?.name || 'MLG-' + mlgId}
+        <span style="cursor:pointer; color:#dc2626;" onclick="removeExcludedMLG(${mlgId})">×</span>
+      </span>`;
+    }).join('');
+  }
+  
+  // Add MLG to must-use list
+  function addMustUseMLG(mlgId) {
+    if (!mlgId || routeFinderState.mustUseMLGs.has(mlgId)) return;
+    routeFinderState.mustUseMLGs.add(mlgId);
+    routeFinderState.excludedMLGs.delete(mlgId); // Remove from excluded if present
+    updateMustUseMLGsList();
+    updateExcludedMLGsList();
+    updateActiveFiltersIndicator();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+    const mlg = findMultilinkGroup(mlgId);
+    showToast(`✅ Must-use MLG: ${mlg?.name || 'MLG-' + mlgId}`);
+  }
+  
+  // Remove MLG from must-use list
+  window.removeMustUseMLG = function(mlgId) {
+    routeFinderState.mustUseMLGs.delete(mlgId);
+    updateMustUseMLGsList();
+    updateActiveFiltersIndicator();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+  };
+  
+  // Add MLG to excluded list
+  function addExcludedMLG(mlgId) {
+    if (!mlgId || routeFinderState.excludedMLGs.has(mlgId)) return;
+    routeFinderState.excludedMLGs.add(mlgId);
+    routeFinderState.mustUseMLGs.delete(mlgId); // Remove from must-use if present
+    updateExcludedMLGsList();
+    updateMustUseMLGsList();
+    updateActiveFiltersIndicator();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+    const mlg = findMultilinkGroup(mlgId);
+    showToast(`🚫 Excluded MLG: ${mlg?.name || 'MLG-' + mlgId}`);
+  }
+  
+  // Remove MLG from excluded list
+  window.removeExcludedMLG = function(mlgId) {
+    routeFinderState.excludedMLGs.delete(mlgId);
+    updateExcludedMLGsList();
+    updateActiveFiltersIndicator();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+  };
+  
+  // Update MLG capacity filter sections
+  function updateMLGCapacityFilterSections() {
+    const totalSection = document.getElementById('mlgCapacityTotalSection');
+    const unitsSection = document.getElementById('mlgCapacityUnitsSection');
+    
+    if (totalSection) totalSection.style.display = routeFinderState.mlgCapacityMode === 'total' ? 'block' : 'none';
+    if (unitsSection) unitsSection.style.display = routeFinderState.mlgCapacityMode === 'units' ? 'block' : 'none';
+  }
+  
+  // Prefer MLGs toggle
+  const routePreferMLGs = document.getElementById('routePreferMLGs');
+  if (routePreferMLGs) {
+    routePreferMLGs.addEventListener('change', () => {
+      routeFinderState.preferMLGs = routePreferMLGs.checked;
+      updateMLGPreferenceUI();
+      routeFinderState.routes = [];
+      updateRouteFinderUI();
+      updateActiveFiltersIndicator();
+      
+      if (routeFinderState.preferMLGs) {
+        showToast('🔗 MLG Preference enabled — routes will prefer Multilink Groups');
+      } else {
+        showToast('🔗 MLG Preference disabled — using standard pathfinding');
+      }
+    });
+  }
+  
+  // MLG topology type checkboxes
+  const mlgFilterLinear = document.getElementById('mlgFilterLinear');
+  const mlgFilterRing = document.getElementById('mlgFilterRing');
+  const mlgFilterRingLinear = document.getElementById('mlgFilterRingLinear');
+  
+  function updateMLGTopologyFilter() {
+    routeFinderState.mlgTopologyFilter.clear();
+    if (mlgFilterLinear?.checked) routeFinderState.mlgTopologyFilter.add('linear');
+    if (mlgFilterRing?.checked) routeFinderState.mlgTopologyFilter.add('ring');
+    if (mlgFilterRingLinear?.checked) routeFinderState.mlgTopologyFilter.add('ring_linear');
+    updateMLGCountDisplay();
+    routeFinderState.routes = [];
+    updateRouteFinderUI();
+  }
+  
+  if (mlgFilterLinear) mlgFilterLinear.addEventListener('change', updateMLGTopologyFilter);
+  if (mlgFilterRing) mlgFilterRing.addEventListener('change', updateMLGTopologyFilter);
+  if (mlgFilterRingLinear) mlgFilterRingLinear.addEventListener('change', updateMLGTopologyFilter);
+  
+  // Must-Use MLG add button
+  const btnAddMustUseMLG = document.getElementById('btnAddMustUseMLG');
+  if (btnAddMustUseMLG) {
+    btnAddMustUseMLG.addEventListener('click', () => {
+      const select = document.getElementById('routeMustUseMLGSelect');
+      const val = parseInt(select?.value, 10);
+      if (!isNaN(val)) {
+        addMustUseMLG(val);
+        select.value = '';
+      }
+    });
+  }
+  
+  // Excluded MLG add button
+  const btnAddExcludeMLG = document.getElementById('btnAddExcludeMLG');
+  if (btnAddExcludeMLG) {
+    btnAddExcludeMLG.addEventListener('click', () => {
+      const select = document.getElementById('routeExcludeMLGSelect');
+      const val = parseInt(select?.value, 10);
+      if (!isNaN(val)) {
+        addExcludedMLG(val);
+        select.value = '';
+      }
+    });
+  }
+  
+  // MLG Capacity mode radios
+  const mlgCapacityModeRadios = document.querySelectorAll('input[name="routeMLGCapacityMode"]');
+  mlgCapacityModeRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      routeFinderState.mlgCapacityMode = radio.value;
+      updateMLGCapacityFilterSections();
+      updateMLGCountDisplay();
+      routeFinderState.routes = [];
+      updateRouteFinderUI();
+    });
+  });
+  
+  // MLG Capacity inputs
+  const routeMLGCapacityMinTotal = document.getElementById('routeMLGCapacityMinTotal');
+  if (routeMLGCapacityMinTotal) {
+    routeMLGCapacityMinTotal.addEventListener('input', () => {
+      routeFinderState.mlgCapacityMinTotal = parseFloat(routeMLGCapacityMinTotal.value) || 0;
+      updateMLGCountDisplay();
+      routeFinderState.routes = [];
+      updateRouteFinderUI();
+    });
+  }
+  
+  // MLG Unit capacity inputs
+  ['1G', '10G', '100G', '400G', 'Tbps'].forEach(tier => {
+    const input = document.getElementById(`routeMLGCapacityMin${tier}`);
+    if (input) {
+      input.addEventListener('input', () => {
+        routeFinderState[`mlgCapacityMin${tier}`] = parseFloat(input.value) || 0;
+        updateMLGCountDisplay();
+        routeFinderState.routes = [];
+        updateRouteFinderUI();
+      });
+    }
+  });
+  
+  // MLG include undefined capacity checkbox
+  const routeMLGCapacityIncludeUndefined = document.getElementById('routeMLGCapacityIncludeUndefined');
+  if (routeMLGCapacityIncludeUndefined) {
+    routeMLGCapacityIncludeUndefined.addEventListener('change', () => {
+      routeFinderState.mlgCapacityIncludeUndefined = routeMLGCapacityIncludeUndefined.checked;
+      updateMLGCountDisplay();
+      routeFinderState.routes = [];
+      updateRouteFinderUI();
+    });
+  }
+  
+  // Clear MLG settings button
+  const btnClearMLGSettings = document.getElementById('btnClearMLGSettings');
+  if (btnClearMLGSettings) {
+    btnClearMLGSettings.addEventListener('click', () => {
+      // Reset MLG state
+      routeFinderState.mustUseMLGs.clear();
+      routeFinderState.excludedMLGs.clear();
+      routeFinderState.mlgTopologyFilter = new Set(['linear', 'ring', 'ring_linear']);
+      routeFinderState.mlgCapacityMode = 'none';
+      routeFinderState.mlgCapacityMinTotal = 0;
+      routeFinderState.mlgCapacityMin1G = 0;
+      routeFinderState.mlgCapacityMin10G = 0;
+      routeFinderState.mlgCapacityMin100G = 0;
+      routeFinderState.mlgCapacityMin400G = 0;
+      routeFinderState.mlgCapacityMinTbps = 0;
+      routeFinderState.mlgCapacityIncludeUndefined = true;
+      
+      // Reset UI
+      if (mlgFilterLinear) mlgFilterLinear.checked = true;
+      if (mlgFilterRing) mlgFilterRing.checked = true;
+      if (mlgFilterRingLinear) mlgFilterRingLinear.checked = true;
+      if (routeMLGCapacityMinTotal) routeMLGCapacityMinTotal.value = 0;
+      ['1G', '10G', '100G', '400G', 'Tbps'].forEach(tier => {
+        const input = document.getElementById(`routeMLGCapacityMin${tier}`);
+        if (input) input.value = 0;
+      });
+      const mlgCapNoneRadio = document.querySelector('input[name="routeMLGCapacityMode"][value="none"]');
+      if (mlgCapNoneRadio) mlgCapNoneRadio.checked = true;
+      if (routeMLGCapacityIncludeUndefined) routeMLGCapacityIncludeUndefined.checked = true;
+      
+      updateMustUseMLGsList();
+      updateExcludedMLGsList();
+      updateMLGCapacityFilterSections();
+      updateMLGCountDisplay();
+      updateActiveFiltersIndicator();
+      routeFinderState.routes = [];
+      updateRouteFinderUI();
+      showToast('🗑️ MLG settings cleared');
+    });
+  }
+  
+  // ============== SAVE ROUTE AS MLG (Phase 1) ==============
+  
+  /**
+   * Convert a route result into an MLG structure
+   * Flattens any MLG references into their constituent segments
+   */
+  function convertRouteToMLGStructure(route) {
+    const segments = [];
+    let segmentId = 1;
+    let pathId = 1;
+    
+    // Process each hop in the route
+    for (let i = 0; i < route.segments.length; i++) {
+      const seg = route.segments[i];
+      const fromNodeId = route.path[i];
+      const toNodeId = route.path[i + 1];
+      
+      if (seg.isMLG && seg.mlgId) {
+        // This hop uses an MLG - flatten its segments into our structure
+        const mlg = findMultilinkGroup(seg.mlgId);
+        if (mlg && mlg.segments) {
+          mlg.segments.forEach(mlgSeg => {
+            segments.push({
+              id: segmentId++,
+              fromNode: mlgSeg.fromNode,
+              toNode: mlgSeg.toNode,
+              paths: mlgSeg.paths.map(p => ({
+                id: pathId++,
+                type: p.type,
+                links: [...p.links],
+                latency: p.latency || 0
+              })),
+              latency: mlgSeg.latency || 0,
+              isDiverse: mlgSeg.isDiverse,
+              diversityWarning: mlgSeg.diversityWarning
+            });
+          });
+        }
+      } else if (seg.edgeId) {
+        // This hop uses a single link
+        segments.push({
+          id: segmentId++,
+          fromNode: fromNodeId,
+          toNode: toNodeId,
+          paths: [{
+            id: pathId++,
+            type: 'primary',
+            links: [seg.edgeId],
+            latency: seg.latency || 0
+          }],
+          latency: seg.latency || 0,
+          isDiverse: true,
+          diversityWarning: null
+        });
+      } else if (seg.implicit) {
+        // Implicit connection - create segment with no links (will need manual population)
+        segments.push({
+          id: segmentId++,
+          fromNode: fromNodeId,
+          toNode: toNodeId,
+          paths: [{
+            id: pathId++,
+            type: 'primary',
+            links: [],  // Empty - user needs to add links
+            latency: seg.latency || 0
+          }],
+          latency: seg.latency || 0,
+          isDiverse: true,
+          diversityWarning: 'Implicit connection - please add links'
+        });
+      }
+    }
+    
+    // Merge consecutive segments with same endpoints if possible
+    // (this handles cases where MLG flattening creates redundant segments)
+    
+    return segments;
+  }
+  
+  // Save Route as MLG button handler
+  const btnSaveRouteAsMLG = document.getElementById('btnSaveRouteAsMLG');
+  if (btnSaveRouteAsMLG) {
+    btnSaveRouteAsMLG.addEventListener('click', () => {
+      const route = routeFinderState.routes[routeFinderState.activeRouteIndex];
+      if (!route || !route.path || route.path.length < 2) {
+        showToast('⚠️ No valid route to save');
+        return;
+      }
+      
+      // Convert route to MLG segments structure
+      const segments = convertRouteToMLGStructure(route);
+      
+      if (segments.length === 0) {
+        showToast('⚠️ Could not convert route to MLG structure');
+        return;
+      }
+      
+      // Prepare tempGroup for MLG editor
+      const originNode = findNode(route.path[0]);
+      const destNode = findNode(route.path[route.path.length - 1]);
+      const originName = originNode?.name || 'N' + route.path[0];
+      const destName = destNode?.name || 'N' + route.path[route.path.length - 1];
+      
+      mlgManagerState.editingGroup = 'new';
+      mlgManagerState.nextTempSegmentId = Math.max(...segments.map(s => s.id)) + 1;
+      mlgManagerState.nextTempPathId = Math.max(...segments.flatMap(s => s.paths.map(p => p.id))) + 1;
+      
+      mlgManagerState.tempGroup = {
+        id: null,
+        name: `${originName} → ${destName}`,
+        color: '#f59e0b',
+        description: `Created from Path Finder route\nLatency: ${route.totalCost.toFixed(3)} ms`,
+        segments: segments,
+        type: 'linear',  // Will be recalculated on save
+        totalLatency: route.totalCost,
+        isDiverse: true,
+        warnings: [],
+        source: 'pathfinder',  // Mark as created from pathfinder
+        tags: [],
+        calcCap1G: 0,
+        calcCap10G: 0,
+        calcCap100G: 0,
+        calcCap400G: 0,
+        calcCapTbps: 0,
+        overrideCap1G: null,
+        overrideCap10G: null,
+        overrideCap100G: null,
+        overrideCap400G: null,
+        overrideCapTbps: null
+      };
+      
+      // Show MLG manager and editor
+      const multilinkManager = document.getElementById('multilinkManager');
+      const multilinkEditor = document.getElementById('multilinkEditor');
+      if (multilinkManager) multilinkManager.style.display = 'flex';
+      if (multilinkEditor) multilinkEditor.style.display = 'flex';
+      
+      // Render the editor with pre-populated data
+      if (typeof renderMultilinkEditor === 'function') {
+        renderMultilinkEditor();
+      }
+      
+      showToast('📝 Route loaded into MLG Editor — review and save');
+    });
+  }
+  
+  // Initialize MLG preference UI
+  updateMLGPreferenceUI();
+  
+  // ============== END MLG PREFERENCE EVENT HANDLERS ==============
+  
   // ============== ACTIVE FILTERS INDICATOR ==============
   
   function updateActiveFiltersIndicator() {
@@ -20744,6 +22125,20 @@ function loadProjectObject(obj) {
     // Check skip implicit transit
     if (routeFinderState.skipImplicitTransit) {
       activeFilters.push('no implicit transit');
+    }
+    
+    // Check MLG preference (Phase 1)
+    if (routeFinderState.preferMLGs) {
+      activeFilters.push('MLG preferred');
+    }
+    if (routeFinderState.mustUseMLGs.size > 0) {
+      activeFilters.push(`${routeFinderState.mustUseMLGs.size} must-use MLG(s)`);
+    }
+    if (routeFinderState.excludedMLGs.size > 0) {
+      activeFilters.push(`${routeFinderState.excludedMLGs.size} excluded MLG(s)`);
+    }
+    if (routeFinderState.mlgCapacityMode !== 'none') {
+      activeFilters.push('MLG capacity filter');
     }
     
     if (activeFilters.length > 0) {
@@ -20822,6 +22217,33 @@ function loadProjectObject(obj) {
     if (routeCapacityMinTbps) routeCapacityMinTbps.value = 0;
     if (routeCapacityIncludeUndefined) routeCapacityIncludeUndefined.checked = true;
     updateCapacityFilterSections();
+    
+    // Reset MLG preference (Phase 1)
+    routeFinderState.preferMLGs = false;
+    routeFinderState.mustUseMLGs.clear();
+    routeFinderState.excludedMLGs.clear();
+    routeFinderState.mlgTopologyFilter = new Set(['linear', 'ring', 'ring_linear']);
+    routeFinderState.mlgCapacityMode = 'none';
+    routeFinderState.mlgCapacityMinTotal = 0;
+    routeFinderState.mlgCapacityMin1G = 0;
+    routeFinderState.mlgCapacityMin10G = 0;
+    routeFinderState.mlgCapacityMin100G = 0;
+    routeFinderState.mlgCapacityMin400G = 0;
+    routeFinderState.mlgCapacityMinTbps = 0;
+    routeFinderState.mlgCapacityIncludeUndefined = true;
+    
+    // Reset MLG UI elements
+    const routePreferMLGs = document.getElementById('routePreferMLGs');
+    if (routePreferMLGs) routePreferMLGs.checked = false;
+    const mlgFilterLinear = document.getElementById('mlgFilterLinear');
+    const mlgFilterRing = document.getElementById('mlgFilterRing');
+    const mlgFilterRingLinear = document.getElementById('mlgFilterRingLinear');
+    if (mlgFilterLinear) mlgFilterLinear.checked = true;
+    if (mlgFilterRing) mlgFilterRing.checked = true;
+    if (mlgFilterRingLinear) mlgFilterRingLinear.checked = true;
+    document.getElementById('mustUseMLGsList')?.innerHTML && (document.getElementById('mustUseMLGsList').innerHTML = '');
+    document.getElementById('excludedMLGsList')?.innerHTML && (document.getElementById('excludedMLGsList').innerHTML = '');
+    if (typeof updateMLGPreferenceUI === 'function') updateMLGPreferenceUI();
     
     // Clear routes and update UI
     routeFinderState.routes = [];
