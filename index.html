@@ -1466,6 +1466,17 @@
       overflow-x: hidden;
       box-shadow: 0 4px 16px rgba(0,0,0,0.12);
       z-index: 31;
+      margin-left: -5px; /* Overlap slightly with parent for easier hover */
+      padding-left: 5px; /* Compensate for margin */
+    }
+    /* Flip submenu to open left when it would go off-screen */
+    .menu .submenu.flip-left {
+      left: auto;
+      right: 100%;
+      margin-left: 0;
+      margin-right: -5px;
+      padding-left: 0;
+      padding-right: 5px;
     }
     /* Smart positioning - flip up if needed */
     .menu .submenu.flip-up {
@@ -1474,6 +1485,18 @@
     }
     .menu .has-submenu:hover > .submenu {
       display: block;
+    }
+    /* Increase hover target area for submenu parent */
+    .menu .has-submenu {
+      position: relative;
+    }
+    .menu .has-submenu::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: -20px;
+      width: 20px;
+      height: 100%;
     }
     .menu .submenu .item {
       padding: 6px 14px;
@@ -4697,20 +4720,22 @@
     <!-- Heat Map Legend (visible when heat map mode is active) -->
     <div id="heatMapLegend" style="
       position: absolute;
-      left: 20px;
-      bottom: 20px;
-      background: rgba(255,255,255,0.95);
+      right: 20px;
+      bottom: 80px;
+      background: rgba(255,255,255,0.97);
       border: 1px solid #d0d0d0;
       border-radius: 8px;
       box-shadow: 0 2px 12px rgba(0,0,0,0.15);
       padding: 12px 16px;
-      z-index: 100;
+      z-index: 150;
       display: none;
       min-width: 180px;
+      cursor: move;
+      user-select: none;
     ">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
         <div style="font-size:12px; font-weight:600; color:#333;" id="heatMapLegendTitle">🌡️ Heat Map</div>
-        <button id="btnCloseHeatMapLegend" style="background:none; border:none; cursor:pointer; color:#999; font-size:14px; padding:0; line-height:1;">✕</button>
+        <button id="btnCloseHeatMapLegend" style="background:none; border:none; cursor:pointer; color:#999; font-size:14px; padding:0; line-height:1;" title="Hide legend">✕</button>
       </div>
       <div style="font-size:10px; color:#666; margin-bottom:8px;" id="heatMapLegendSubtitle">Capacity Available</div>
       <div id="heatMapLegendGradient" style="height:12px; border-radius:3px; background:linear-gradient(to right, #22c55e, #ef4444); margin-bottom:4px;"></div>
@@ -4723,31 +4748,43 @@
         <div style="width:20px; height:12px; background:#9ca3af; border-radius:2px; border:1px solid #6b7280;"></div>
         <span style="font-size:10px; color:#6b7280;">No data available</span>
       </div>
+      <div style="font-size:9px; color:#aaa; margin-top:6px; text-align:center;">drag to move</div>
     </div>
     
     <!-- Heat Map Active Indicator (top bar when heat map is on) -->
     <div id="heatMapActiveIndicator" style="
       position: absolute;
-      top: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 60px;
+      right: 20px;
       background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
       color: white;
       padding: 8px 16px;
       border-radius: 20px;
       box-shadow: 0 2px 12px rgba(249, 115, 22, 0.4);
-      z-index: 100;
+      z-index: 150;
       display: none;
       font-size: 12px;
       font-weight: 500;
-      cursor: pointer;
+      cursor: default;
       user-select: none;
       align-items: center;
       gap: 8px;
-    " title="Click to disable heat map">
+    ">
       <span>🌡️</span>
       <span id="heatMapActiveLabel">Heat Map: Capacity</span>
-      <span style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:10px; font-size:10px; margin-left:4px;">✕ Click to exit</span>
+      <button id="heatMapScaleToggle" style="
+        background: rgba(255,255,255,0.25);
+        border: 1px solid rgba(255,255,255,0.4);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-left: 4px;
+        transition: background 0.2s;
+      " title="Toggle between linear and logarithmic scale">Lin</button>
+      <span id="heatMapExitBtn" style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:10px; font-size:10px; margin-left:4px; cursor:pointer;" title="Click to disable heat map">✕ Exit</span>
     </div>
   </div>
 
@@ -5627,6 +5664,162 @@
             <label>Transit Latency (ms)</label>
             <input id="groupTransitLatency" type="number" min="0" step="0.1" placeholder="Default: use global setting" />
             <div class="hint" style="margin-top:4px;">Latency added when routing through this container. Leave empty to use global default.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commercial Cost Section -->
+      <div class="inspector-section collapsed" data-section="group-commercial-cost">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>💰 Commercial Cost</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <!-- Override Status -->
+          <div id="groupCostOverrideStatus" style="margin-bottom:12px; padding:8px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:11px; color:#92400e;">✏️ <strong>User Override</strong> - values set manually</span>
+              <button class="mini-btn" id="btnGroupResetCost" style="font-size:10px; padding:2px 6px;">🔄 Reset to Calculated</button>
+            </div>
+          </div>
+          
+          <div id="groupCostCalculatedStatus" style="margin-bottom:12px; padding:8px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px;">
+            <span style="font-size:11px; color:#065f46;">📊 <strong>Auto-calculated</strong> from <span id="groupCostSourceDesc">internal links</span></span>
+          </div>
+          
+          <!-- Cost Mode Selector -->
+          <div style="margin-bottom:12px;">
+            <label style="font-size:10px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:6px; display:block;">Pathfinder Cost Mode</label>
+            <div class="cost-mode-selector">
+              <label title="Use Annual Contract Value for pathfinding">
+                <input type="radio" name="groupCostMode" id="groupCostModeLease" value="lease" checked />
+                <span>📄 Lease (ACV)</span>
+              </label>
+              <label title="Use IRU Net Present Value for pathfinding">
+                <input type="radio" name="groupCostMode" id="groupCostModeIRU" value="iru" />
+                <span>📜 IRU (NPV)</span>
+              </label>
+            </div>
+          </div>
+          
+          <!-- Lease Subsection - Tier-based -->
+          <div class="cost-subsection lease">
+            <div class="cost-subsection-title">
+              <span>📄 Lease Terms (by Capacity Tier)</span>
+              <span id="groupLeaseCurrency" style="font-size:10px; color:#3b82f6; font-weight:600;">USD</span>
+            </div>
+            <table class="tier-pricing-grid">
+              <thead>
+                <tr>
+                  <th>Tier</th>
+                  <th>NRC</th>
+                  <th>MRC</th>
+                  <th>ACV</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-tier="1G">
+                  <td class="tier-label">1G</td>
+                  <td><input type="number" id="groupLeaseNRC_1G" min="0" step="0.01" value="0" /></td>
+                  <td><input type="number" id="groupLeaseMRC_1G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated" id="groupLeaseACV_1G">$12</td>
+                </tr>
+                <tr data-tier="10G">
+                  <td class="tier-label">10G</td>
+                  <td><input type="number" id="groupLeaseNRC_10G" min="0" step="0.01" value="0" /></td>
+                  <td><input type="number" id="groupLeaseMRC_10G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated" id="groupLeaseACV_10G">$12</td>
+                </tr>
+                <tr data-tier="100G">
+                  <td class="tier-label">100G</td>
+                  <td><input type="number" id="groupLeaseNRC_100G" min="0" step="0.01" value="0" /></td>
+                  <td><input type="number" id="groupLeaseMRC_100G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated" id="groupLeaseACV_100G">$12</td>
+                </tr>
+                <tr data-tier="400G">
+                  <td class="tier-label">400G</td>
+                  <td><input type="number" id="groupLeaseNRC_400G" min="0" step="0.01" value="0" /></td>
+                  <td><input type="number" id="groupLeaseMRC_400G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated" id="groupLeaseACV_400G">$12</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="tier-multiplier-help">
+              <button class="mini-btn" id="btnGroupAutoFillLeaseTiers" title="Auto-calculate higher tiers based on 1G pricing">⚡ Auto-fill from 1G</button>
+              <span class="hint">×2.5 (10G), ×6.25 (100G), ×15.625 (400G)</span>
+            </div>
+          </div>
+          
+          <!-- IRU Subsection - Tier-based -->
+          <div class="cost-subsection iru">
+            <div class="cost-subsection-title">
+              <span>📜 IRU Terms (by Capacity Tier)</span>
+              <span id="groupIRUCurrency" style="font-size:10px; color:#8b5cf6; font-weight:600;">USD</span>
+            </div>
+            <table class="tier-pricing-grid">
+              <thead>
+                <tr>
+                  <th>Tier</th>
+                  <th>IRU Fee</th>
+                  <th>NPV</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-tier="1G">
+                  <td class="tier-label">1G</td>
+                  <td><input type="number" id="groupIRUFee_1G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated iru" id="groupIRUNPV_1G">$1</td>
+                </tr>
+                <tr data-tier="10G">
+                  <td class="tier-label">10G</td>
+                  <td><input type="number" id="groupIRUFee_10G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated iru" id="groupIRUNPV_10G">$1</td>
+                </tr>
+                <tr data-tier="100G">
+                  <td class="tier-label">100G</td>
+                  <td><input type="number" id="groupIRUFee_100G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated iru" id="groupIRUNPV_100G">$1</td>
+                </tr>
+                <tr data-tier="400G">
+                  <td class="tier-label">400G</td>
+                  <td><input type="number" id="groupIRUFee_400G" min="0" step="0.01" value="1" /></td>
+                  <td class="calculated iru" id="groupIRUNPV_400G">$1</td>
+                </tr>
+              </tbody>
+            </table>
+            <div class="tier-multiplier-help">
+              <button class="mini-btn" id="btnGroupAutoFillIRUTiers" title="Auto-calculate higher tiers based on 1G pricing">⚡ Auto-fill from 1G</button>
+              <span class="hint">×2.5 (10G), ×6.25 (100G), ×15.625 (400G)</span>
+            </div>
+            
+            <!-- Common IRU terms (apply to all tiers) -->
+            <div style="margin-top:12px; padding-top:12px; border-top:1px solid #e5e7eb;">
+              <div style="font-size:10px; font-weight:600; color:#6b7280; margin-bottom:8px;">Common IRU Terms (all tiers)</div>
+              <div class="cost-row">
+                <label>Term</label>
+                <input type="number" id="groupIRUTerm" min="1" max="30" step="1" value="15" style="width:60px;" />
+                <span style="font-size:11px; color:#6b7280;">years</span>
+              </div>
+              <div class="cost-row">
+                <label>O&M (%)</label>
+                <input type="number" id="groupIRUOAM" min="0" max="100" step="0.1" value="3" style="width:60px;" />
+                <span style="font-size:11px; color:#6b7280;">% of IRU fee/year</span>
+              </div>
+              <div class="cost-row">
+                <label>O&M Annual Incr.</label>
+                <input type="number" id="groupIRUOAMIncrement" min="0" max="50" step="0.1" value="2" style="width:60px;" />
+                <span style="font-size:11px; color:#6b7280;">%</span>
+              </div>
+              <div style="font-size:9px; color:#7c3aed; margin-top:6px;">
+                NPV @ <span id="groupIRUDiscountRate">12.5</span>% discount rate
+              </div>
+            </div>
+          </div>
+          
+          <!-- Settings Link -->
+          <div class="settings-link">
+            <span>💡</span>
+            <span>Currency & NPV settings: <a id="groupCostSettingsLink" style="color:#059669; cursor:pointer;">Financial Settings</a></span>
           </div>
         </div>
       </div>
@@ -6894,12 +7087,15 @@
           <div class="row" id="containerLatencyRow">
             <label>Default Container Latency (ms)</label>
             <input id="routeContainerLatency" type="number" value="1" min="0.000001" step="0.1" style="width:100%;" />
-            <div class="hint">Implicit connection within same container. Can be overridden per-container in Inspector → Routing.</div>
+            <div class="hint">Default for containers without custom values. Per-container settings in Inspector → Routing prevail.</div>
           </div>
           <div class="row" id="regionLatencyRow">
             <label>Default Region Latency (ms)</label>
             <input id="routeRegionLatency" type="number" value="10" min="0.000001" step="1" style="width:100%;" />
-            <div class="hint">Implicit connection between sibling containers. Can be overridden per-group in Inspector → Routing.</div>
+            <div class="hint">Default for regions without custom values. Per-region settings in Inspector → Routing prevail.</div>
+          </div>
+          <div style="margin-top:8px; padding:8px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px;">
+            <div style="font-size:10px; color:#0369a1;">💡 <strong>Note:</strong> When cost optimization is enabled (balance > 0%), container transit also considers commercial cost. Configure per-container costs in Inspector → Commercial Cost section.</div>
           </div>
         </div>
       </div>
@@ -7611,7 +7807,14 @@
       defaultIRUTerm: 15,
       defaultOAM: 3,               // percentage of IRU fee
       defaultOAMIncrement: 2,      // yearly percentage increase
-      tierMultipliers: { '10G': 2.5, '100G': 6.25, '400G': 15.625 }
+      tierMultipliers: { '10G': 2.5, '100G': 6.25, '400G': 15.625 },
+      // Container defaults (used when no links exist inside container)
+      containerDefaultMRC: 1,
+      containerDefaultNRC: 0,
+      containerDefaultIRU: 1,
+      containerDefaultIRUTerm: 15,
+      containerDefaultOAM: 3,
+      containerDefaultOAMIncrement: 2
     },
     
     // Pathfinder cost settings
@@ -8375,52 +8578,88 @@
     const submenus = menu.querySelectorAll('.submenu');
     submenus.forEach(submenu => {
       // Reset any previous positioning
-      submenu.classList.remove('flip-up');
+      submenu.classList.remove('flip-up', 'flip-left');
       submenu.style.maxHeight = '';
       submenu.style.top = '';
       submenu.style.left = '';
+      submenu.style.right = '';
+      submenu.style.position = '';
       
       // Check position when parent is hovered
       const parent = submenu.parentElement;
-      parent.addEventListener('mouseenter', () => {
+      
+      // Remove previous listeners to prevent duplicates
+      const newParent = parent.cloneNode(true);
+      parent.parentNode.replaceChild(newParent, parent);
+      const newSubmenu = newParent.querySelector('.submenu');
+      
+      newParent.addEventListener('mouseenter', () => {
         requestAnimationFrame(() => {
-          const parentRect = parent.getBoundingClientRect();
+          const parentRect = newParent.getBoundingClientRect();
           const viewportHeight = window.innerHeight;
           const viewportWidth = window.innerWidth;
           
-          // Special handling for fixed position submenus (MapLibre and GeoView settings)
-          if (submenu.id === 'mapLibreSubmenu' || submenu.id === 'geoViewSubmenu') {
-            // Position to the right of the parent menu item
-            submenu.style.left = (parentRect.right + 2) + 'px';
-            // Keep it near top of viewport for maximum space
-            submenu.style.top = '60px';
-            submenu.style.maxHeight = (viewportHeight - 80) + 'px';
+          // Special handling for fixed position submenus (MapLibre and GeoView settings, HeatMap)
+          if (newSubmenu.id === 'mapLibreSubmenu' || newSubmenu.id === 'geoViewSubmenu' || newSubmenu.id === 'heatMapSubmenu') {
+            // Use fixed positioning for these complex submenus
+            newSubmenu.style.position = 'fixed';
+            
+            // Calculate available space on right vs left
+            const spaceOnRight = viewportWidth - parentRect.right - 20;
+            const spaceOnLeft = parentRect.left - 20;
+            const submenuWidth = 300; // Approximate width
+            
+            if (spaceOnRight >= submenuWidth) {
+              // Position to the right
+              newSubmenu.style.left = (parentRect.right + 5) + 'px';
+              newSubmenu.style.right = 'auto';
+            } else if (spaceOnLeft >= submenuWidth) {
+              // Position to the left
+              newSubmenu.style.left = 'auto';
+              newSubmenu.style.right = (viewportWidth - parentRect.left + 5) + 'px';
+            } else {
+              // Not enough space, overlay near center
+              newSubmenu.style.left = Math.max(10, (viewportWidth - submenuWidth) / 2) + 'px';
+              newSubmenu.style.right = 'auto';
+            }
+            
+            // Vertical positioning - align with parent or use top
+            const submenuHeight = 400; // Approximate max height
+            if (parentRect.top + submenuHeight > viewportHeight - 20) {
+              // Would overflow bottom, position from bottom
+              newSubmenu.style.top = 'auto';
+              newSubmenu.style.bottom = '20px';
+            } else {
+              newSubmenu.style.top = Math.max(60, parentRect.top) + 'px';
+              newSubmenu.style.bottom = 'auto';
+            }
+            
+            newSubmenu.style.maxHeight = (viewportHeight - 80) + 'px';
             return;
           }
           
-          const rect = submenu.getBoundingClientRect();
+          const rect = newSubmenu.getBoundingClientRect();
           
           // Check if submenu goes below viewport
           if (rect.bottom > viewportHeight - 20) {
             // Try flipping up first
-            submenu.classList.add('flip-up');
+            newSubmenu.classList.add('flip-up');
             
             // Re-check after flip
-            const newRect = submenu.getBoundingClientRect();
+            const newRect = newSubmenu.getBoundingClientRect();
             if (newRect.top < 20) {
               // Can't flip, use scroll instead
-              submenu.classList.remove('flip-up');
-              submenu.style.maxHeight = (viewportHeight - rect.top - 40) + 'px';
+              newSubmenu.classList.remove('flip-up');
+              newSubmenu.style.maxHeight = (viewportHeight - rect.top - 40) + 'px';
             }
           }
           
           // Check if submenu goes past right edge
           if (rect.right > viewportWidth - 10) {
-            submenu.style.left = 'auto';
-            submenu.style.right = '100%';
+            newSubmenu.classList.add('flip-left');
           }
         });
-      }, { once: false });
+      });
     });
   }
   
@@ -12340,6 +12579,9 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
     
     // Get heat map color if active (overrides normal stroke color)
     const heatMapColor = (typeof getHeatMapColor === 'function') ? getHeatMapColor(e) : null;
+    if (heatMapColor) {
+      console.log('[HeatMap] Render using heatMapColor for edge', e.id, ':', heatMapColor);
+    }
     const effectiveStrokeColor = heatMapColor || e.strokeColor || "#7f8aa6";
 
     // Draw highlight glow behind edge if highlighted
@@ -13777,6 +14019,11 @@ const groupTitle = document.getElementById('groupTitle');
         groupTitleVisibility.classList.toggle('hidden', g.showTitle === false);
       }
       
+      // Update commercial cost display
+      if (typeof updateGroupCostDisplay === 'function') {
+        updateGroupCostDisplay(g);
+      }
+      
       // Update container shape info
       const groupShapeInfo = document.getElementById('groupShapeInfo');
       const btnRemoveGroupShape = document.getElementById('btnRemoveGroupShape');
@@ -14357,6 +14604,209 @@ if (groupTitleFontInline) {
     });
   }
   
+  // ============== GROUP COMMERCIAL COST HANDLERS ==============
+  
+  // Cost mode radio buttons
+  document.querySelectorAll('input[name="groupCostMode"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        g.commercialCostMode = radio.value;
+        commit();
+      }
+    });
+  });
+  
+  // Tier pricing inputs - Lease NRC, MRC
+  const tiers = ['1G', '10G', '100G', '400G'];
+  tiers.forEach(tier => {
+    const nrcEl = document.getElementById(`groupLeaseNRC_${tier}`);
+    const mrcEl = document.getElementById(`groupLeaseMRC_${tier}`);
+    const iruFeeEl = document.getElementById(`groupIRUFee_${tier}`);
+    
+    if (nrcEl) {
+      nrcEl.addEventListener('input', () => {
+        if (state.selected?.type !== 'group') return;
+        const g = findGroup(state.selected.id);
+        if (g) {
+          if (!g.leaseNRC) g.leaseNRC = {};
+          g.leaseNRC[tier] = parseFloat(nrcEl.value) || 0;
+          g.commercialCostOverride = true;
+          commit();
+          updateGroupCostDisplay(g);
+        }
+      });
+    }
+    
+    if (mrcEl) {
+      mrcEl.addEventListener('input', () => {
+        if (state.selected?.type !== 'group') return;
+        const g = findGroup(state.selected.id);
+        if (g) {
+          if (!g.leaseMRC) g.leaseMRC = {};
+          g.leaseMRC[tier] = parseFloat(mrcEl.value) || 0;
+          g.commercialCostOverride = true;
+          commit();
+          updateGroupCostDisplay(g);
+        }
+      });
+    }
+    
+    if (iruFeeEl) {
+      iruFeeEl.addEventListener('input', () => {
+        if (state.selected?.type !== 'group') return;
+        const g = findGroup(state.selected.id);
+        if (g) {
+          if (!g.iruFee) g.iruFee = {};
+          g.iruFee[tier] = parseFloat(iruFeeEl.value) || 0;
+          g.commercialCostOverride = true;
+          commit();
+          updateGroupCostDisplay(g);
+        }
+      });
+    }
+  });
+  
+  // IRU common terms
+  const groupIRUTerm = document.getElementById('groupIRUTerm');
+  const groupIRUOAM = document.getElementById('groupIRUOAM');
+  const groupIRUOAMIncrement = document.getElementById('groupIRUOAMIncrement');
+  
+  if (groupIRUTerm) {
+    groupIRUTerm.addEventListener('input', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        g.iruTerm = parseInt(groupIRUTerm.value) || 15;
+        g.commercialCostOverride = true;
+        commit();
+        updateGroupCostDisplay(g);
+      }
+    });
+  }
+  
+  if (groupIRUOAM) {
+    groupIRUOAM.addEventListener('input', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        g.iruOamPercent = parseFloat(groupIRUOAM.value) || 3;
+        g.commercialCostOverride = true;
+        commit();
+        updateGroupCostDisplay(g);
+      }
+    });
+  }
+  
+  if (groupIRUOAMIncrement) {
+    groupIRUOAMIncrement.addEventListener('input', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        g.iruOamAnnualIncrement = parseFloat(groupIRUOAMIncrement.value) || 2;
+        g.commercialCostOverride = true;
+        commit();
+        updateGroupCostDisplay(g);
+      }
+    });
+  }
+  
+  // Reset to calculated button
+  const btnGroupResetCost = document.getElementById('btnGroupResetCost');
+  if (btnGroupResetCost) {
+    btnGroupResetCost.addEventListener('click', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        g.commercialCostOverride = false;
+        // Recalculate values
+        const result = calculateContainerCost(g);
+        g.leaseNRC = result.costs.leaseNRC;
+        g.leaseMRC = result.costs.leaseMRC;
+        g.iruFee = result.costs.iruFee;
+        g.iruTerm = result.costs.iruTerm;
+        g.iruOamPercent = result.costs.iruOamPercent;
+        g.iruOamAnnualIncrement = result.costs.iruOamAnnualIncrement;
+        commit();
+        updateGroupCostDisplay(g);
+        showToast('Cost values reset to calculated');
+      }
+    });
+  }
+  
+  // Auto-fill tier buttons
+  const btnGroupAutoFillLeaseTiers = document.getElementById('btnGroupAutoFillLeaseTiers');
+  if (btnGroupAutoFillLeaseTiers) {
+    btnGroupAutoFillLeaseTiers.addEventListener('click', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        const tierMults = state.financialSettings?.tierMultipliers || { '10G': 2.5, '100G': 6.25, '400G': 15.625 };
+        const nrc1G = parseFloat(document.getElementById('groupLeaseNRC_1G')?.value) || 0;
+        const mrc1G = parseFloat(document.getElementById('groupLeaseMRC_1G')?.value) || 1;
+        
+        g.leaseNRC = {
+          '1G': nrc1G,
+          '10G': Math.round(nrc1G * tierMults['10G'] * 100) / 100,
+          '100G': Math.round(nrc1G * tierMults['100G'] * 100) / 100,
+          '400G': Math.round(nrc1G * tierMults['400G'] * 100) / 100
+        };
+        g.leaseMRC = {
+          '1G': mrc1G,
+          '10G': Math.round(mrc1G * tierMults['10G'] * 100) / 100,
+          '100G': Math.round(mrc1G * tierMults['100G'] * 100) / 100,
+          '400G': Math.round(mrc1G * tierMults['400G'] * 100) / 100
+        };
+        g.commercialCostOverride = true;
+        commit();
+        updateGroupCostDisplay(g);
+        showToast('Lease tiers auto-filled from 1G');
+      }
+    });
+  }
+  
+  const btnGroupAutoFillIRUTiers = document.getElementById('btnGroupAutoFillIRUTiers');
+  if (btnGroupAutoFillIRUTiers) {
+    btnGroupAutoFillIRUTiers.addEventListener('click', () => {
+      if (state.selected?.type !== 'group') return;
+      const g = findGroup(state.selected.id);
+      if (g) {
+        const tierMults = state.financialSettings?.tierMultipliers || { '10G': 2.5, '100G': 6.25, '400G': 15.625 };
+        const iruFee1G = parseFloat(document.getElementById('groupIRUFee_1G')?.value) || 1;
+        
+        g.iruFee = {
+          '1G': iruFee1G,
+          '10G': Math.round(iruFee1G * tierMults['10G'] * 100) / 100,
+          '100G': Math.round(iruFee1G * tierMults['100G'] * 100) / 100,
+          '400G': Math.round(iruFee1G * tierMults['400G'] * 100) / 100
+        };
+        g.commercialCostOverride = true;
+        commit();
+        updateGroupCostDisplay(g);
+        showToast('IRU tiers auto-filled from 1G');
+      }
+    });
+  }
+  
+  // Financial settings link
+  const groupCostSettingsLink = document.getElementById('groupCostSettingsLink');
+  if (groupCostSettingsLink) {
+    groupCostSettingsLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      const modal = document.getElementById('financialSettingsModal');
+      if (modal) {
+        if (typeof openFinancialSettings === 'function') {
+          openFinancialSettings();
+        } else {
+          modal.classList.add('show');
+        }
+      }
+    });
+  }
+  
+  // ============== END GROUP COMMERCIAL COST HANDLERS ==============
+  
   groupW.addEventListener('input', () => {
     if (state.selected?.type!=='group') return;
     const g = findGroup(state.selected.id); if (!g) return;
@@ -14636,6 +15086,33 @@ if (groupTitleFontInline) {
 
   function makeGroup(id, x, y, type) {
     const isRegion = type === 'region';
+    const tierMults = state.financialSettings?.tierMultipliers || { '10G': 2.5, '100G': 6.25, '400G': 15.625 };
+    
+    // Get container defaults from financial settings
+    const defaultNRC = state.financialSettings?.containerDefaultNRC || 0;
+    const defaultMRC = state.financialSettings?.containerDefaultMRC || 1;
+    const defaultIRU = state.financialSettings?.containerDefaultIRU || 1;
+    
+    // Create tier-based pricing (same structure as links)
+    const leaseNRC = {
+      '1G': defaultNRC,
+      '10G': Math.round(defaultNRC * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultNRC * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultNRC * tierMults['400G'] * 100) / 100
+    };
+    const leaseMRC = {
+      '1G': defaultMRC,
+      '10G': Math.round(defaultMRC * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultMRC * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultMRC * tierMults['400G'] * 100) / 100
+    };
+    const iruFee = {
+      '1G': defaultIRU,
+      '10G': Math.round(defaultIRU * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultIRU * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultIRU * tierMults['400G'] * 100) / 100
+    };
+    
     return {
       id,
       uuid: generateUUID(),
@@ -14653,7 +15130,19 @@ if (groupTitleFontInline) {
       strokeW: 1,
       titleColor:"#333333",
       titleFont: isRegion ? 15 : 14,
-      titleDx:0, titleDy:0
+      titleDx:0, titleDy:0,
+      // Transit latency (null = use global default)
+      transitLatency: null,
+      // Commercial cost properties (same structure as links)
+      leaseNRC,
+      leaseMRC,
+      iruFee,
+      iruTerm: state.financialSettings?.containerDefaultIRUTerm || 15,
+      iruOamPercent: state.financialSettings?.containerDefaultOAM || 3,
+      iruOamAnnualIncrement: state.financialSettings?.containerDefaultOAMIncrement || 2,
+      commercialCostMode: 'lease',
+      // Override flag - when true, user has manually set values (don't recalculate)
+      commercialCostOverride: false
     };
   }
 
@@ -15816,7 +16305,7 @@ function showTemplateDownloadDialog() {
       <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
         <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">📌 Template Instructions</div>
         <div style="font-size: 12px; color: #1e40af;">
-          Download a spreadsheet template with 4 tabs: Instructions, Nodes, Links, and Containers.
+          Download a spreadsheet template with 5 tabs: Instructions, Nodes, Links, Containers, and MLGs.
           Fill in your data and import it back to create your network diagram.
         </div>
       </div>
@@ -15857,8 +16346,9 @@ function showTemplateDownloadDialog() {
         <div style="font-size: 11px; color: #666; line-height: 1.6;">
           <div><strong>Tab 1 - Instructions:</strong> How to fill the template, field descriptions</div>
           <div><strong>Tab 2 - Nodes:</strong> Node Name*, Code, City, Country, GPS, Tags, etc.</div>
-          <div><strong>Tab 3 - Links:</strong> A-End*, B-End*, Latency, Capacity, Priority, etc.</div>
+          <div><strong>Tab 3 - Links:</strong> A-End*, B-End*, Latency, Capacity, Cost, Diversity, etc.</div>
           <div><strong>Tab 4 - Containers:</strong> Container Name*, Type, Parent, etc.</div>
+          <div><strong>Tab 5 - MLGs:</strong> MLG Name*, Origin, Dest, Paths, Protection, Costs, etc.</div>
           <div style="margin-top: 6px; font-size: 10px; color: #888;">* Required fields</div>
         </div>
       </div>
@@ -15962,6 +16452,30 @@ function generateTemplateData(includeData) {
       ['Additional Tags - Free text notes'],
       ['Line Color - Hex color #RRGGBB (default: #666666)'],
       [''],
+      ['--- LINKS COMMERCIAL FIELDS ---'],
+      ['Lease NRC - Non-Recurring Cost (one-time fee)'],
+      ['Lease MRC - Monthly Recurring Cost'],
+      ['IRU Fee - Indefeasible Right of Use fee'],
+      ['IRU Term (years) - Duration of IRU agreement'],
+      ['IRU O&M % - Operations & Maintenance percentage'],
+      ['IRU O&M Annual Increment % - Yearly O&M increase'],
+      ['Physical Routing Overlap - Pipe-separated link codes sharing physical path'],
+      [''],
+      ['--- MLG (MULTILINK GROUP) TAB FIELDS ---'],
+      ['MLG Name* - Display name for the protected path'],
+      ['MLG Code - Short identifier'],
+      ['Origin Node* - Starting node (Code or Name)'],
+      ['Destination Node* - Ending node (Code or Name)'],
+      ['Capacity Tier - 1G, 10G, 100G, or 400G'],
+      ['Topology Type - unprotected, 1+1, ring, mesh'],
+      ['Total Latency (ms) - End-to-end latency'],
+      ['Total Links - Number of links in path'],
+      ['Path Links - Pipe-separated codes for primary/working path'],
+      ['Protection Links - Pipe-separated codes for protection path'],
+      ['Override NRC/MRC/IRU Fee - Manual cost overrides'],
+      ['IRU Term (years) - IRU duration for MLG'],
+      ['Notes - Free text notes'],
+      [''],
       ['--- CONTAINERS TAB FIELDS ---'],
       ['Container Name* - Display title'],
       ['Type - "country" or "region"'],
@@ -16003,12 +16517,18 @@ function generateTemplateData(includeData) {
         'A-End Node', 'B-End Node', 'Link Tag', 'Link Code', 'Latency (ms)', 'Priority',
         'Design Max Capacity (Gbps)', 'Available 1G Units', 'Available 10G Units',
         'Available 100G Units', 'Available 400G Units', 'Available Tbps Units',
-        'Cable System', 'Tags', 'Additional Tags', 'Line Color'
+        'Cable System', 'Tags', 'Additional Tags', 'Line Color',
+        'Lease NRC', 'Lease MRC', 'IRU Fee', 'IRU Term (years)', 'IRU O&M %', 'IRU O&M Annual Inc %',
+        'Physical Routing Overlap (Link Codes)'
       ],
       rows: includeData ? state.edges.map(e => {
         const a = findNode(e.a);
         const b = findNode(e.b);
         const cs = e.cableSystemId ? state.cableSystems.find(c => c.id === e.cableSystemId) : null;
+        // Get cost values - handle tiered pricing (use 10G tier as default for export)
+        const nrc = getValueForTier(e.leaseNRC, '10G', 0);
+        const mrc = getValueForTier(e.leaseMRC, '10G', 0);
+        const iruFee = getValueForTier(e.iruFee, '10G', 0);
         return [
           a?.code || a?.name || '',
           b?.code || b?.name || '',
@@ -16025,13 +16545,24 @@ function generateTemplateData(includeData) {
           cs?.name || '',
           (e.filterTags || []).join('|'),
           e.extraTags || '',
-          e.strokeColor || e.stroke || ''
+          e.strokeColor || e.stroke || '',
+          nrc || '',
+          mrc || '',
+          iruFee || '',
+          e.iruTerm || '',
+          e.iruOamPercent ?? '',
+          e.iruOamAnnualIncrement ?? '',
+          // Physical routing overlap - export as pipe-separated link codes
+          (Array.isArray(e.routingOverlap) ? e.routingOverlap.map(ro => {
+            const overlapEdge = state.edges.find(ed => ed.id === (ro.linkId || ro));
+            return overlapEdge?.code || `Link-${ro.linkId || ro}`;
+          }).join('|') : '')
         ];
       }) : [
-        ['LON-DC1', 'PAR-DC1', 'London-Paris', 'CKT-EU-001', '10', '0', '400', '0', '0', '4', '0', '0', '', 'default|backbone', '', ''],
-        ['LON-DC1', 'NYC-DC1', 'Transatlantic', 'CKT-TA-001', '70', '0', '800', '0', '0', '8', '0', '0', 'TAT-14', 'default|submarine', 'Main transatlantic link', ''],
-        ['NYC-DC1', 'LAX-DC1', 'US Cross-country', 'CKT-US-001', '60', '0', '400', '0', '0', '4', '0', '0', '', 'default|terrestrial', '', ''],
-        ['(Leave Line Color blank for default #666666)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '#666666']
+        ['LON-DC1', 'PAR-DC1', 'London-Paris', 'CKT-EU-001', '10', '0', '400', '0', '0', '4', '0', '0', '', 'default|backbone', '', '', '0', '500', '10000', '15', '3', '2', 'CKT-TA-001'],
+        ['LON-DC1', 'NYC-DC1', 'Transatlantic', 'CKT-TA-001', '70', '0', '800', '0', '0', '8', '0', '0', 'TAT-14', 'default|submarine', 'Main transatlantic link', '', '0', '2000', '50000', '20', '3', '2', 'CKT-EU-001'],
+        ['NYC-DC1', 'LAX-DC1', 'US Cross-country', 'CKT-US-001', '60', '0', '400', '0', '0', '4', '0', '0', '', 'default|terrestrial', '', '', '0', '800', '20000', '15', '3', '2', ''],
+        ['(Physical Routing Overlap: pipe-separated link codes sharing physical path)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '#666666', '', '', '', '', '', '', '']
       ]
     },
     containers: {
@@ -16054,6 +16585,57 @@ function generateTemplateData(includeData) {
         ['France', 'country', 'Europe', '', ''],
         ['USA', 'country', 'North America', '', ''],
         ['(Leave colors blank for defaults: Fill=#fff2cc, Stroke=#d6b656)', '', '', '#fff2cc', '#d6b656']
+      ]
+    },
+    mlgs: {
+      headers: [
+        'MLG Name', 'MLG Code', 'Origin Node', 'Destination Node', 'Capacity Tier',
+        'Topology Type', 'Total Latency (ms)', 'Total Links',
+        'Path Links (pipe-separated codes)', 'Protection Links (pipe-separated codes)',
+        'Override NRC', 'Override MRC', 'Override IRU Fee', 'IRU Term (years)',
+        'Notes'
+      ],
+      rows: includeData ? state.multilinkGroups.map(mlg => {
+        const origin = findNode(mlg.originNodeId);
+        const dest = findNode(mlg.destinationNodeId);
+        
+        // Collect path and protection links
+        const pathLinks = [];
+        const protectionLinks = [];
+        (mlg.segments || []).forEach(seg => {
+          (seg.paths || []).forEach(path => {
+            const linkCodes = (path.links || []).map(linkId => {
+              const edge = state.edges.find(e => e.id === linkId);
+              return edge?.code || `Link-${linkId}`;
+            });
+            if (path.type === 'primary' || path.type === 'working') {
+              pathLinks.push(...linkCodes);
+            } else {
+              protectionLinks.push(...linkCodes);
+            }
+          });
+        });
+        
+        return [
+          mlg.name || '',
+          mlg.code || '',
+          origin?.code || origin?.name || '',
+          dest?.code || dest?.name || '',
+          mlg.capacityTier || '10G',
+          mlg.topologyType || 'unprotected',
+          mlg.totalLatency ?? '',
+          mlg.totalLinks ?? '',
+          pathLinks.join('|'),
+          protectionLinks.join('|'),
+          mlg.overrideLeaseNRC ?? '',
+          mlg.overrideLeaseMRC ?? '',
+          mlg.overrideIRUFee ?? '',
+          mlg.iruTerm ?? '',
+          mlg.notes || ''
+        ];
+      }) : [
+        ['London-NYC Primary', 'MLG-001', 'LON-DC1', 'NYC-DC1', '10G', 'protected', '70', '1', 'CKT-TA-001', 'CKT-EU-001|CKT-US-001', '', '', '', '15', 'Main transatlantic service'],
+        ['(MLG = Multilink Group / Protected Path)', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
       ]
     }
   };
@@ -16108,6 +16690,14 @@ function createAndDownloadWorkbook(templateData, format) {
     containersWS['!cols'] = templateData.containers.headers.map(h => ({ wch: Math.max(12, h.length + 2) }));
     XLSX.utils.book_append_sheet(wb, containersWS, 'Containers');
     
+    // 5. MLGs sheet
+    if (templateData.mlgs) {
+      const mlgsData = [templateData.mlgs.headers, ...templateData.mlgs.rows];
+      const mlgsWS = XLSX.utils.aoa_to_sheet(mlgsData);
+      mlgsWS['!cols'] = templateData.mlgs.headers.map(h => ({ wch: Math.max(12, h.length + 2) }));
+      XLSX.utils.book_append_sheet(wb, mlgsWS, 'MLGs');
+    }
+    
     // Generate file
     const fileExtension = format === 'ods' ? 'ods' : 'xlsx';
     const bookType = format === 'ods' ? 'ods' : 'xlsx';
@@ -16144,6 +16734,13 @@ function downloadAsCSVFallback(templateData) {
   const containersCsv = [templateData.containers.headers.join(separator)];
   templateData.containers.rows.forEach(row => containersCsv.push(row.map(v => escapeCSV(v, separator)).join(separator)));
   downloadText('4_Containers.csv', containersCsv.join('\r\n'), 'text/csv;charset=utf-8');
+  
+  // MLGs
+  if (templateData.mlgs) {
+    const mlgsCsv = [templateData.mlgs.headers.join(separator)];
+    templateData.mlgs.rows.forEach(row => mlgsCsv.push(row.map(v => escapeCSV(v, separator)).join(separator)));
+    downloadText('5_MLGs.csv', mlgsCsv.join('\r\n'), 'text/csv;charset=utf-8');
+  }
   
   showToast('✓ Template CSV files downloaded. Combine them in a spreadsheet app for multi-tab format.');
 }
@@ -16812,6 +17409,14 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
     const cap400G = parseFloat(row['Available 400G Units'] || row['400G Units']);
     const capTbps = parseFloat(row['Available Tbps Units'] || row['Tbps Units']);
     
+    // Cost fields
+    const leaseNRC = parseFloat(row['Lease NRC'] || row['NRC']);
+    const leaseMRC = parseFloat(row['Lease MRC'] || row['MRC']);
+    const iruFee = parseFloat(row['IRU Fee'] || row['IRU']);
+    const iruTerm = parseFloat(row['IRU Term (years)'] || row['IRU Term']);
+    const iruOamPercent = parseFloat(row['IRU O&M %'] || row['O&M %']);
+    const iruOamIncrement = parseFloat(row['IRU O&M Annual Inc %'] || row['O&M Inc %']);
+    
     if (existing) {
       // Update existing edge
       if (row['Link Tag'] || row['Tag']) existing.tag = row['Link Tag'] || row['Tag'];
@@ -16824,6 +17429,13 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
       if (!isNaN(cap100G)) existing.cap100G = cap100G;
       if (!isNaN(cap400G)) existing.cap400G = cap400G;
       if (!isNaN(capTbps)) existing.capTbps = capTbps;
+      // Cost fields - store as tiered pricing (apply to all tiers for simplicity on import)
+      if (!isNaN(leaseNRC)) existing.leaseNRC = { '1G': leaseNRC, '10G': leaseNRC, '100G': leaseNRC, '400G': leaseNRC };
+      if (!isNaN(leaseMRC)) existing.leaseMRC = { '1G': leaseMRC, '10G': leaseMRC, '100G': leaseMRC, '400G': leaseMRC };
+      if (!isNaN(iruFee)) existing.iruFee = { '1G': iruFee, '10G': iruFee, '100G': iruFee, '400G': iruFee };
+      if (!isNaN(iruTerm)) existing.iruTerm = iruTerm;
+      if (!isNaN(iruOamPercent)) existing.iruOamPercent = iruOamPercent;
+      if (!isNaN(iruOamIncrement)) existing.iruOamAnnualIncrement = iruOamIncrement;
       if (row['Tags']) existing.filterTags = parseTagsString(row['Tags']);
       if (row['Additional Tags']) existing.extraTags = row['Additional Tags'];
       if (row['Line Color']) existing.strokeColor = row['Line Color'];
@@ -16844,6 +17456,13 @@ async function executeImportWithData(nodesData, linksData, containersData, mode)
         cap100G: !isNaN(cap100G) ? cap100G : 0,
         cap400G: !isNaN(cap400G) ? cap400G : 0,
         capTbps: !isNaN(capTbps) ? capTbps : 0,
+        // Cost fields
+        leaseNRC: !isNaN(leaseNRC) ? { '1G': leaseNRC, '10G': leaseNRC, '100G': leaseNRC, '400G': leaseNRC } : { '1G': 0, '10G': 0, '100G': 0, '400G': 0 },
+        leaseMRC: !isNaN(leaseMRC) ? { '1G': leaseMRC, '10G': leaseMRC, '100G': leaseMRC, '400G': leaseMRC } : { '1G': 1, '10G': 1, '100G': 1, '400G': 1 },
+        iruFee: !isNaN(iruFee) ? { '1G': iruFee, '10G': iruFee, '100G': iruFee, '400G': iruFee } : { '1G': 1, '10G': 1, '100G': 1, '400G': 1 },
+        iruTerm: !isNaN(iruTerm) ? iruTerm : 15,
+        iruOamPercent: !isNaN(iruOamPercent) ? iruOamPercent : null,
+        iruOamAnnualIncrement: !isNaN(iruOamIncrement) ? iruOamIncrement : null,
         filterTags: row['Tags'] ? parseTagsString(row['Tags']) : ['default'],
         extraTags: row['Additional Tags'] || '',
         strokeColor: row['Line Color'] || '#666666',
@@ -17229,36 +17848,73 @@ function loadProjectObject(obj) {
     commercialCostMode: mlg.commercialCostMode || 'lease'
   }));
 
-  state.groups = gg.map(g => ({
-    id: g.id,
-    type: g.type || 'country',
-    parentId: g.parentId ?? null,
-    x: g.x, y: g.y, w: g.w, h: g.h,
-    title: g.title || ((g.type==='region') ? ('Group' + g.id) : 'Container'),
-    extraTags: g.extraTags || '',
-    fill: g.fill || (g.type==='region' ? 'rgba(120, 140, 180, 0.10)' : 'rgba(54, 76, 140, 0.12)'),
-    stroke: g.stroke || (g.type==='region' ? '#7f8aa6' : '#6073b8'),
-    strokeW: (typeof g.strokeW === 'number') ? g.strokeW : 2,
-    titleColor: g.titleColor || '#eaeaea',
-    titleFont: (typeof g.titleFont === 'number') ? g.titleFont : (g.type==='region' ? 15 : 14),
-    titleDx: (typeof g.titleDx === 'number') ? g.titleDx : 0,
-    titleDy: (typeof g.titleDy === 'number') ? g.titleDy : 0,
-    // Shape container properties - embedded shape data for library independence
-    shapeContainer: g.shapeContainer || false,
-    decorativeShape: g.decorativeShape ? {
-      id: g.decorativeShape.id,
-      svgData: g.decorativeShape.svgData,
-      pathData: g.decorativeShape.pathData,
-      viewBox: g.decorativeShape.viewBox,
-      name: g.decorativeShape.name,
-      aspectRatio: g.decorativeShape.aspectRatio
-    } : null,
-    // Additional properties
-    filterTags: Array.isArray(g.filterTags) ? g.filterTags : ['default'],
-    showTitle: g.showTitle !== false,
-    lineStyle: g.lineStyle || 'solid',
-    transitLatency: (typeof g.transitLatency === 'number') ? g.transitLatency : null
-  }));
+  state.groups = gg.map(g => {
+    // Get tier multipliers for default calculation
+    const tierMults = state.financialSettings?.tierMultipliers || { '10G': 2.5, '100G': 6.25, '400G': 15.625 };
+    const defaultNRC = state.financialSettings?.containerDefaultNRC || 0;
+    const defaultMRC = state.financialSettings?.containerDefaultMRC || 1;
+    const defaultIRU = state.financialSettings?.containerDefaultIRU || 1;
+    
+    // Initialize default tier pricing if not present
+    const defaultLeaseNRC = {
+      '1G': defaultNRC,
+      '10G': Math.round(defaultNRC * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultNRC * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultNRC * tierMults['400G'] * 100) / 100
+    };
+    const defaultLeaseMRC = {
+      '1G': defaultMRC,
+      '10G': Math.round(defaultMRC * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultMRC * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultMRC * tierMults['400G'] * 100) / 100
+    };
+    const defaultIruFee = {
+      '1G': defaultIRU,
+      '10G': Math.round(defaultIRU * tierMults['10G'] * 100) / 100,
+      '100G': Math.round(defaultIRU * tierMults['100G'] * 100) / 100,
+      '400G': Math.round(defaultIRU * tierMults['400G'] * 100) / 100
+    };
+    
+    return {
+      id: g.id,
+      type: g.type || 'country',
+      parentId: g.parentId ?? null,
+      x: g.x, y: g.y, w: g.w, h: g.h,
+      title: g.title || ((g.type==='region') ? ('Group' + g.id) : 'Container'),
+      extraTags: g.extraTags || '',
+      fill: g.fill || (g.type==='region' ? 'rgba(120, 140, 180, 0.10)' : 'rgba(54, 76, 140, 0.12)'),
+      stroke: g.stroke || (g.type==='region' ? '#7f8aa6' : '#6073b8'),
+      strokeW: (typeof g.strokeW === 'number') ? g.strokeW : 2,
+      titleColor: g.titleColor || '#eaeaea',
+      titleFont: (typeof g.titleFont === 'number') ? g.titleFont : (g.type==='region' ? 15 : 14),
+      titleDx: (typeof g.titleDx === 'number') ? g.titleDx : 0,
+      titleDy: (typeof g.titleDy === 'number') ? g.titleDy : 0,
+      // Shape container properties - embedded shape data for library independence
+      shapeContainer: g.shapeContainer || false,
+      decorativeShape: g.decorativeShape ? {
+        id: g.decorativeShape.id,
+        svgData: g.decorativeShape.svgData,
+        pathData: g.decorativeShape.pathData,
+        viewBox: g.decorativeShape.viewBox,
+        name: g.decorativeShape.name,
+        aspectRatio: g.decorativeShape.aspectRatio
+      } : null,
+      // Additional properties
+      filterTags: Array.isArray(g.filterTags) ? g.filterTags : ['default'],
+      showTitle: g.showTitle !== false,
+      lineStyle: g.lineStyle || 'solid',
+      transitLatency: (typeof g.transitLatency === 'number') ? g.transitLatency : null,
+      // Commercial cost properties - use saved values or defaults
+      leaseNRC: g.leaseNRC || defaultLeaseNRC,
+      leaseMRC: g.leaseMRC || defaultLeaseMRC,
+      iruFee: g.iruFee || defaultIruFee,
+      iruTerm: (typeof g.iruTerm === 'number') ? g.iruTerm : (state.financialSettings?.containerDefaultIRUTerm || 15),
+      iruOamPercent: (typeof g.iruOamPercent === 'number') ? g.iruOamPercent : (state.financialSettings?.containerDefaultOAM || 3),
+      iruOamAnnualIncrement: (typeof g.iruOamAnnualIncrement === 'number') ? g.iruOamAnnualIncrement : (state.financialSettings?.containerDefaultOAMIncrement || 2),
+      commercialCostMode: g.commercialCostMode || 'lease',
+      commercialCostOverride: g.commercialCostOverride || false
+    };
+  });
 
   state.nextNode = (typeof obj.nextNode === 'number') ? obj.nextNode : (Math.max(0, ...state.nodes.map(n=>n.id)) + 1);
   state.nextEdge = (typeof obj.nextEdge === 'number') ? obj.nextEdge : (Math.max(0, ...state.edges.map(e=>e.id)) + 1);
@@ -21548,6 +22204,7 @@ function loadProjectObject(obj) {
     
     segments.forEach(seg => {
       if (seg.edgeId) {
+        // Regular link
         const edge = findEdge(seg.edgeId);
         if (edge) {
           if (metric === 'iru') {
@@ -21562,6 +22219,26 @@ function loadProjectObject(obj) {
           } else {
             const nrc = getValueForTier(edge.leaseNRC, tier, 0);
             const mrc = getValueForTier(edge.leaseMRC, tier, 1);
+            totalCost += calculateLeaseACV(nrc, mrc);
+          }
+        }
+      } else if (seg.implicit && (seg.containerId || seg.regionId)) {
+        // Implicit container/region transit - add container commercial cost
+        const groupId = seg.containerId || seg.regionId;
+        const group = findGroup(groupId);
+        if (group) {
+          if (metric === 'iru') {
+            const iruFee = getValueForTier(group.iruFee, tier, 1);
+            totalCost += calculateIRUNPV(
+              iruFee,
+              group.iruTerm || 15,
+              group.iruOamPercent ?? 3,
+              group.iruOamAnnualIncrement ?? 2,
+              discountRate
+            );
+          } else {
+            const nrc = getValueForTier(group.leaseNRC, tier, 0);
+            const mrc = getValueForTier(group.leaseMRC, tier, 1);
             totalCost += calculateLeaseACV(nrc, mrc);
           }
         }
@@ -21874,7 +22551,19 @@ function loadProjectObject(obj) {
         const latency = (group?.transitLatency !== undefined && group?.transitLatency !== null) 
           ? group.transitLatency 
           : routeFinderState.containerLatency;
-        const cost = calculateEdgeCost(latency, 0);
+        
+        // Get commercial cost for cost optimization (if balance > 0)
+        const balance = routeFinderState.optimizationBalance || 0;
+        let cost;
+        if (balance > 0 && group) {
+          // Blend latency and commercial cost
+          const commercialCost = getContainerCostForPathfinding(group);
+          const normalizedCost = normalizeCommercialCost(commercialCost);
+          const latencyCost = latency || routeFinderState.minLatency;
+          cost = (1 - balance) * latencyCost + balance * normalizedCost;
+        } else {
+          cost = calculateEdgeCost(latency, 0);
+        }
         
         for (let i = 0; i < nodeIdsInContainer.length; i++) {
           for (let j = i + 1; j < nodeIdsInContainer.length; j++) {
@@ -21891,11 +22580,11 @@ function loadProjectObject(obj) {
             if (!hasExplicit) {
               adjacency.get(a).push({
                 to: b, cost, edgeId: null, implicit: true, containerId: groupId,
-                latency, description: `via ${containerName}`
+                latency, commercialCost: group ? getContainerCostForPathfinding(group) : 0, description: `via ${containerName}`
               });
               adjacency.get(b).push({
                 to: a, cost, edgeId: null, implicit: true, containerId: groupId,
-                latency, description: `via ${containerName}`
+                latency, commercialCost: group ? getContainerCostForPathfinding(group) : 0, description: `via ${containerName}`
               });
             }
           }
@@ -21920,7 +22609,19 @@ function loadProjectObject(obj) {
         const latency = (region?.transitLatency !== undefined && region?.transitLatency !== null)
           ? region.transitLatency
           : routeFinderState.regionLatency;
-        const cost = calculateEdgeCost(latency, 0);
+        
+        // Get commercial cost for cost optimization (if balance > 0)
+        const balance = routeFinderState.optimizationBalance || 0;
+        let cost;
+        if (balance > 0 && region) {
+          // Blend latency and commercial cost
+          const commercialCost = getContainerCostForPathfinding(region);
+          const normalizedCost = normalizeCommercialCost(commercialCost);
+          const latencyCost = latency || routeFinderState.minLatency;
+          cost = (1 - balance) * latencyCost + balance * normalizedCost;
+        } else {
+          cost = calculateEdgeCost(latency, 0);
+        }
         
         for (let i = 0; i < containerIds.length; i++) {
           for (let j = i + 1; j < containerIds.length; j++) {
@@ -21941,11 +22642,11 @@ function loadProjectObject(obj) {
                 if (!hasExplicit) {
                   adjacency.get(a).push({
                     to: b, cost, edgeId: null, implicit: true, regionId,
-                    latency, description: `via ${regionName}`
+                    latency, commercialCost: region ? getContainerCostForPathfinding(region) : 0, description: `via ${regionName}`
                   });
                   adjacency.get(b).push({
                     to: a, cost, edgeId: null, implicit: true, regionId,
-                    latency, description: `via ${regionName}`
+                    latency, commercialCost: region ? getContainerCostForPathfinding(region) : 0, description: `via ${regionName}`
                   });
                 }
               });
@@ -24358,7 +25059,22 @@ function loadProjectObject(obj) {
         hopStyle = 'background:#fffbeb; border-left:3px solid #f59e0b;';
         hopLabel = '<span style="color:#f59e0b; font-size:10px;"> (implicit)</span>';
         hopIcon = '⋯';
-        hopCost = '<span style="color:#94a3b8; font-size:9px; margin-left:4px;">no cost</span>';
+        
+        // Get container/region cost for implicit transit
+        const groupId = seg.containerId || seg.regionId;
+        if (groupId) {
+          const group = findGroup(groupId);
+          if (group) {
+            const currency = state.financialSettings?.baseCurrency || 'USD';
+            const containerCost = getContainerCostForPathfinding(group);
+            hopCost = `<span style="color:#f59e0b; font-size:9px; margin-left:4px;">${formatCurrency(containerCost, currency)}</span>`;
+            hopLabel = `<span style="color:#f59e0b; font-size:10px;"> (implicit via ${group.title || 'container'})</span>`;
+          } else {
+            hopCost = '<span style="color:#94a3b8; font-size:9px; margin-left:4px;">$0</span>';
+          }
+        } else {
+          hopCost = '<span style="color:#94a3b8; font-size:9px; margin-left:4px;">$0</span>';
+        }
       } else {
         // Regular link hop - default styling
         hopStyle = 'border-left:3px solid #e5e7eb;';
@@ -28659,7 +29375,16 @@ function loadProjectObject(obj) {
         
         // Determine edge color and width based on style mode
         let edgeColor, edgeWidth, edgeLineStyle;
-        if (useCanvasStyles) {
+        
+        // Check for heat map color first (overrides all other colors)
+        const heatMapColor = (typeof getHeatMapColor === 'function') ? getHeatMapColor(e) : null;
+        
+        if (heatMapColor) {
+          // Heat map is active - use heat map color
+          edgeColor = heatMapColor;
+          edgeWidth = useCanvasStyles ? (e.strokeW || 2) : simplifiedLink.linkWidth;
+          edgeLineStyle = useCanvasStyles ? (e.lineStyle || 'solid') : simplifiedLink.linkStyle;
+        } else if (useCanvasStyles) {
           edgeColor = e.strokeColor || '#666666';
           edgeWidth = e.strokeW || 2;
           edgeLineStyle = e.lineStyle || 'solid';
@@ -30586,7 +31311,15 @@ function loadProjectObject(obj) {
           
           // Determine edge color and width based on style mode
           let edgeColor, edgeWidth;
-          if (useCanvasStyles) {
+          
+          // Check for heat map color first (overrides all other colors)
+          const heatMapColor = (typeof getHeatMapColor === 'function') ? getHeatMapColor(e) : null;
+          
+          if (heatMapColor) {
+            // Heat map is active - use heat map color
+            edgeColor = heatMapColor;
+            edgeWidth = e.strokeW || e.strokeWidth || simplifiedLink.linkWidth;
+          } else if (useCanvasStyles) {
             // Use individual canvas colors
             edgeColor = e.strokeColor || e.stroke || simplifiedLink.linkColor;
             edgeWidth = e.strokeW || e.strokeWidth || simplifiedLink.linkWidth;
@@ -32254,6 +32987,13 @@ function loadProjectObject(obj) {
     const finTierMult100G = document.getElementById('finTierMult100G');
     const finTierMult400G = document.getElementById('finTierMult400G');
     
+    // Container defaults
+    const finContainerDefaultNRC = document.getElementById('finContainerDefaultNRC');
+    const finContainerDefaultMRC = document.getElementById('finContainerDefaultMRC');
+    const finContainerDefaultIRU = document.getElementById('finContainerDefaultIRU');
+    const finContainerDefaultIRUTerm = document.getElementById('finContainerDefaultIRUTerm');
+    const finContainerDefaultOAM = document.getElementById('finContainerDefaultOAM');
+    
     if (finBaseCurrency) finBaseCurrency.value = state.financialSettings.baseCurrency || 'USD';
     if (finDiscountRate) finDiscountRate.value = state.financialSettings.npvDiscountRate || 12.5;
     if (finDefaultNRC) finDefaultNRC.value = state.financialSettings.defaultNRC || 0;
@@ -32263,6 +33003,13 @@ function loadProjectObject(obj) {
     if (finDefaultOAM) finDefaultOAM.value = state.financialSettings.defaultOAM || 5;
     if (finDefaultCostMetric) finDefaultCostMetric.value = state.pathfinderSettings.costMetric || 'lease';
     if (finCostScale) finCostScale.value = state.pathfinderSettings.costScale || 'logarithmic';
+    
+    // Populate container defaults
+    if (finContainerDefaultNRC) finContainerDefaultNRC.value = state.financialSettings.containerDefaultNRC || 0;
+    if (finContainerDefaultMRC) finContainerDefaultMRC.value = state.financialSettings.containerDefaultMRC || 1;
+    if (finContainerDefaultIRU) finContainerDefaultIRU.value = state.financialSettings.containerDefaultIRU || 1;
+    if (finContainerDefaultIRUTerm) finContainerDefaultIRUTerm.value = state.financialSettings.containerDefaultIRUTerm || 15;
+    if (finContainerDefaultOAM) finContainerDefaultOAM.value = state.financialSettings.containerDefaultOAM || 3;
     
     // Load tier multipliers
     const multipliers = state.financialSettings.tierMultipliers || { '10G': 2.5, '100G': 6.25, '400G': 15.625 };
@@ -32292,6 +33039,14 @@ function loadProjectObject(obj) {
     if (finDefaultNRCUnit) finDefaultNRCUnit.textContent = currency;
     if (finDefaultMRCUnit) finDefaultMRCUnit.textContent = currency;
     if (finDefaultIRUUnit) finDefaultIRUUnit.textContent = currency;
+    
+    // Container default units
+    const finContainerDefaultNRCUnit = document.getElementById('finContainerDefaultNRCUnit');
+    const finContainerDefaultMRCUnit = document.getElementById('finContainerDefaultMRCUnit');
+    const finContainerDefaultIRUUnit = document.getElementById('finContainerDefaultIRUUnit');
+    if (finContainerDefaultNRCUnit) finContainerDefaultNRCUnit.textContent = currency;
+    if (finContainerDefaultMRCUnit) finContainerDefaultMRCUnit.textContent = currency;
+    if (finContainerDefaultIRUUnit) finContainerDefaultIRUUnit.textContent = currency;
   }
   
   function updateExchangeRatesDisplay() {
@@ -32362,6 +33117,13 @@ function loadProjectObject(obj) {
     const finTierMult100G = document.getElementById('finTierMult100G');
     const finTierMult400G = document.getElementById('finTierMult400G');
     
+    // Container defaults
+    const finContainerDefaultNRC = document.getElementById('finContainerDefaultNRC');
+    const finContainerDefaultMRC = document.getElementById('finContainerDefaultMRC');
+    const finContainerDefaultIRU = document.getElementById('finContainerDefaultIRU');
+    const finContainerDefaultIRUTerm = document.getElementById('finContainerDefaultIRUTerm');
+    const finContainerDefaultOAM = document.getElementById('finContainerDefaultOAM');
+    
     // Update financial settings
     state.financialSettings.baseCurrency = finBaseCurrency?.value || 'USD';
     state.financialSettings.npvDiscountRate = parseFloat(finDiscountRate?.value) || 12.5;
@@ -32370,6 +33132,13 @@ function loadProjectObject(obj) {
     state.financialSettings.defaultIRU = parseFloat(finDefaultIRU?.value) || 1;
     state.financialSettings.defaultIRUTerm = parseInt(finDefaultIRUTerm?.value) || 15;
     state.financialSettings.defaultOAM = parseFloat(finDefaultOAM?.value) || 5;
+    
+    // Update container defaults
+    state.financialSettings.containerDefaultNRC = parseFloat(finContainerDefaultNRC?.value) || 0;
+    state.financialSettings.containerDefaultMRC = parseFloat(finContainerDefaultMRC?.value) || 1;
+    state.financialSettings.containerDefaultIRU = parseFloat(finContainerDefaultIRU?.value) || 1;
+    state.financialSettings.containerDefaultIRUTerm = parseInt(finContainerDefaultIRUTerm?.value) || 15;
+    state.financialSettings.containerDefaultOAM = parseFloat(finContainerDefaultOAM?.value) || 3;
     
     // Update tier multipliers
     state.financialSettings.tierMultipliers = {
@@ -32569,6 +33338,18 @@ function loadProjectObject(obj) {
   // Grey color for links with no data
   const HEAT_MAP_NO_DATA_COLOR = '#9ca3af';
   
+  // Helper function to render the current active view (canvas, geo static, or geo dynamic)
+  function renderCurrentView() {
+    if (window.mapLibreState && window.mapLibreState.active && typeof window.renderMapLibreContent === 'function') {
+      window.mapLibreState.skipFitBounds = true;
+      window.renderMapLibreContent();
+    } else if (window.geoViewState && window.geoViewState.active && typeof window.renderGeoView === 'function') {
+      window.renderGeoView();
+    } else {
+      render();
+    }
+  }
+  
   // Get heat map color for an edge
   function getHeatMapColor(edge) {
     if (!heatMapState.active || heatMapState.mode === 'off') {
@@ -32576,6 +33357,7 @@ function loadProjectObject(obj) {
     }
     
     const value = getHeatMapValue(edge);
+    console.log('[HeatMap] getHeatMapColor called for edge', edge.id, '- value:', value);
     
     // Return grey for links with no data
     if (value === null) {
@@ -32635,6 +33417,14 @@ function loadProjectObject(obj) {
           activeLabel.textContent = `Heat Map: Price @ ${heatMapState.priceTier}${scaleLabel}`;
         }
       }
+      // Update scale toggle button
+      const scaleToggle = document.getElementById('heatMapScaleToggle');
+      if (scaleToggle) {
+        scaleToggle.textContent = heatMapState.useLogarithmic ? 'Log' : 'Lin';
+        scaleToggle.title = heatMapState.useLogarithmic ? 
+          'Currently logarithmic - click for linear scale' : 
+          'Currently linear - click for logarithmic scale';
+      }
     }
     
     // Show legend if enabled
@@ -32675,8 +33465,10 @@ function loadProjectObject(obj) {
   
   // Apply heat map mode change
   function applyHeatMapMode(mode) {
+    console.log('[HeatMap] Applying mode:', mode);
     heatMapState.mode = mode;
     heatMapState.active = mode !== 'off';
+    console.log('[HeatMap] State active:', heatMapState.active);
     
     // Set mode-specific default colors
     if (mode === 'capacity') {
@@ -32696,13 +33488,50 @@ function loadProjectObject(obj) {
       priceTierSection.style.display = mode === 'price' ? 'block' : 'none';
     }
     
+    // Show/hide active indicator immediately
+    const activeIndicator = document.getElementById('heatMapActiveIndicator');
+    const activeLabel = document.getElementById('heatMapActiveLabel');
+    console.log('[HeatMap] Active indicator element:', activeIndicator);
+    
+    if (activeIndicator) {
+      if (heatMapState.active) {
+        activeIndicator.style.display = 'flex';
+        if (activeLabel) {
+          const scaleLabel = heatMapState.useLogarithmic ? ' (log)' : '';
+          if (mode === 'capacity') {
+            activeLabel.textContent = `Heat Map: Capacity${scaleLabel}`;
+          } else if (mode === 'price') {
+            activeLabel.textContent = `Heat Map: Price @ ${heatMapState.priceTier}${scaleLabel}`;
+          }
+        }
+        console.log('[HeatMap] Showing active indicator');
+      } else {
+        activeIndicator.style.display = 'none';
+        console.log('[HeatMap] Hiding active indicator');
+      }
+    }
+    
     if (heatMapState.active) {
       calculateHeatMapRange();
+      console.log('[HeatMap] Range calculated:', heatMapState.minValue, '-', heatMapState.maxValue);
     }
     
     updateHeatMapGradientPreview();
     updateHeatMapLegend();
-    render();
+    
+    // Render the appropriate view
+    console.log('[HeatMap] Rendering view...');
+    if (window.mapLibreState && window.mapLibreState.active && typeof window.renderMapLibreContent === 'function') {
+      console.log('[HeatMap] Rendering MapLibre view');
+      window.mapLibreState.skipFitBounds = true;
+      window.renderMapLibreContent();
+    } else if (window.geoViewState && window.geoViewState.active && typeof window.renderGeoView === 'function') {
+      console.log('[HeatMap] Rendering GeoStatic view');
+      window.renderGeoView();
+    } else {
+      console.log('[HeatMap] Rendering Canvas view');
+      render();
+    }
     
     if (mode === 'off') {
       showToast('Heat map disabled');
@@ -32728,173 +33557,246 @@ function loadProjectObject(obj) {
   
   // Initialize heat map controls
   function initHeatMapControls() {
-    // Mode radio buttons
-    const modeOff = document.getElementById('heatMapModeOff');
-    const modeCapacity = document.getElementById('heatMapModeCapacity');
-    const modePrice = document.getElementById('heatMapModePrice');
+    console.log('[HeatMap] initHeatMapControls starting...');
     
-    if (modeOff) modeOff.addEventListener('change', () => { if (modeOff.checked) applyHeatMapMode('off'); });
-    if (modeCapacity) modeCapacity.addEventListener('change', () => { if (modeCapacity.checked) applyHeatMapMode('capacity'); });
-    if (modePrice) modePrice.addEventListener('change', () => { if (modePrice.checked) applyHeatMapMode('price'); });
-    
-    // Price tier radio buttons
-    const tierLabels = ['1G', '10G', '100G', '400G'];
-    tierLabels.forEach(tier => {
-      const radio = document.getElementById(`heatMapTier${tier}`);
-      const label = document.getElementById(`heatMapTier${tier}Label`);
-      if (radio) {
-        radio.addEventListener('change', () => {
-          if (radio.checked) {
-            heatMapState.priceTier = tier;
-            // Update label styles
-            tierLabels.forEach(t => {
-              const l = document.getElementById(`heatMapTier${t}Label`);
-              if (l) {
-                if (t === tier) {
-                  l.style.borderColor = '#3b82f6';
-                  l.style.background = '#eff6ff';
-                  l.style.color = '#1d4ed8';
-                } else {
-                  l.style.borderColor = '#e5e7eb';
-                  l.style.background = 'white';
-                  l.style.color = '';
-                }
-              }
-            });
-            if (heatMapState.active && heatMapState.mode === 'price') {
-              calculateHeatMapRange();
-              updateHeatMapLegend();
-              render();
-              showToast(`🌡️ Heat map: Price (${tier})`);
+    // Use event delegation on document body to handle radio button changes
+    // This works even after the submenu is cloned
+    document.body.addEventListener('change', (e) => {
+      console.log('[HeatMap] Change event on:', e.target.id, e.target.name, e.target.type);
+      
+      if (e.target.name === 'heatMapMode') {
+        console.log('[HeatMap] Mode changed via delegation:', e.target.id, 'checked:', e.target.checked);
+        if (e.target.id === 'heatMapModeOff' && e.target.checked) {
+          applyHeatMapMode('off');
+        } else if (e.target.id === 'heatMapModeCapacity' && e.target.checked) {
+          applyHeatMapMode('capacity');
+        } else if (e.target.id === 'heatMapModePrice' && e.target.checked) {
+          applyHeatMapMode('price');
+        }
+      }
+      
+      // Price tier radio buttons
+      if (e.target.name === 'heatMapPriceTier' && e.target.checked) {
+        console.log('[HeatMap] Price tier changed:', e.target.value);
+        heatMapState.priceTier = e.target.value;
+        // Update label styles
+        ['1G', '10G', '100G', '400G'].forEach(t => {
+          const l = document.getElementById(`heatMapTier${t}Label`);
+          if (l) {
+            if (t === e.target.value) {
+              l.style.borderColor = '#3b82f6';
+              l.style.background = '#eff6ff';
+              l.style.color = '#1d4ed8';
+            } else {
+              l.style.borderColor = '#e5e7eb';
+              l.style.background = 'white';
+              l.style.color = '';
             }
           }
         });
+        if (heatMapState.active && heatMapState.mode === 'price') {
+          calculateHeatMapRange();
+          updateHeatMapLegend();
+          renderCurrentView();
+          showToast(`🌡️ Heat map: Price (${e.target.value})`);
+        }
+      }
+      
+      // Show legend checkbox
+      if (e.target.id === 'heatMapShowLegend') {
+        heatMapState.showLegend = e.target.checked;
+        updateHeatMapLegend();
+      }
+      
+      // Logarithmic scale checkbox
+      if (e.target.id === 'heatMapUseLogarithmic') {
+        console.log('[HeatMap] Logarithmic checkbox changed:', e.target.checked);
+        console.log('[HeatMap] Current state - active:', heatMapState.active, 'mode:', heatMapState.mode);
+        heatMapState.useLogarithmic = e.target.checked;
+        updateHeatMapLegend();
+        console.log('[HeatMap] After updateHeatMapLegend - checking indicator');
+        const indicator = document.getElementById('heatMapActiveIndicator');
+        console.log('[HeatMap] Indicator element:', indicator, 'display:', indicator?.style.display);
+        if (heatMapState.active) renderCurrentView();
+        showToast(e.target.checked ? '📈 Logarithmic scale enabled' : '📊 Linear scale enabled');
       }
     });
     
-    // Color pickers - Cold color (click swatch to open palette)
-    const coldColorSwatch = document.getElementById('heatMapColdColorSwatch');
-    const coldColorPicker = document.getElementById('heatMapColdColorPicker');
-    const coldColorInput = document.getElementById('heatMapColdColor');
-    const coldColorHex = document.getElementById('heatMapColdColorHex');
+    // Color picker click handlers using delegation
+    document.body.addEventListener('click', (e) => {
+      // Cold color swatch
+      if (e.target.id === 'heatMapColdColorSwatch' || e.target.closest('#heatMapColdColorSwatch')) {
+        e.stopPropagation();
+        const coldColorPicker = document.getElementById('heatMapColdColorPicker');
+        const hotColorPicker = document.getElementById('heatMapHotColorPicker');
+        if (coldColorPicker) {
+          const isVisible = coldColorPicker.style.display !== 'none';
+          if (hotColorPicker) hotColorPicker.style.display = 'none';
+          coldColorPicker.style.display = isVisible ? 'none' : 'block';
+        }
+      }
+      
+      // Hot color swatch
+      if (e.target.id === 'heatMapHotColorSwatch' || e.target.closest('#heatMapHotColorSwatch')) {
+        e.stopPropagation();
+        const coldColorPicker = document.getElementById('heatMapColdColorPicker');
+        const hotColorPicker = document.getElementById('heatMapHotColorPicker');
+        if (hotColorPicker) {
+          const isVisible = hotColorPicker.style.display !== 'none';
+          if (coldColorPicker) coldColorPicker.style.display = 'none';
+          hotColorPicker.style.display = isVisible ? 'none' : 'block';
+        }
+      }
+      
+      // Close legend button
+      if (e.target.id === 'btnCloseHeatMapLegend') {
+        heatMapState.showLegend = false;
+        const showLegendCheck = document.getElementById('heatMapShowLegend');
+        if (showLegendCheck) showLegendCheck.checked = false;
+        updateHeatMapLegend();
+      }
+      
+      // Scale toggle button in active indicator
+      if (e.target.id === 'heatMapScaleToggle') {
+        e.stopPropagation();
+        heatMapState.useLogarithmic = !heatMapState.useLogarithmic;
+        // Update the checkbox in the menu if it exists
+        const logCheckbox = document.getElementById('heatMapUseLogarithmic');
+        if (logCheckbox) logCheckbox.checked = heatMapState.useLogarithmic;
+        // Update the toggle button text
+        e.target.textContent = heatMapState.useLogarithmic ? 'Log' : 'Lin';
+        updateHeatMapLegend();
+        if (heatMapState.active) renderCurrentView();
+        showToast(heatMapState.useLogarithmic ? '📈 Logarithmic scale' : '📊 Linear scale');
+        return; // Don't process further
+      }
+      
+      // Exit button click to disable heat map
+      if (e.target.id === 'heatMapExitBtn') {
+        e.stopPropagation();
+        console.log('[HeatMap] Exit button clicked - disabling heatmap');
+        const modeOff = document.getElementById('heatMapModeOff');
+        if (modeOff) modeOff.checked = true;
+        applyHeatMapMode('off');
+        return; // Don't process further
+      }
+      
+      // Active indicator click (but not on buttons) to disable heat map
+      // Make sure we're not clicking on a form element inside a menu
+      if ((e.target.id === 'heatMapActiveIndicator' || e.target.closest('#heatMapActiveIndicator')) &&
+          !e.target.closest('.menu') && !e.target.closest('.submenu') &&
+          e.target.id !== 'heatMapScaleToggle' && e.target.id !== 'heatMapExitBtn') {
+        // Don't do anything on general indicator click - only exit button exits
+      }
+    });
     
-    if (coldColorSwatch && coldColorPicker) {
-      // Create palette picker (hidden initially)
+    // Initialize color swatches
+    const coldSwatch = document.getElementById('heatMapColdColorSwatch');
+    const hotSwatch = document.getElementById('heatMapHotColorSwatch');
+    if (coldSwatch) coldSwatch.style.background = heatMapState.coldColor;
+    if (hotSwatch) hotSwatch.style.background = heatMapState.hotColor;
+    
+    // Create color palette pickers
+    const coldColorPicker = document.getElementById('heatMapColdColorPicker');
+    const hotColorPicker = document.getElementById('heatMapHotColorPicker');
+    
+    if (coldColorPicker) {
       createHeatMapPalettePicker(coldColorPicker, heatMapState.coldColor, (color) => {
         heatMapState.coldColor = color;
-        // Save to mode-specific color
         if (heatMapState.mode === 'capacity') {
           heatMapState.capacityColdColor = color;
         } else if (heatMapState.mode === 'price') {
           heatMapState.priceColdColor = color;
         }
-        coldColorSwatch.style.background = color;
-        if (coldColorInput) coldColorInput.value = color;
-        if (coldColorHex) coldColorHex.textContent = color;
+        const swatch = document.getElementById('heatMapColdColorSwatch');
+        const hex = document.getElementById('heatMapColdColorHex');
+        if (swatch) swatch.style.background = color;
+        if (hex) hex.textContent = color;
         updateHeatMapGradientPreview();
         updateHeatMapLegend();
-        if (heatMapState.active) render();
+        if (heatMapState.active) renderCurrentView();
         coldColorPicker.style.display = 'none';
-      });
-      
-      // Click swatch to toggle palette
-      coldColorSwatch.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = coldColorPicker.style.display !== 'none';
-        // Hide other picker if open
-        if (hotColorPicker) hotColorPicker.style.display = 'none';
-        coldColorPicker.style.display = isVisible ? 'none' : 'block';
       });
     }
     
-    // Color pickers - Hot color (click swatch to open palette)
-    const hotColorSwatch = document.getElementById('heatMapHotColorSwatch');
-    const hotColorPicker = document.getElementById('heatMapHotColorPicker');
-    const hotColorInput = document.getElementById('heatMapHotColor');
-    const hotColorHex = document.getElementById('heatMapHotColorHex');
-    
-    if (hotColorSwatch && hotColorPicker) {
-      // Create palette picker (hidden initially)
+    if (hotColorPicker) {
       createHeatMapPalettePicker(hotColorPicker, heatMapState.hotColor, (color) => {
         heatMapState.hotColor = color;
-        // Save to mode-specific color
         if (heatMapState.mode === 'capacity') {
           heatMapState.capacityHotColor = color;
         } else if (heatMapState.mode === 'price') {
           heatMapState.priceHotColor = color;
         }
-        hotColorSwatch.style.background = color;
-        if (hotColorInput) hotColorInput.value = color;
-        if (hotColorHex) hotColorHex.textContent = color;
+        const swatch = document.getElementById('heatMapHotColorSwatch');
+        const hex = document.getElementById('heatMapHotColorHex');
+        if (swatch) swatch.style.background = color;
+        if (hex) hex.textContent = color;
         updateHeatMapGradientPreview();
         updateHeatMapLegend();
-        if (heatMapState.active) render();
+        if (heatMapState.active) renderCurrentView();
         hotColorPicker.style.display = 'none';
       });
+    }
+    
+    // Make legend draggable
+    makeLegendDraggable();
+    
+    console.log('[HeatMap] Event delegation setup complete');
+  }
+  
+  // Helper function to make the legend draggable
+  function makeLegendDraggable() {
+    const legend = document.getElementById('heatMapLegend');
+    if (legend) {
+      let isDragging = false;
+      let startX, startY, startLeft, startTop;
       
-      // Click swatch to toggle palette
-      hotColorSwatch.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = hotColorPicker.style.display !== 'none';
-        // Hide other picker if open
-        if (coldColorPicker) coldColorPicker.style.display = 'none';
-        hotColorPicker.style.display = isVisible ? 'none' : 'block';
+      legend.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
+        
+        isDragging = true;
+        const rect = legend.getBoundingClientRect();
+        startX = e.clientX;
+        startY = e.clientY;
+        
+        if (!legend.style.left || legend.style.left === '') {
+          legend.style.left = rect.left + 'px';
+          legend.style.right = 'auto';
+        }
+        if (!legend.style.top || legend.style.top === '') {
+          legend.style.top = rect.top + 'px';
+          legend.style.bottom = 'auto';
+        }
+        
+        startLeft = parseInt(legend.style.left) || rect.left;
+        startTop = parseInt(legend.style.top) || rect.top;
+        
+        e.preventDefault();
+      });
+      
+      document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        
+        let newLeft = startLeft + dx;
+        let newTop = startTop + dy;
+        
+        newLeft = Math.max(10, Math.min(newLeft, window.innerWidth - legend.offsetWidth - 10));
+        newTop = Math.max(10, Math.min(newTop, window.innerHeight - legend.offsetHeight - 10));
+        
+        legend.style.left = newLeft + 'px';
+        legend.style.top = newTop + 'px';
+        legend.style.right = 'auto';
+        legend.style.bottom = 'auto';
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
       });
     }
     
-    // Close palettes when clicking elsewhere
-    document.addEventListener('click', () => {
-      if (coldColorPicker) coldColorPicker.style.display = 'none';
-      if (hotColorPicker) hotColorPicker.style.display = 'none';
-    });
-    
-    // Set initial swatch colors
-    if (coldColorSwatch) coldColorSwatch.style.background = heatMapState.coldColor;
-    if (hotColorSwatch) hotColorSwatch.style.background = heatMapState.hotColor;
-    
-    // Show legend checkbox
-    const showLegendCheck = document.getElementById('heatMapShowLegend');
-    if (showLegendCheck) {
-      showLegendCheck.addEventListener('change', () => {
-        heatMapState.showLegend = showLegendCheck.checked;
-        updateHeatMapLegend();
-      });
-    }
-    
-    // Logarithmic scale checkbox
-    const useLogCheck = document.getElementById('heatMapUseLogarithmic');
-    if (useLogCheck) {
-      useLogCheck.addEventListener('change', () => {
-        heatMapState.useLogarithmic = useLogCheck.checked;
-        updateHeatMapLegend();
-        if (heatMapState.active) render();
-        showToast(useLogCheck.checked ? '📈 Logarithmic scale enabled' : '📊 Linear scale enabled');
-      });
-    }
-    
-    // Close legend button
-    const closeLegendBtn = document.getElementById('btnCloseHeatMapLegend');
-    if (closeLegendBtn) {
-      closeLegendBtn.addEventListener('click', () => {
-        heatMapState.showLegend = false;
-        const showLegendCheck = document.getElementById('heatMapShowLegend');
-        if (showLegendCheck) showLegendCheck.checked = false;
-        updateHeatMapLegend();
-      });
-    }
-    
-    // Active indicator click to disable heat map
-    const activeIndicator = document.getElementById('heatMapActiveIndicator');
-    if (activeIndicator) {
-      activeIndicator.addEventListener('click', () => {
-        // Disable heat map
-        const modeOff = document.getElementById('heatMapModeOff');
-        if (modeOff) modeOff.checked = true;
-        applyHeatMapMode('off');
-      });
-    }
-    
-    // Initial gradient preview
     updateHeatMapGradientPreview();
   }
   
@@ -32967,8 +33869,21 @@ function loadProjectObject(obj) {
     container.appendChild(customContainer);
   }
   
-  // Initialize on load
-  setTimeout(initHeatMapControls, 100);
+  // Initialize on load - use DOMContentLoaded for reliability
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[HeatMap] DOMContentLoaded - Initializing heat map controls...');
+      initHeatMapControls();
+      console.log('[HeatMap] Heat map controls initialized');
+    });
+  } else {
+    // DOM already loaded
+    console.log('[HeatMap] DOM ready - Initializing heat map controls...');
+    setTimeout(() => {
+      initHeatMapControls();
+      console.log('[HeatMap] Heat map controls initialized');
+    }, 100);
+  }
   
   // ============== CAPACITY EDITOR ==============
   
@@ -33580,6 +34495,8 @@ function loadProjectObject(obj) {
       renderLinksTable(thead, tbody, showCost, currency);
     } else if (type === 'nodes') {
       renderNodesTable(thead, tbody);
+    } else if (type === 'containers') {
+      renderContainersTable(thead, tbody, showCost, currency);
     } else if (type === 'mlg') {
       renderMLGTable(thead, tbody, showCost, currency);
     }
@@ -33602,6 +34519,24 @@ function loadProjectObject(obj) {
         const iruFee = getValueForTier(e.iruFee, tier, 1);
         const acv = calculateLeaseACV(nrc, mrc);
         const iruNpv = calculateIRUNPV(iruFee, e.iruTerm || 15, e.iruOamPercent ?? defaultOAM, e.iruOamAnnualIncrement ?? defaultOAMInc, discountRate);
+        totalACV += acv;
+        totalIRUNPV += iruNpv;
+      });
+      
+      if (totalACVEl) totalACVEl.textContent = formatCurrency(totalACV, currency) + ` @${tier}`;
+      if (totalIRUEl) totalIRUEl.textContent = formatCurrency(totalIRUNPV, currency) + ` @${tier}`;
+    } else if (type === 'containers') {
+      // Calculate totals for containers
+      let totalACV = 0, totalIRUNPV = 0;
+      const discountRate = state.financialSettings.npvDiscountRate || 12.5;
+      const tier = document.getElementById('dataTableCapacityTier')?.value || '10G';
+      
+      state.groups.forEach(g => {
+        const nrc = getValueForTier(g.leaseNRC, tier, 0);
+        const mrc = getValueForTier(g.leaseMRC, tier, 1);
+        const iruFee = getValueForTier(g.iruFee, tier, 1);
+        const acv = calculateLeaseACV(nrc, mrc);
+        const iruNpv = calculateIRUNPV(iruFee, g.iruTerm || 15, g.iruOamPercent ?? 3, g.iruOamAnnualIncrement ?? 2, discountRate);
         totalACV += acv;
         totalIRUNPV += iruNpv;
       });
@@ -33992,6 +34927,162 @@ function loadProjectObject(obj) {
     });
   }
   
+  function renderContainersTable(thead, tbody, showCost, currency) {
+    const search = dataTableState.searchQuery.toLowerCase();
+    const symbol = getCurrencySymbol(currency);
+    const tier = document.getElementById('dataTableCapacityTier')?.value || '10G';
+    const discountRate = state.financialSettings.npvDiscountRate || 12.5;
+    
+    // Headers
+    let headers = `
+      <tr>
+        <th data-col="name">Name</th>
+        <th data-col="type">Type</th>
+        <th data-col="parent">Parent Region</th>
+        <th data-col="nodes">Nodes</th>
+        <th data-col="latency">Transit Latency (ms)</th>
+        <th data-col="override">Cost Source</th>`;
+    
+    if (showCost) {
+      headers += `
+        <th data-col="nrc">NRC @${tier} (${symbol})</th>
+        <th data-col="mrc">MRC @${tier} (${symbol})</th>
+        <th data-col="acv">ACV @${tier} (${symbol})</th>
+        <th data-col="iruFee">IRU @${tier} (${symbol})</th>
+        <th data-col="iruTerm">Term</th>
+        <th data-col="iruNpv">NPV @${tier} (${symbol})</th>
+        <th data-col="mode">Mode</th>`;
+    }
+    headers += `</tr>`;
+    thead.innerHTML = headers;
+    
+    // Filter containers
+    let filteredGroups = state.groups.filter(g => {
+      if (!search) return true;
+      const parent = g.parentId ? findGroup(g.parentId) : null;
+      const parentName = parent?.title || '';
+      return (g.title || '').toLowerCase().includes(search) ||
+             (g.type || '').toLowerCase().includes(search) ||
+             parentName.toLowerCase().includes(search);
+    });
+    
+    // Sort if needed
+    if (dataTableState.sortColumn) {
+      filteredGroups.sort((a, b) => {
+        let aVal, bVal;
+        const col = dataTableState.sortColumn;
+        
+        switch(col) {
+          case 'name': aVal = a.title || ''; bVal = b.title || ''; break;
+          case 'type': aVal = a.type || ''; bVal = b.type || ''; break;
+          case 'parent':
+            const pA = a.parentId ? findGroup(a.parentId) : null;
+            const pB = b.parentId ? findGroup(b.parentId) : null;
+            aVal = pA?.title || '';
+            bVal = pB?.title || '';
+            break;
+          case 'nodes':
+            aVal = state.nodes.filter(n => n.groupId === a.id).length;
+            bVal = state.nodes.filter(n => n.groupId === b.id).length;
+            break;
+          case 'latency':
+            aVal = a.transitLatency ?? 999999;
+            bVal = b.transitLatency ?? 999999;
+            break;
+          case 'nrc': aVal = getValueForTier(a.leaseNRC, tier, 0); bVal = getValueForTier(b.leaseNRC, tier, 0); break;
+          case 'mrc': aVal = getValueForTier(a.leaseMRC, tier, 1); bVal = getValueForTier(b.leaseMRC, tier, 1); break;
+          case 'acv': 
+            aVal = calculateLeaseACV(getValueForTier(a.leaseNRC, tier, 0), getValueForTier(a.leaseMRC, tier, 1)); 
+            bVal = calculateLeaseACV(getValueForTier(b.leaseNRC, tier, 0), getValueForTier(b.leaseMRC, tier, 1)); 
+            break;
+          case 'iruFee': aVal = getValueForTier(a.iruFee, tier, 1); bVal = getValueForTier(b.iruFee, tier, 1); break;
+          case 'iruNpv':
+            aVal = calculateIRUNPV(getValueForTier(a.iruFee, tier, 1), a.iruTerm || 15, a.iruOamPercent ?? 3, a.iruOamAnnualIncrement ?? 2, discountRate);
+            bVal = calculateIRUNPV(getValueForTier(b.iruFee, tier, 1), b.iruTerm || 15, b.iruOamPercent ?? 3, b.iruOamAnnualIncrement ?? 2, discountRate);
+            break;
+          default: aVal = a.id; bVal = b.id;
+        }
+        
+        if (typeof aVal === 'string') {
+          const result = aVal.localeCompare(bVal);
+          return dataTableState.sortDirection === 'asc' ? result : -result;
+        }
+        return dataTableState.sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+      });
+    }
+    
+    // Generate rows
+    let rows = '';
+    filteredGroups.forEach(g => {
+      const parent = g.parentId ? findGroup(g.parentId) : null;
+      const nodeCount = state.nodes.filter(n => n.groupId === g.id).length;
+      const typeLabel = g.type === 'region' ? '📁 Region' : '📦 Container';
+      const parentLabel = parent ? parent.title : '—';
+      const latencyLabel = g.transitLatency !== undefined && g.transitLatency !== null ? g.transitLatency.toFixed(2) : '(default)';
+      const costSource = g.commercialCostOverride ? '✏️ Manual' : '📊 Calculated';
+      
+      const nrc = getValueForTier(g.leaseNRC, tier, 0);
+      const mrc = getValueForTier(g.leaseMRC, tier, 1);
+      const iruFee = getValueForTier(g.iruFee, tier, 1);
+      const acv = calculateLeaseACV(nrc, mrc);
+      const iruNpv = calculateIRUNPV(iruFee, g.iruTerm || 15, g.iruOamPercent ?? 3, g.iruOamAnnualIncrement ?? 2, discountRate);
+      
+      rows += `<tr data-id="${g.id}" data-type="group" style="cursor:pointer;">
+        <td style="font-weight:500;">${escapeHtml(g.title || '')}</td>
+        <td style="font-size:11px;">${typeLabel}</td>
+        <td style="font-size:11px;">${escapeHtml(parentLabel)}</td>
+        <td style="text-align:center;">${nodeCount}</td>
+        <td style="text-align:right;">${latencyLabel}</td>
+        <td style="font-size:10px; color:${g.commercialCostOverride ? '#d97706' : '#059669'};">${costSource}</td>`;
+      
+      if (showCost) {
+        rows += `
+          <td style="text-align:right;">${nrc.toFixed(2)}</td>
+          <td style="text-align:right;">${mrc.toFixed(2)}</td>
+          <td style="text-align:right; font-weight:500; color:#1d4ed8;">${formatCurrency(acv, currency)}</td>
+          <td style="text-align:right;">${iruFee.toFixed(2)}</td>
+          <td style="text-align:center;">${g.iruTerm || 15}y</td>
+          <td style="text-align:right; font-weight:500; color:#7c3aed;">${formatCurrency(iruNpv, currency)}</td>
+          <td style="font-size:10px;">${g.commercialCostMode === 'iru' ? 'IRU' : 'Lease'}</td>`;
+      }
+      rows += `</tr>`;
+    });
+    
+    tbody.innerHTML = rows;
+    
+    // Add click handler to select container
+    tbody.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', () => {
+        const id = parseInt(row.dataset.id);
+        const g = findGroup(id);
+        if (g) {
+          select({ type: 'group', id });
+          render();
+          updateInspector();
+        }
+      });
+    });
+    
+    // Add sort handlers
+    thead.querySelectorAll('th[data-col]').forEach(th => {
+      th.style.cursor = 'pointer';
+      th.addEventListener('click', () => {
+        const col = th.dataset.col;
+        if (dataTableState.sortColumn === col) {
+          dataTableState.sortDirection = dataTableState.sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+          dataTableState.sortColumn = col;
+          dataTableState.sortDirection = 'asc';
+        }
+        
+        thead.querySelectorAll('th').forEach(h => h.classList.remove('sorted-asc', 'sorted-desc'));
+        th.classList.add(dataTableState.sortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
+        
+        renderDataTable();
+      });
+    });
+  }
+  
   function renderMLGTable(thead, tbody, showCost, currency) {
     const symbol = getCurrencySymbol(currency);
     const discountRate = state.financialSettings.npvDiscountRate || 12.5;
@@ -34191,8 +35282,9 @@ function loadProjectObject(obj) {
     if (btnRecalc) {
       btnRecalc.addEventListener('click', () => {
         recalculateAllMLGCosts();
+        recalculateAllContainerCosts();
         renderDataTable();
-        showToast('Costs recalculated');
+        showToast('Costs recalculated (MLGs and Containers)');
       });
     }
     
@@ -35006,6 +36098,365 @@ function loadProjectObject(obj) {
     });
   }
   
+  // ============== CONTAINER COMMERCIAL COST CALCULATIONS ==============
+  
+  /**
+   * Get links that have both endpoints inside a container
+   * @param {Object} group - Container/group object
+   * @returns {Array} Array of edge objects
+   */
+  function getLinksInsideContainer(group) {
+    const nodeIdsInContainer = new Set(
+      state.nodes.filter(n => n.groupId === group.id).map(n => n.id)
+    );
+    return state.edges.filter(e => 
+      nodeIdsInContainer.has(e.a) && nodeIdsInContainer.has(e.b)
+    );
+  }
+  
+  /**
+   * Get links that connect nodes in different child containers of a region
+   * @param {Object} region - Region (container of containers) object
+   * @returns {Array} Array of edge objects
+   */
+  function getInterChildLinks(region) {
+    // Get all child containers of this region
+    const childContainerIds = state.groups
+      .filter(g => g.parentId === region.id && g.type === 'country')
+      .map(g => g.id);
+    
+    if (childContainerIds.length < 2) return [];
+    
+    // Build map of node -> container
+    const nodeToContainer = new Map();
+    state.nodes.forEach(n => {
+      if (childContainerIds.includes(n.groupId)) {
+        nodeToContainer.set(n.id, n.groupId);
+      }
+    });
+    
+    // Find links where endpoints are in different child containers
+    return state.edges.filter(e => {
+      const containerA = nodeToContainer.get(e.a);
+      const containerB = nodeToContainer.get(e.b);
+      return containerA && containerB && containerA !== containerB;
+    });
+  }
+  
+  /**
+   * Calculate average cost values from a set of links
+   * @param {Array} links - Array of edge objects
+   * @returns {Object} Average cost values by tier
+   */
+  function calculateAverageLinkCosts(links) {
+    const tiers = ['1G', '10G', '100G', '400G'];
+    const defaults = {
+      leaseNRC: {},
+      leaseMRC: {},
+      iruFee: {},
+      iruTerm: state.financialSettings?.containerDefaultIRUTerm || 15,
+      iruOamPercent: state.financialSettings?.containerDefaultOAM || 3,
+      iruOamAnnualIncrement: state.financialSettings?.containerDefaultOAMIncrement || 2
+    };
+    
+    tiers.forEach(tier => {
+      defaults.leaseNRC[tier] = state.financialSettings?.containerDefaultNRC || 0;
+      defaults.leaseMRC[tier] = state.financialSettings?.containerDefaultMRC || 1;
+      defaults.iruFee[tier] = state.financialSettings?.containerDefaultIRU || 1;
+    });
+    
+    if (links.length === 0) return defaults;
+    
+    const sums = {
+      leaseNRC: {},
+      leaseMRC: {},
+      iruFee: {},
+      iruTerm: 0,
+      iruOamPercent: 0,
+      iruOamAnnualIncrement: 0
+    };
+    
+    tiers.forEach(tier => {
+      sums.leaseNRC[tier] = 0;
+      sums.leaseMRC[tier] = 0;
+      sums.iruFee[tier] = 0;
+    });
+    
+    links.forEach(link => {
+      tiers.forEach(tier => {
+        sums.leaseNRC[tier] += getValueForTier(link.leaseNRC, tier, 0);
+        sums.leaseMRC[tier] += getValueForTier(link.leaseMRC, tier, 1);
+        sums.iruFee[tier] += getValueForTier(link.iruFee, tier, 1);
+      });
+      sums.iruTerm += link.iruTerm || 15;
+      sums.iruOamPercent += link.iruOamPercent ?? 3;
+      sums.iruOamAnnualIncrement += link.iruOamAnnualIncrement ?? 2;
+    });
+    
+    const result = {
+      leaseNRC: {},
+      leaseMRC: {},
+      iruFee: {},
+      iruTerm: Math.round(sums.iruTerm / links.length),
+      iruOamPercent: Math.round((sums.iruOamPercent / links.length) * 10) / 10,
+      iruOamAnnualIncrement: Math.round((sums.iruOamAnnualIncrement / links.length) * 10) / 10
+    };
+    
+    tiers.forEach(tier => {
+      result.leaseNRC[tier] = Math.round((sums.leaseNRC[tier] / links.length) * 100) / 100;
+      result.leaseMRC[tier] = Math.round((sums.leaseMRC[tier] / links.length) * 100) / 100;
+      result.iruFee[tier] = Math.round((sums.iruFee[tier] / links.length) * 100) / 100;
+    });
+    
+    return result;
+  }
+  
+  /**
+   * Calculate container commercial cost
+   * For regular containers: average of internal links
+   * For regions: 2 × average(child containers) + average(inter-child links)
+   * @param {Object} group - Container/group object
+   * @returns {Object} Calculated cost values and source description
+   */
+  function calculateContainerCost(group) {
+    const tiers = ['1G', '10G', '100G', '400G'];
+    
+    if (group.type === 'region') {
+      // Region: 2 × avg(child costs) + avg(inter-child links)
+      const childContainers = state.groups.filter(g => g.parentId === group.id && g.type === 'country');
+      const interChildLinks = getInterChildLinks(group);
+      
+      if (childContainers.length === 0) {
+        // No children - use defaults
+        return {
+          costs: calculateAverageLinkCosts([]),
+          sourceDesc: 'defaults (no child containers)',
+          linkCount: 0,
+          childCount: 0
+        };
+      }
+      
+      // Calculate average of child container costs
+      const childCostSums = {
+        leaseNRC: {},
+        leaseMRC: {},
+        iruFee: {},
+        iruTerm: 0,
+        iruOamPercent: 0,
+        iruOamAnnualIncrement: 0
+      };
+      
+      tiers.forEach(tier => {
+        childCostSums.leaseNRC[tier] = 0;
+        childCostSums.leaseMRC[tier] = 0;
+        childCostSums.iruFee[tier] = 0;
+      });
+      
+      childContainers.forEach(child => {
+        // Get child's effective costs (calculated or override)
+        const childCosts = child.commercialCostOverride ? {
+          leaseNRC: child.leaseNRC,
+          leaseMRC: child.leaseMRC,
+          iruFee: child.iruFee
+        } : calculateContainerCost(child).costs;
+        
+        tiers.forEach(tier => {
+          childCostSums.leaseNRC[tier] += getValueForTier(childCosts.leaseNRC, tier, 0);
+          childCostSums.leaseMRC[tier] += getValueForTier(childCosts.leaseMRC, tier, 1);
+          childCostSums.iruFee[tier] += getValueForTier(childCosts.iruFee, tier, 1);
+        });
+        childCostSums.iruTerm += child.iruTerm || 15;
+        childCostSums.iruOamPercent += child.iruOamPercent ?? 3;
+        childCostSums.iruOamAnnualIncrement += child.iruOamAnnualIncrement ?? 2;
+      });
+      
+      // Average child costs × 2
+      const avgChildCosts = {
+        leaseNRC: {},
+        leaseMRC: {},
+        iruFee: {}
+      };
+      tiers.forEach(tier => {
+        avgChildCosts.leaseNRC[tier] = 2 * (childCostSums.leaseNRC[tier] / childContainers.length);
+        avgChildCosts.leaseMRC[tier] = 2 * (childCostSums.leaseMRC[tier] / childContainers.length);
+        avgChildCosts.iruFee[tier] = 2 * (childCostSums.iruFee[tier] / childContainers.length);
+      });
+      
+      // Add inter-child link costs
+      const interChildCosts = calculateAverageLinkCosts(interChildLinks);
+      
+      const finalCosts = {
+        leaseNRC: {},
+        leaseMRC: {},
+        iruFee: {},
+        iruTerm: Math.round(childCostSums.iruTerm / childContainers.length),
+        iruOamPercent: Math.round((childCostSums.iruOamPercent / childContainers.length) * 10) / 10,
+        iruOamAnnualIncrement: Math.round((childCostSums.iruOamAnnualIncrement / childContainers.length) * 10) / 10
+      };
+      
+      tiers.forEach(tier => {
+        finalCosts.leaseNRC[tier] = Math.round((avgChildCosts.leaseNRC[tier] + getValueForTier(interChildCosts.leaseNRC, tier, 0)) * 100) / 100;
+        finalCosts.leaseMRC[tier] = Math.round((avgChildCosts.leaseMRC[tier] + getValueForTier(interChildCosts.leaseMRC, tier, 1)) * 100) / 100;
+        finalCosts.iruFee[tier] = Math.round((avgChildCosts.iruFee[tier] + getValueForTier(interChildCosts.iruFee, tier, 1)) * 100) / 100;
+      });
+      
+      return {
+        costs: finalCosts,
+        sourceDesc: `2×avg(${childContainers.length} children) + avg(${interChildLinks.length} inter-child links)`,
+        linkCount: interChildLinks.length,
+        childCount: childContainers.length
+      };
+    } else {
+      // Regular container: average of internal links
+      const internalLinks = getLinksInsideContainer(group);
+      const costs = calculateAverageLinkCosts(internalLinks);
+      
+      return {
+        costs,
+        sourceDesc: internalLinks.length > 0 ? `avg(${internalLinks.length} internal links)` : 'defaults (no internal links)',
+        linkCount: internalLinks.length,
+        childCount: 0
+      };
+    }
+  }
+  
+  /**
+   * Recalculate commercial costs for all containers that don't have user overrides
+   */
+  function recalculateAllContainerCosts() {
+    state.groups.forEach(group => {
+      if (!group.commercialCostOverride) {
+        const result = calculateContainerCost(group);
+        group.leaseNRC = result.costs.leaseNRC;
+        group.leaseMRC = result.costs.leaseMRC;
+        group.iruFee = result.costs.iruFee;
+        group.iruTerm = result.costs.iruTerm;
+        group.iruOamPercent = result.costs.iruOamPercent;
+        group.iruOamAnnualIncrement = result.costs.iruOamAnnualIncrement;
+      }
+    });
+  }
+  
+  /**
+   * Get commercial cost for a container for pathfinding
+   * @param {Object} group - Container/group object
+   * @param {string} tier - Capacity tier ('1G', '10G', '100G', '400G')
+   * @returns {number} Commercial cost value
+   */
+  function getContainerCostForPathfinding(group) {
+    if (!group) return 0;
+    
+    const metric = routeFinderState.costMetric || state.pathfinderSettings?.costMetric || 'lease';
+    const tier = routeFinderState.capacityTier || '10G';
+    const discountRate = state.financialSettings?.npvDiscountRate || 12.5;
+    
+    if (metric === 'iru') {
+      const iruFee = getValueForTier(group.iruFee, tier, 1);
+      return calculateIRUNPV(
+        iruFee,
+        group.iruTerm || 15,
+        group.iruOamPercent ?? 3,
+        group.iruOamAnnualIncrement ?? 2,
+        discountRate
+      );
+    } else {
+      const nrc = getValueForTier(group.leaseNRC, tier, 0);
+      const mrc = getValueForTier(group.leaseMRC, tier, 1);
+      return calculateLeaseACV(nrc, mrc);
+    }
+  }
+  
+  /**
+   * Update container cost display in inspector
+   * @param {Object} group - Container/group object
+   */
+  function updateGroupCostDisplay(group) {
+    if (!group) return;
+    
+    const currency = state.financialSettings.baseCurrency || 'USD';
+    const discountRate = state.financialSettings.npvDiscountRate || 12.5;
+    const tiers = ['1G', '10G', '100G', '400G'];
+    
+    // Update currency labels
+    const groupLeaseCurrency = document.getElementById('groupLeaseCurrency');
+    const groupIRUCurrency = document.getElementById('groupIRUCurrency');
+    if (groupLeaseCurrency) groupLeaseCurrency.textContent = currency;
+    if (groupIRUCurrency) groupIRUCurrency.textContent = currency;
+    
+    // Update discount rate
+    const groupIRUDiscountRate = document.getElementById('groupIRUDiscountRate');
+    if (groupIRUDiscountRate) groupIRUDiscountRate.textContent = discountRate.toFixed(1);
+    
+    // Update override status display
+    const overrideStatus = document.getElementById('groupCostOverrideStatus');
+    const calculatedStatus = document.getElementById('groupCostCalculatedStatus');
+    const sourceDesc = document.getElementById('groupCostSourceDesc');
+    
+    if (group.commercialCostOverride) {
+      if (overrideStatus) overrideStatus.style.display = 'block';
+      if (calculatedStatus) calculatedStatus.style.display = 'none';
+    } else {
+      if (overrideStatus) overrideStatus.style.display = 'none';
+      if (calculatedStatus) calculatedStatus.style.display = 'block';
+      const calcResult = calculateContainerCost(group);
+      if (sourceDesc) sourceDesc.textContent = calcResult.sourceDesc;
+    }
+    
+    // Update cost mode radios
+    const costMode = group.commercialCostMode || 'lease';
+    const groupCostModeLease = document.getElementById('groupCostModeLease');
+    const groupCostModeIRU = document.getElementById('groupCostModeIRU');
+    if (groupCostModeLease) groupCostModeLease.checked = (costMode === 'lease');
+    if (groupCostModeIRU) groupCostModeIRU.checked = (costMode === 'iru');
+    
+    // Update tier pricing fields
+    tiers.forEach(tier => {
+      const nrcEl = document.getElementById(`groupLeaseNRC_${tier}`);
+      const mrcEl = document.getElementById(`groupLeaseMRC_${tier}`);
+      const iruFeeEl = document.getElementById(`groupIRUFee_${tier}`);
+      const acvEl = document.getElementById(`groupLeaseACV_${tier}`);
+      const npvEl = document.getElementById(`groupIRUNPV_${tier}`);
+      
+      const nrc = getValueForTier(group.leaseNRC, tier, 0);
+      const mrc = getValueForTier(group.leaseMRC, tier, 1);
+      const iruFee = getValueForTier(group.iruFee, tier, 1);
+      
+      if (nrcEl) nrcEl.value = nrc;
+      if (mrcEl) mrcEl.value = mrc;
+      if (iruFeeEl) iruFeeEl.value = iruFee;
+      
+      // Calculate and display ACV and NPV
+      const acv = calculateLeaseACV(nrc, mrc);
+      const npv = calculateIRUNPV(
+        iruFee,
+        group.iruTerm || 15,
+        group.iruOamPercent ?? 3,
+        group.iruOamAnnualIncrement ?? 2,
+        discountRate
+      );
+      
+      if (acvEl) acvEl.textContent = formatCurrency(acv, currency);
+      if (npvEl) npvEl.textContent = formatCurrency(npv, currency);
+    });
+    
+    // Update IRU common terms
+    const groupIRUTerm = document.getElementById('groupIRUTerm');
+    const groupIRUOAM = document.getElementById('groupIRUOAM');
+    const groupIRUOAMIncrement = document.getElementById('groupIRUOAMIncrement');
+    
+    if (groupIRUTerm) groupIRUTerm.value = group.iruTerm || 15;
+    if (groupIRUOAM) groupIRUOAM.value = group.iruOamPercent ?? 3;
+    if (groupIRUOAMIncrement) groupIRUOAMIncrement.value = group.iruOamAnnualIncrement ?? 2;
+  }
+  
+  // Expose functions globally
+  window.calculateContainerCost = calculateContainerCost;
+  window.recalculateAllContainerCosts = recalculateAllContainerCosts;
+  window.getContainerCostForPathfinding = getContainerCostForPathfinding;
+  window.updateGroupCostDisplay = updateGroupCostDisplay;
+  
+  // ============== END CONTAINER COMMERCIAL COST ==============
+  
   // Update MLG cost display in editor
   function updateMLGCostDisplay(mlg) {
     if (!mlg) return;
@@ -35456,6 +36907,49 @@ function loadProjectObject(obj) {
         </div>
       </div>
       
+      <!-- Container Defaults Section -->
+      <div class="fin-section">
+        <div class="fin-section-title">📦 Container Transit Defaults (1G Base Tier)</div>
+        <div class="fin-hint" style="margin-bottom:10px;">Default commercial cost values for container transit when no internal links exist. Values are calculated automatically from average of internal links when available.</div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <!-- Container Lease Defaults -->
+          <div style="padding:10px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px;">
+            <div style="font-size:10px; font-weight:600; color:#065f46; margin-bottom:8px;">📄 Lease Defaults (1G)</div>
+            <div class="fin-row" style="margin-bottom:6px;">
+              <label style="width:80px;">NRC</label>
+              <input type="number" id="finContainerDefaultNRC" value="0" min="0" step="0.01" style="width:80px;" />
+              <span class="unit" id="finContainerDefaultNRCUnit">USD</span>
+            </div>
+            <div class="fin-row">
+              <label style="width:80px;">MRC</label>
+              <input type="number" id="finContainerDefaultMRC" value="1" min="0" step="0.01" style="width:80px;" />
+              <span class="unit" id="finContainerDefaultMRCUnit">USD</span>
+            </div>
+          </div>
+          
+          <!-- Container IRU Defaults -->
+          <div style="padding:10px; background:#fdf4ff; border:1px solid #f0abfc; border-radius:6px;">
+            <div style="font-size:10px; font-weight:600; color:#86198f; margin-bottom:8px;">📜 IRU Defaults (1G)</div>
+            <div class="fin-row" style="margin-bottom:6px;">
+              <label style="width:80px;">IRU Fee</label>
+              <input type="number" id="finContainerDefaultIRU" value="1" min="0" step="0.01" style="width:80px;" />
+              <span class="unit" id="finContainerDefaultIRUUnit">USD</span>
+            </div>
+            <div class="fin-row" style="margin-bottom:6px;">
+              <label style="width:80px;">Term</label>
+              <input type="number" id="finContainerDefaultIRUTerm" value="15" min="1" max="30" step="1" style="width:60px;" />
+              <span class="unit">years</span>
+            </div>
+            <div class="fin-row">
+              <label style="width:80px;">O&M %</label>
+              <input type="number" id="finContainerDefaultOAM" value="3" min="0" max="100" step="0.1" style="width:60px;" />
+              <span class="unit">%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <!-- Pathfinder Cost Settings Section -->
       <div class="fin-section">
         <div class="fin-section-title">🧭 Pathfinder Cost Settings</div>
@@ -35492,6 +36986,7 @@ function loadProjectObject(obj) {
         <select id="dataTableType">
           <option value="links">Links</option>
           <option value="nodes">Nodes</option>
+          <option value="containers">Containers</option>
           <option value="mlg">Multilink Groups</option>
         </select>
         <button class="close-btn" id="btnCloseDataTable">✕</button>
@@ -37145,6 +38640,8 @@ function loadProjectObject(obj) {
       }
     });
   }
+  
+  console.log('[NexiMap] Main script fully loaded');
 })();
 </script>
 </body>
