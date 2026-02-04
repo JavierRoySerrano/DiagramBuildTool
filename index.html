@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.20 - CABLE VISOR FIXES + DRAGGABLE + INTEGRATION - 2025-02-04 -->
+<!-- NexiMap Studio v61.21 - FIX CABLE DATABASE LOADING FORMAT - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19995,7 +19995,8 @@ function loadProjectObject(obj) {
     
     try {
       // Load cable database
-      const cables = await loadSubmarineCableDb();
+      const db = await loadSubmarineCableDb();
+      const cables = db.cables || {};
       csBulkImportCables = cables;
       
       // Get unique regions
@@ -33855,7 +33856,7 @@ function loadProjectObject(obj) {
     
     if (!dbData || !dbData.cables) {
       console.warn('[NexiMap] Invalid cable database format');
-      return cables;
+      return { cables: {} };
     }
     
     for (const [key, cable] of Object.entries(dbData.cables)) {
@@ -33870,6 +33871,7 @@ function loadProjectObject(obj) {
       cables[key] = {
         id: cable.id || key,
         name: cable.name,
+        shortName: cable.shortName || cable.name,  // Include shortName from JSON
         description: landingPointNames || `${cable.region} submarine cable`,
         region: cable.region || 'Unknown',
         rfs: cable.rfs || 'Unknown',
@@ -33891,7 +33893,7 @@ function loadProjectObject(obj) {
       };
     }
     
-    return cables;
+    return { cables: cables };
   }
   
   // Extract coordinates from GeoJSON geometry (LineString or MultiLineString)
@@ -33983,7 +33985,8 @@ function loadProjectObject(obj) {
     
     try {
       // Load the cable database
-      const cables = await loadSubmarineCableDb();
+      const db = await loadSubmarineCableDb();
+      const cables = db.cables || {};
       const cableCount = Object.keys(cables).length;
       
       if (cableCount === 0) {
@@ -34471,7 +34474,8 @@ function loadProjectObject(obj) {
   
   // Pre-load the database in the background after a short delay
   setTimeout(() => {
-    loadSubmarineCableDb().then(cables => {
+    loadSubmarineCableDb().then(db => {
+      const cables = db.cables || {};
       console.log(`[NexiMap] Submarine cable database loaded: ${Object.keys(cables).length} cables`);
     }).catch(err => {
       console.warn('[NexiMap] Failed to preload cable database:', err.message);
