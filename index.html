@@ -19625,42 +19625,92 @@ function loadProjectObject(obj) {
     }
   }
   
-  async function loadCableVisorData() {
-    // If already loaded, just render
-    if (cableVisorState.cableDatabase) {
+  async function loadCableVisorData(forceReload = false) {
+    // If already loaded and not forcing reload, just render
+    if (cableVisorState.cableDatabase && !forceReload) {
       renderCableVisorList();
       return;
     }
     
     const listEl = document.getElementById('cableVisorCableList');
-    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Loading cable database...</div>';
+    const titleEl = document.getElementById('cableVisorListTitle');
     
-    const useTeleGeography = document.getElementById('visorUseTeleGeography')?.checked || false;
+    // Determine source
+    const srcList = document.getElementById('visorSrcList');
+    const srcDb = document.getElementById('visorSrcDb');
+    const srcAPI = document.getElementById('visorSrcAPI');
+    
+    let source = 'list'; // default to Cable List
+    if (srcDb?.checked) source = 'db';
+    if (srcAPI?.checked) source = 'api';
+    
+    // Update title
+    const sourceLabels = { list: 'Cables from Cable List', db: 'Cables from Database', api: 'Cables from TeleGeography API' };
+    if (titleEl) titleEl.textContent = sourceLabels[source];
+    
+    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Loading cables...</div>';
     
     try {
       let db;
       
-      if (useTeleGeography) {
-        // Load directly from TeleGeography API
+      if (source === 'list') {
+        // Load from Cable System List (state.cableSystems)
+        db = loadCablesFromCableList();
+      } else if (source === 'api') {
+        // Load from TeleGeography API
         db = await loadFromTeleGeographyAPI();
       } else {
         // Load from local database
         db = await loadSubmarineCableDb();
       }
       
-      console.log('[CableVisor] Database loaded:', db ? Object.keys(db.cables || {}).length : 0, 'cables');
+      console.log('[CableVisor] Loaded from ' + source + ':', db ? Object.keys(db.cables || {}).length : 0, 'cables');
       
       if (db && db.cables) {
         cableVisorState.cableDatabase = db;
         populateCableVisorRegionFilter(db);
         renderCableVisorList();
       } else {
-        if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#c00;">Failed to load cable database</div>';
+        if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#888;">No cables found</div>';
       }
     } catch (err) {
-      console.error('[CableVisor] Failed to load cable database:', err);
+      console.error('[CableVisor] Failed to load cables:', err);
       if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#c00;">Error: ' + err.message + '</div>';
     }
+  }
+  
+  // Load cables from Cable System List (state.cableSystems)
+  function loadCablesFromCableList() {
+    const cables = {};
+    
+    if (!state.cableSystems || state.cableSystems.length === 0) {
+      return { cables: {}, source: 'Cable System List' };
+    }
+    
+    state.cableSystems.forEach(cs => {
+      cables[cs.id] = {
+        id: cs.id,
+        name: cs.name,
+        shortName: cs.shortName || cs.name,
+        color: cs.color || '#0077b6',
+        region: cs.region || 'Unknown',
+        status: cs.status === 'operational' ? 'Active' : (cs.status === 'planned' ? 'Planned' : cs.status),
+        rfs: cs.rfs || '',
+        rfsYear: cs.rfsYear || null,
+        owners: cs.owners || [],
+        ownersText: Array.isArray(cs.owners) ? cs.owners.join(', ') : (cs.owners || ''),
+        length_km: cs.length_km || null,
+        geometry: cs.geometry || null,
+        description: cs.description || '',
+        source: cs.source || 'Cable System List'
+      };
+    });
+    
+    return {
+      version: '1.0',
+      source: 'Cable System List',
+      cables: cables
+    };
   }
   
   // Cloudflare Worker proxy URL for TeleGeography API
@@ -20163,6 +20213,11 @@ function loadProjectObject(obj) {
     const searchInput = document.getElementById('cableVisorSearch');
     const regionFilter = document.getElementById('cableVisorRegionFilter');
     
+    // Source toggle radio buttons
+    const srcList = document.getElementById('visorSrcList');
+    const srcDb = document.getElementById('visorSrcDb');
+    const srcAPI = document.getElementById('visorSrcAPI');
+    
     if (openBtn) openBtn.addEventListener('click', showCableVisor);
     if (closeBtn) closeBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -20176,6 +20231,26 @@ function loadProjectObject(obj) {
     if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllVisorCables);
     if (searchInput) searchInput.addEventListener('input', () => renderCableVisorList());
     if (regionFilter) regionFilter.addEventListener('change', () => renderCableVisorList());
+    
+    // Source toggle handlers - reload data when source changes
+    if (srcList) srcList.addEventListener('change', () => {
+      if (srcList.checked) {
+        cableVisorState.cableDatabase = null; // Clear cache
+        loadCableVisorData(true);
+      }
+    });
+    if (srcDb) srcDb.addEventListener('change', () => {
+      if (srcDb.checked) {
+        cableVisorState.cableDatabase = null;
+        loadCableVisorData(true);
+      }
+    });
+    if (srcAPI) srcAPI.addEventListener('change', () => {
+      if (srcAPI.checked) {
+        cableVisorState.cableDatabase = null;
+        loadCableVisorData(true);
+      }
+    });
     
     console.log('[CableVisor] Event handlers initialized');
   }
@@ -42132,12 +42207,29 @@ function loadProjectObject(obj) {
     </div>
   </div>
   <div id="cableVisorToolbar">
-    <input type="text" id="cableVisorSearch" placeholder="Search cables..." />
-    <select id="cableVisorRegionFilter">
-      <option value="">All Regions</option>
-    </select>
-    <button class="btn" id="btnVisorSelectAll" style="padding:4px 8px; font-size:11px;" title="Select all visible">✓ All</button>
-    <button class="btn" id="btnVisorClearAll" style="padding:4px 8px; font-size:11px;" title="Clear selection">✗ Clear</button>
+    <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+      <span style="font-size:11px; font-weight:600; color:#495057;">Source:</span>
+      <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+        <input type="radio" name="visorSource" id="visorSrcList" value="list" checked style="margin:0;" />
+        📋 Cable List
+      </label>
+      <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+        <input type="radio" name="visorSource" id="visorSrcDb" value="db" style="margin:0;" />
+        📁 Database
+      </label>
+      <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
+        <input type="radio" name="visorSource" id="visorSrcAPI" value="api" style="margin:0;" />
+        🌐 API
+      </label>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <input type="text" id="cableVisorSearch" placeholder="Search cables..." style="flex:1;" />
+      <select id="cableVisorRegionFilter">
+        <option value="">All Regions</option>
+      </select>
+      <button class="btn" id="btnVisorSelectAll" style="padding:4px 8px; font-size:11px;" title="Select all visible">✓ All</button>
+      <button class="btn" id="btnVisorClearAll" style="padding:4px 8px; font-size:11px;" title="Clear selection">✗ Clear</button>
+    </div>
   </div>
   <div id="cableVisorMap">
     <div id="cableVisorMapContainer" style="width:100%; height:100%;"></div>
