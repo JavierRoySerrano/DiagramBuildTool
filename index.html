@@ -29,6 +29,257 @@
     #maplibreContainer.active {
       display: block;
     }
+    /* When map is active, prevent parent scrollbars from interfering */
+    #wrap:has(#maplibreContainer.active) {
+      overflow: hidden !important;
+    }
+    /* Ensure maplibreMap fills container */
+    #maplibreMap {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    
+    /* Path Edit Mode Banner */
+    #pathEditModeBanner {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white;
+      padding: 8px 16px;
+      z-index: 10001;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    #pathEditModeBanner.active {
+      display: block;
+    }
+    #pathEditModeBanner .banner-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 100%;
+      gap: 16px;
+    }
+    #pathEditModeBanner .banner-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #pathEditModeBanner .banner-icon {
+      font-size: 20px;
+    }
+    #pathEditModeBanner .banner-title {
+      font-weight: 700;
+      font-size: 14px;
+    }
+    #pathEditModeBanner .banner-subtitle {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+    #pathEditModeBanner .banner-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 20px;
+      font-size: 12px;
+    }
+    #pathEditModeBanner .banner-status.unsaved {
+      background: rgba(239, 68, 68, 0.4);
+    }
+    #pathEditModeBanner .banner-actions {
+      display: flex;
+      gap: 8px;
+    }
+    #pathEditModeBanner .banner-btn {
+      padding: 6px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #pathEditModeBanner .banner-btn.save {
+      background: white;
+      color: #d97706;
+    }
+    #pathEditModeBanner .banner-btn.save:hover {
+      background: #fef3c7;
+    }
+    #pathEditModeBanner .banner-btn.exit {
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+    #pathEditModeBanner .banner-btn.exit:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    
+    /* Path Edit Mode Overlay - dims everything else */
+    #pathEditModeOverlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 9999;
+      pointer-events: none;
+    }
+    #pathEditModeOverlay.active {
+      display: block;
+    }
+    
+    /* Path Edit Control Panel */
+    #pathEditControlPanel {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      z-index: 10002;
+      width: 320px;
+      max-height: calc(100vh - 150px);
+      overflow: hidden;
+    }
+    #pathEditControlPanel.active {
+      display: block;
+    }
+    #pathEditControlPanel.minimized .control-body {
+      display: none;
+    }
+    #pathEditControlPanel.minimized {
+      width: auto;
+    }
+    #pathEditControlPanel .control-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      cursor: move;
+      user-select: none;
+    }
+    #pathEditControlPanel .control-title {
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    #pathEditControlPanel .control-header-btns {
+      display: flex;
+      gap: 4px;
+    }
+    #pathEditControlPanel .control-header-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #pathEditControlPanel .control-header-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    #pathEditControlPanel .waypoint-count {
+      font-size: 11px;
+      color: rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.2);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    #pathEditControlPanel .control-body {
+      padding: 16px;
+    }
+    #pathEditControlPanel .edit-methods {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    #pathEditControlPanel .method-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+    #pathEditControlPanel .method-btn:hover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+    }
+    #pathEditControlPanel .method-btn.active {
+      border-color: #3b82f6;
+      background: #dbeafe;
+    }
+    #pathEditControlPanel .method-btn .method-icon {
+      font-size: 18px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    #pathEditControlPanel .method-btn .method-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #374151;
+    }
+    #pathEditControlPanel .control-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+    #pathEditControlPanel .control-btn {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    #pathEditControlPanel .control-btn.secondary {
+      background: #f3f4f6;
+      border: 1px solid #d1d5db;
+      color: #374151;
+    }
+    #pathEditControlPanel .control-btn.secondary:hover {
+      background: #e5e7eb;
+    }
+    #pathEditControlPanel .control-btn.primary {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      color: white;
+    }
+    #pathEditControlPanel .control-btn.primary:hover {
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+    }
+    #pathEditControlPanel .control-btn.danger {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      color: #dc2626;
+    }
+    #pathEditControlPanel .control-btn.danger:hover {
+      background: #fee2e2;
+    }
     .maplibregl-map {
       width: 100%;
       height: 100%;
@@ -3151,10 +3402,21 @@
       max-width: 90vw;
       height: 600px;
       max-height: 85vh;
+      min-width: 400px;
+      min-height: 300px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       animation: helpCenterSlideIn 0.25s ease-out;
+      position: relative;
+    }
+    #helpCenterContent.dragging {
+      animation: none;
+      user-select: none;
+    }
+    #helpCenterContent.positioned {
+      position: fixed;
+      animation: none;
     }
     
     @keyframes helpCenterSlideIn {
@@ -3169,6 +3431,8 @@
       padding: 16px 24px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
+      cursor: move;
+      user-select: none;
     }
     #helpCenterHeader h2 {
       margin: 0;
@@ -3193,6 +3457,44 @@
       transition: background 0.15s;
     }
     #helpCenterHeader .close-btn:hover { background: rgba(255,255,255,0.3); }
+    
+    /* Resize handles for Help Center */
+    .help-center-resize-handle {
+      position: absolute;
+      background: transparent;
+    }
+    .help-center-resize-handle.right {
+      top: 0;
+      right: 0;
+      width: 8px;
+      height: 100%;
+      cursor: ew-resize;
+    }
+    .help-center-resize-handle.bottom {
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      cursor: ns-resize;
+    }
+    .help-center-resize-handle.corner {
+      bottom: 0;
+      right: 0;
+      width: 16px;
+      height: 16px;
+      cursor: nwse-resize;
+      z-index: 1;
+    }
+    .help-center-resize-handle.corner::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid rgba(102, 126, 234, 0.5);
+      border-bottom: 2px solid rgba(102, 126, 234, 0.5);
+    }
     
     #helpCenterSearch {
       padding: 14px 20px 14px 16px;
@@ -4790,6 +5092,20 @@
       <span style="font-size:11px; margin-left:4px;">Labels</span>
     </button>
     
+    <!-- Main Canvas View Button -->
+    <button class="tool-btn active" id="btnMainView" type="button" title="Main Canvas View - Standard network diagram view" style="color: #10b981;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Grid/canvas icon -->
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <circle cx="8" cy="8" r="2" fill="currentColor"/>
+        <circle cx="16" cy="8" r="2" fill="currentColor"/>
+        <circle cx="12" cy="16" r="2" fill="currentColor"/>
+        <line x1="8" y1="10" x2="12" y2="14"/>
+        <line x1="16" y1="10" x2="12" y2="14"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">Main</span>
+    </button>
+    
     <!-- Geographic View Toggle Button -->
     <button class="tool-btn" id="btnGeoView" type="button" title="Geo Static Background - Show nodes on customizable world map based on GPS coordinates">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4802,16 +5118,27 @@
     </button>
     
     <!-- Geo Dynamic Map (MapLibre) Button -->
-    <button class="tool-btn" id="btnMapLibre" type="button" title="Geo Dynamic Map - Zoomable interactive map with OpenStreetMap tiles" style="color: #10b981;">
+    <button class="tool-btn" id="btnMapLibre" type="button" title="Geo Dynamic Map - Zoomable interactive map with OpenStreetMap tiles">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <!-- Folded map icon -->
         <path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3V6z"/>
         <path d="M9 3v15"/>
         <path d="M15 6v15"/>
         <!-- Location pin -->
-        <circle cx="17" cy="9" r="2" fill="#10b981" stroke="#10b981"/>
+        <circle cx="17" cy="9" r="2" fill="currentColor" stroke="currentColor"/>
       </svg>
       <span style="font-size:11px; margin-left:4px;">Map</span>
+    </button>
+    
+    <!-- Show Paths Toggle (only visible when in Map view) -->
+    <button class="tool-btn" id="btnShowPaths" type="button" title="Toggle cable path display - Show actual cable routes instead of straight lines" style="display:none; color: #6366f1;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Wavy path icon -->
+        <circle cx="4" cy="12" r="2" fill="currentColor"/>
+        <circle cx="20" cy="12" r="2" fill="currentColor"/>
+        <path d="M6 12 Q 9 6, 12 12 T 18 12"/>
+      </svg>
+      <span style="font-size:10px; margin-left:2px;">Paths</span>
     </button>
     
     <!-- Route Finder Button -->
@@ -5733,6 +6060,51 @@
                 <input id="edgeStrokeColor" type="hidden" />
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Path Geometry Section (for geographic cable routing) -->
+      <div class="inspector-section collapsed" data-section="edge-path-geometry">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>📍 Path Geometry</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div id="pathGeometryStatus" style="padding:8px; background:#f9fafb; border-radius:6px; margin-bottom:10px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+              <span id="pathStatusIcon" style="font-size:16px;">➖</span>
+              <span id="pathStatusText" style="font-size:12px; color:#6b7280;">No path defined (straight line)</span>
+            </div>
+            <div id="pathStatusDetails" style="font-size:11px; color:#9ca3af;"></div>
+          </div>
+          
+          <div id="pathGeometryNoPath">
+            <p style="font-size:11px; color:#6b7280; margin:0 0 10px;">
+              Define a custom geographic path for this link instead of a straight line.
+              Only visible in Dynamic Map view.
+            </p>
+            <button id="btnEditPathGeometry" class="btn-tool" style="width:100%; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
+              <span>🛤️</span> Edit Path Geometry
+            </button>
+          </div>
+          
+          <div id="pathGeometryHasPath" style="display:none;">
+            <div style="display:flex; gap:6px; margin-bottom:8px;">
+              <button id="btnPreviewPath" class="btn-tool" style="flex:1; padding:8px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; font-size:11px;">
+                👁️ Preview
+              </button>
+              <button id="btnEditExistingPath" class="btn-tool" style="flex:1; padding:8px; background:#dbeafe; border:1px solid #93c5fd; border-radius:4px; cursor:pointer; font-size:11px; color:#1d4ed8;">
+                ✏️ Edit
+              </button>
+              <button id="btnRemovePath" class="btn-tool" style="flex:1; padding:8px; background:#fef2f2; border:1px solid #fecaca; border-radius:4px; cursor:pointer; font-size:11px; color:#dc2626;">
+                🗑️ Remove
+              </button>
+            </div>
+          </div>
+          
+          <div class="hint" style="margin-top:8px;">
+            Path is shown in Dynamic Map view when "Show Paths" is enabled.
           </div>
         </div>
       </div>
@@ -7858,6 +8230,18 @@
     placingGroup: false,
     defaultNodeShape: 'circle',
     placingGroupType: 'country',
+    
+    // Path Edit Mode state
+    pathEditMode: {
+      active: false,
+      linkId: null,
+      originalPath: null,      // For cancel/restore
+      currentPath: [],         // Working coordinates [[lng,lat], ...]
+      hasUnsavedChanges: false,
+      editMethod: null,        // 'manual' | 'telegeography' | 'kml-import'
+      selectedSegments: [],    // For Cable Database multilinestring selection
+      telegeographyData: null  // Cached cable data from Cable Database
+    },
 
     // Canvas dimensions (now customizable)
     canvasWidth: 1600,
@@ -8026,6 +8410,9 @@
       arrowEnd: false
     }
   };
+
+  // Expose state globally for cross-script access
+  window.state = state;
 
   const history = { stack: [], index: -1, max: 120 };
   let dirty = false;
@@ -8764,21 +9151,20 @@
       // Check position when parent is hovered
       const parent = submenu.parentElement;
       
-      // Remove previous listeners to prevent duplicates
-      const newParent = parent.cloneNode(true);
-      parent.parentNode.replaceChild(newParent, parent);
-      const newSubmenu = newParent.querySelector('.submenu');
+      // Skip if already processed (use data attribute to track)
+      if (parent.dataset.submenuPositioned) return;
+      parent.dataset.submenuPositioned = 'true';
       
-      newParent.addEventListener('mouseenter', () => {
+      parent.addEventListener('mouseenter', () => {
         requestAnimationFrame(() => {
-          const parentRect = newParent.getBoundingClientRect();
+          const parentRect = parent.getBoundingClientRect();
           const viewportHeight = window.innerHeight;
           const viewportWidth = window.innerWidth;
           
           // Special handling for fixed position submenus (MapLibre and GeoView settings, HeatMap)
-          if (newSubmenu.id === 'mapLibreSubmenu' || newSubmenu.id === 'geoViewSubmenu' || newSubmenu.id === 'heatMapSubmenu') {
+          if (submenu.id === 'mapLibreSubmenu' || submenu.id === 'geoViewSubmenu' || submenu.id === 'heatMapSubmenu') {
             // Use fixed positioning for these complex submenus
-            newSubmenu.style.position = 'fixed';
+            submenu.style.position = 'fixed';
             
             // Calculate available space on right vs left
             const spaceOnRight = viewportWidth - parentRect.right - 20;
@@ -8787,52 +9173,52 @@
             
             if (spaceOnRight >= submenuWidth) {
               // Position to the right
-              newSubmenu.style.left = (parentRect.right + 5) + 'px';
-              newSubmenu.style.right = 'auto';
+              submenu.style.left = (parentRect.right + 5) + 'px';
+              submenu.style.right = 'auto';
             } else if (spaceOnLeft >= submenuWidth) {
               // Position to the left
-              newSubmenu.style.left = 'auto';
-              newSubmenu.style.right = (viewportWidth - parentRect.left + 5) + 'px';
+              submenu.style.left = 'auto';
+              submenu.style.right = (viewportWidth - parentRect.left + 5) + 'px';
             } else {
               // Not enough space, overlay near center
-              newSubmenu.style.left = Math.max(10, (viewportWidth - submenuWidth) / 2) + 'px';
-              newSubmenu.style.right = 'auto';
+              submenu.style.left = Math.max(10, (viewportWidth - submenuWidth) / 2) + 'px';
+              submenu.style.right = 'auto';
             }
             
             // Vertical positioning - align with parent or use top
             const submenuHeight = 400; // Approximate max height
             if (parentRect.top + submenuHeight > viewportHeight - 20) {
               // Would overflow bottom, position from bottom
-              newSubmenu.style.top = 'auto';
-              newSubmenu.style.bottom = '20px';
+              submenu.style.top = 'auto';
+              submenu.style.bottom = '20px';
             } else {
-              newSubmenu.style.top = Math.max(60, parentRect.top) + 'px';
-              newSubmenu.style.bottom = 'auto';
+              submenu.style.top = Math.max(60, parentRect.top) + 'px';
+              submenu.style.bottom = 'auto';
             }
             
-            newSubmenu.style.maxHeight = (viewportHeight - 80) + 'px';
+            submenu.style.maxHeight = (viewportHeight - 80) + 'px';
             return;
           }
           
-          const rect = newSubmenu.getBoundingClientRect();
+          const rect = submenu.getBoundingClientRect();
           
           // Check if submenu goes below viewport
           if (rect.bottom > viewportHeight - 20) {
             // Try flipping up first
-            newSubmenu.classList.add('flip-up');
+            submenu.classList.add('flip-up');
             
             // Re-check after flip
-            const newRect = newSubmenu.getBoundingClientRect();
+            const newRect = submenu.getBoundingClientRect();
             if (newRect.top < 20) {
               // Can't flip, use scroll instead
-              newSubmenu.classList.remove('flip-up');
-              newSubmenu.style.maxHeight = (viewportHeight - rect.top - 40) + 'px';
+              submenu.classList.remove('flip-up');
+              submenu.style.maxHeight = (viewportHeight - rect.top - 40) + 'px';
             }
           }
           
           // Check if submenu goes past right edge
           if (rect.right > viewportWidth - 10) {
-            newSubmenu.classList.add('flip-left');
+            submenu.classList.add('flip-left');
           }
         });
       });
@@ -14107,6 +14493,10 @@ const groupTitle = document.getElementById('groupTitle');
       } else {
         curveArchControl.style.display = 'none';
       }
+      
+      // Update Path Geometry section
+      updatePathGeometryUI(e);
+      
       return;
     }
 
@@ -15256,7 +15646,11 @@ if (groupTitleFontInline) {
       iruTerm: defaultIRUTerm,
       iruOamPercent: defaultOAM,
       iruOamAnnualIncrement: defaultOAMInc,
-      commercialCostMode: 'lease'
+      commercialCostMode: 'lease',
+      // Path geometry fields (for geographic cable routing)
+      pathGeometry: null,       // GeoJSON coordinates array [[lng,lat], ...] or null
+      pathSource: null,         // 'manual' | 'telegeography' | 'kml-import' | null
+      pathCableRef: null        // Reference name if from Cable Database
     };
   }
 
@@ -29843,10 +30237,22 @@ function loadProjectObject(obj) {
     if (geoRadio) geoRadio.checked = active;
     if (geoOptionsEl) geoOptionsEl.style.display = active ? '' : 'none';
     
-    // Update toolbar button
+    // Update toolbar buttons with green active state
+    const btnMain = document.getElementById('btnMainView');
     const btnGeoView = document.getElementById('btnGeoView');
+    const btnMapLibre = document.getElementById('btnMapLibre');
+    const activeColor = '#10b981';
+    
+    if (btnMain) {
+      btnMain.classList.toggle('active', !active && !mapLibreState.active);
+      btnMain.style.color = (!active && !mapLibreState.active) ? activeColor : '';
+    }
     if (btnGeoView) {
       btnGeoView.classList.toggle('active', active);
+      btnGeoView.style.color = active ? activeColor : '';
+    }
+    if (btnMapLibre) {
+      // Don't change MapLibre here, it's handled separately
     }
     
     // Show/hide floating projection panel
@@ -30422,6 +30828,52 @@ function loadProjectObject(obj) {
   
   // ============== END LOCATION LOOKUP ==============
   
+  // Helper function to update view button states (green color for active)
+  function updateViewButtonStates(activeView) {
+    // activeView: 'main', 'geo', or 'map'
+    const btnMain = document.getElementById('btnMainView');
+    const btnGeo = document.getElementById('btnGeoView');
+    const btnMap = document.getElementById('btnMapLibre');
+    const btnShowPaths = document.getElementById('btnShowPaths');
+    
+    const activeColor = '#10b981'; // green
+    const inactiveColor = ''; // default
+    
+    if (btnMain) {
+      btnMain.classList.toggle('active', activeView === 'main');
+      btnMain.style.color = activeView === 'main' ? activeColor : inactiveColor;
+    }
+    if (btnGeo) {
+      btnGeo.classList.toggle('active', activeView === 'geo');
+      btnGeo.style.color = activeView === 'geo' ? activeColor : inactiveColor;
+    }
+    if (btnMap) {
+      btnMap.classList.toggle('active', activeView === 'map');
+      btnMap.style.color = activeView === 'map' ? activeColor : inactiveColor;
+    }
+    
+    // Show/hide Paths button only in map view
+    if (btnShowPaths) {
+      btnShowPaths.style.display = activeView === 'map' ? 'flex' : 'none';
+    }
+  }
+  
+  // Main view button
+  const btnMainView = document.getElementById('btnMainView');
+  if (btnMainView) {
+    btnMainView.addEventListener('click', () => {
+      // Deactivate other views if active
+      if (mapLibreState && mapLibreState.active) {
+        toggleMapLibreView(false);
+      }
+      if (geoViewState && geoViewState.active) {
+        toggleGeoView(false);
+      }
+      updateViewButtonStates('main');
+      render();
+    });
+  }
+  
   // Geo view button
   const btnGeoView = document.getElementById('btnGeoView');
   if (btnGeoView) {
@@ -30431,14 +30883,15 @@ function loadProjectObject(obj) {
         toggleMapLibreView(false);
       }
       toggleGeoView(!geoViewState.active);
-      // Update button states
-      const btnMapLibre = document.getElementById('btnMapLibre');
-      if (btnMapLibre) btnMapLibre.classList.remove('active');
+      // Update button states based on new geo state
+      updateViewButtonStates(geoViewState.active ? 'geo' : 'main');
     });
   }
   
   // Interactive Map (MapLibre) button
   const btnMapLibre = document.getElementById('btnMapLibre');
+  const btnShowPaths = document.getElementById('btnShowPaths');
+  
   if (btnMapLibre) {
     btnMapLibre.addEventListener('click', () => {
       // If Geo view is active, deactivate it first
@@ -30446,9 +30899,48 @@ function loadProjectObject(obj) {
         toggleGeoView(false);
       }
       toggleMapLibreView(!mapLibreState.active);
-      // Update button states
-      btnMapLibre.classList.toggle('active', mapLibreState.active);
-      if (btnGeoView) btnGeoView.classList.remove('active');
+      // Update button states based on new map state
+      updateViewButtonStates(mapLibreState.active ? 'map' : 'main');
+      
+      // If deactivating, re-render the canvas
+      if (!mapLibreState.active) {
+        render();
+      }
+    });
+  }
+  
+  // Show Paths toggle button
+  if (btnShowPaths) {
+    btnShowPaths.addEventListener('click', () => {
+      // Toggle path render mode
+      mapLibreState.pathRenderMode = mapLibreState.pathRenderMode === 'paths' ? 'lines' : 'paths';
+      
+      // Update button appearance
+      const isPathsMode = mapLibreState.pathRenderMode === 'paths';
+      btnShowPaths.classList.toggle('active', isPathsMode);
+      btnShowPaths.style.background = isPathsMode ? '#e0e7ff' : '';
+      btnShowPaths.style.borderColor = isPathsMode ? '#6366f1' : '';
+      
+      // Update button label
+      const labelSpan = btnShowPaths.querySelector('span');
+      if (labelSpan) {
+        labelSpan.textContent = isPathsMode ? 'Paths ✓' : 'Paths';
+      }
+      
+      // Re-render map
+      if (mapLibreState.active && mapLibreState.map && mapLibreState.isStyleLoaded) {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
+      
+      // Count links with paths
+      const linksWithPaths = state.edges.filter(e => e.pathGeometry && e.pathGeometry.length > 0).length;
+      
+      if (isPathsMode) {
+        showToast(`Showing cable paths (${linksWithPaths} link${linksWithPaths !== 1 ? 's' : ''} with paths)`);
+      } else {
+        showToast('Showing straight lines');
+      }
     });
   }
   
@@ -30464,14 +30956,22 @@ function loadProjectObject(obj) {
   if (viewModeStandard) {
     viewModeStandard.addEventListener('change', () => {
       if (viewModeStandard.checked) {
+        if (mapLibreState && mapLibreState.active) {
+          toggleMapLibreView(false);
+        }
         toggleGeoView(false);
+        updateViewButtonStates('main');
       }
     });
   }
   if (viewModeGeo) {
     viewModeGeo.addEventListener('change', () => {
       if (viewModeGeo.checked) {
+        if (mapLibreState && mapLibreState.active) {
+          toggleMapLibreView(false);
+        }
         toggleGeoView(true);
+        updateViewButtonStates('geo');
       }
     });
   }
@@ -31071,6 +31571,8 @@ function loadProjectObject(obj) {
     selectionEnabled: true,
     // Style mode: 'canvas' or 'simplified'
     styleMode: 'canvas',
+    // Path rendering mode: 'lines' or 'paths'
+    pathRenderMode: 'lines', // 'lines' = straight lines, 'paths' = show pathGeometry if available
     // Simplified view settings (used when styleMode is 'simplified')
     simplified: {
       nodeFill: '#dae8fc',
@@ -31108,6 +31610,1226 @@ function loadProjectObject(obj) {
   // Expose globally for label toggle handlers
   window.mapLibreState = mapLibreState;
   
+  // ============== PATH EDIT MODE FUNCTIONS ==============
+  
+  // Update path geometry UI in inspector
+  function updatePathGeometryUI(edge) {
+    const statusIcon = document.getElementById('pathStatusIcon');
+    const statusText = document.getElementById('pathStatusText');
+    const statusDetails = document.getElementById('pathStatusDetails');
+    const noPathDiv = document.getElementById('pathGeometryNoPath');
+    const hasPathDiv = document.getElementById('pathGeometryHasPath');
+    
+    if (!statusIcon || !statusText) return;
+    
+    if (edge.pathGeometry && edge.pathGeometry.length > 0) {
+      // Has path
+      statusIcon.textContent = '🛤️';
+      statusText.textContent = `Path defined (${edge.pathGeometry.length} waypoints)`;
+      statusText.style.color = '#059669';
+      
+      let details = [];
+      if (edge.pathSource) {
+        const sourceLabels = {
+          'manual': 'Manually drawn',
+          'telegeography': 'Cable Database import',
+          'kml-import': 'KML/GeoJSON import'
+        };
+        details.push(sourceLabels[edge.pathSource] || edge.pathSource);
+      }
+      if (edge.pathCableRef) {
+        details.push(`Cable: ${edge.pathCableRef}`);
+      }
+      statusDetails.textContent = details.join(' • ');
+      
+      if (noPathDiv) noPathDiv.style.display = 'none';
+      if (hasPathDiv) hasPathDiv.style.display = 'block';
+    } else {
+      // No path
+      statusIcon.textContent = '➖';
+      statusText.textContent = 'No path defined (straight line)';
+      statusText.style.color = '#6b7280';
+      statusDetails.textContent = '';
+      
+      if (noPathDiv) noPathDiv.style.display = 'block';
+      if (hasPathDiv) hasPathDiv.style.display = 'none';
+    }
+  }
+  
+  // Enter Path Edit Mode
+  function enterPathEditMode(linkId) {
+    const edge = findEdge(linkId);
+    if (!edge) {
+      showToast('Link not found');
+      return;
+    }
+    
+    const nodeA = findNode(edge.a);
+    const nodeB = findNode(edge.b);
+    if (!nodeA || !nodeB) {
+      showToast('Link endpoints not found');
+      return;
+    }
+    
+    // Check if both nodes have GPS coordinates
+    if (!nodeA.gpsLat || !nodeA.gpsLon || !nodeB.gpsLat || !nodeB.gpsLon) {
+      showToast('Both link endpoints need GPS coordinates for path editing');
+      return;
+    }
+    
+    // Store coordinates in state for reliable access
+    const sourceCoords = [parseFloat(nodeA.gpsLon), parseFloat(nodeA.gpsLat)];
+    const targetCoords = [parseFloat(nodeB.gpsLon), parseFloat(nodeB.gpsLat)];
+    
+    
+    // Save original path for cancel/restore
+    state.pathEditMode.originalPath = edge.pathGeometry ? [...edge.pathGeometry] : null;
+    state.pathEditMode.currentPath = edge.pathGeometry ? [...edge.pathGeometry] : [];
+    state.pathEditMode.linkId = linkId;
+    state.pathEditMode.hasUnsavedChanges = false;
+    state.pathEditMode.editMethod = null;
+    state.pathEditMode.active = true;
+    state.pathEditMode._boundsFitted = false;
+    // Store coordinates for reliable access
+    state.pathEditMode.sourceCoords = sourceCoords;
+    state.pathEditMode.targetCoords = targetCoords;
+    state.pathEditMode.sourceName = nodeA.name || nodeA.code || 'Source';
+    state.pathEditMode.targetName = nodeB.name || nodeB.code || 'Target';
+    
+    // Update UI
+    const banner = document.getElementById('pathEditModeBanner');
+    const overlay = document.getElementById('pathEditModeOverlay');
+    const controlPanel = document.getElementById('pathEditControlPanel');
+    const linkName = document.getElementById('pathEditLinkName');
+    const btnShowPaths = document.getElementById('btnShowPaths');
+    
+    if (banner) banner.classList.add('active');
+    // Don't show overlay - it blocks interaction
+    // if (overlay) overlay.classList.add('active');
+    if (controlPanel) controlPanel.classList.add('active');
+    if (linkName) linkName.textContent = `Editing: ${edge.code || 'Link ' + linkId} (${nodeA.name || nodeA.code} → ${nodeB.name || nodeB.code})`;
+    
+    // Show the Paths toggle button
+    if (btnShowPaths) btnShowPaths.style.display = 'flex';
+    
+    updatePathEditStatus();
+    updateWaypointCount();
+    
+    // FORCE switch to Dynamic Map view using proper toggle function
+    if (!mapLibreState.active) {
+      // Use the proper toggle function which handles all setup including:
+      // - Container visibility
+      // - Button states (Main/Geo/Map with green highlight)
+      // - Radio button sync
+      // - Map initialization
+      // - Wrap overflow
+      toggleMapLibreView(true);
+    }
+    
+    // Wait for map to be ready, then center on link and render
+    const centerAndRender = () => {
+      if (!mapLibreState.map) return;
+      
+      const map = mapLibreState.map;
+      const srcCoords = state.pathEditMode.sourceCoords;
+      const tgtCoords = state.pathEditMode.targetCoords;
+      
+      
+      // Ensure zoom/pan interactions are enabled
+      map.scrollZoom.enable();
+      map.dragPan.enable();
+      map.doubleClickZoom.enable();
+      map.touchZoomRotate.enable();
+      
+      // Validate coordinates
+      if (!srcCoords || !tgtCoords || 
+          !isFinite(srcCoords[0]) || !isFinite(srcCoords[1]) ||
+          !isFinite(tgtCoords[0]) || !isFinite(tgtCoords[1])) {
+        console.error('[PATH EDIT] Invalid coordinates in centerAndRender');
+        renderPathEditingView();
+        return;
+      }
+      
+      // Use fitBounds with proper padding - this is the correct approach for fitting to a link
+      const bounds = new maplibregl.LngLatBounds();
+      bounds.extend(srcCoords);
+      bounds.extend(tgtCoords);
+      
+      
+      // Use fitBounds with large padding to ensure the link is well-framed
+      map.fitBounds(bounds, {
+        padding: { top: 150, bottom: 200, left: 400, right: 150 },
+        maxZoom: 10,
+        duration: 1000
+      });
+      
+      // Mark bounds as fitted so renderPathEditingView doesn't re-fit
+      state.pathEditMode._boundsFitted = true;
+      
+      // Render after the fly animation completes
+      setTimeout(() => {
+        renderPathEditingView();
+      }, 1100);
+    };
+    
+    // Wait for map and style to be ready
+    setTimeout(() => {
+      if (mapLibreState.map && mapLibreState.isStyleLoaded) {
+        centerAndRender();
+      } else if (mapLibreState.map) {
+        mapLibreState.map.once('style.load', () => {
+          centerAndRender();
+        });
+      }
+    }, 150);
+    
+    showToast('Path Edit Mode activated. Select a method below, then click on the map.');
+  }
+  
+  // Exit Path Edit Mode
+  function exitPathEditMode(save = false) {
+    if (!state.pathEditMode.active) return;
+    
+    const linkId = state.pathEditMode.linkId;
+    const edge = findEdge(linkId);
+    
+    if (save && edge) {
+      // Save the path
+      if (state.pathEditMode.currentPath && state.pathEditMode.currentPath.length > 0) {
+        edge.pathGeometry = [...state.pathEditMode.currentPath];
+        edge.pathSource = state.pathEditMode.editMethod || 'manual';
+      } else {
+        edge.pathGeometry = null;
+        edge.pathSource = null;
+        edge.pathCableRef = null;
+      }
+      commit();
+      showToast('Path saved successfully');
+    } else if (!save && edge && state.pathEditMode.hasUnsavedChanges) {
+      // Restore original
+      edge.pathGeometry = state.pathEditMode.originalPath;
+      showToast('Changes discarded');
+    }
+    
+    // Clear path editing layers from map
+    clearPathEditLayers();
+    
+    // Clear tracked markers
+    
+    pathEditMarkers.forEach(marker => {
+      try {
+        marker.remove();
+      } catch (e) {}
+    });
+    pathEditMarkers = [];
+    
+    // Remove map click handler
+    if (mapLibreState.map) {
+      mapLibreState.map.off('click', handleMapClickForPath);
+    }
+    
+    // Reset state
+    state.pathEditMode.active = false;
+    state.pathEditMode.linkId = null;
+    state.pathEditMode.originalPath = null;
+    state.pathEditMode.currentPath = [];
+    state.pathEditMode.hasUnsavedChanges = false;
+    state.pathEditMode.editMethod = null;
+    state.pathEditMode._boundsFitted = false;
+    
+    // Update UI
+    const banner = document.getElementById('pathEditModeBanner');
+    const overlay = document.getElementById('pathEditModeOverlay');
+    const controlPanel = document.getElementById('pathEditControlPanel');
+    
+    if (banner) banner.classList.remove('active');
+    if (overlay) overlay.classList.remove('active');
+    if (controlPanel) controlPanel.classList.remove('active');
+    
+    // Reset method buttons
+    document.querySelectorAll('#pathEditControlPanel .method-btn').forEach(b => b.classList.remove('active'));
+    
+    // Re-enable interactions
+    enableNonPathInteractions();
+    
+    // Refresh views
+    render();
+    if (mapLibreState.active && mapLibreState.map) {
+      renderMapLibreContent();
+    }
+    updateInspector();
+    
+  }
+  
+  // Update path edit status display
+  function updatePathEditStatus() {
+    const statusDiv = document.getElementById('pathEditStatus');
+    const statusIcon = document.getElementById('pathEditStatusIcon');
+    const statusText = document.getElementById('pathEditStatusText');
+    
+    if (!statusDiv) return;
+    
+    if (state.pathEditMode.hasUnsavedChanges) {
+      statusDiv.classList.add('unsaved');
+      if (statusIcon) statusIcon.textContent = '●';
+      if (statusText) statusText.textContent = 'Unsaved changes';
+    } else {
+      statusDiv.classList.remove('unsaved');
+      if (statusIcon) statusIcon.textContent = '●';
+      if (statusText) statusText.textContent = state.pathEditMode.currentPath.length > 0 ? 'Path defined' : 'No changes';
+    }
+  }
+  
+  // Update waypoint count display
+  function updateWaypointCount() {
+    const countEl = document.getElementById('pathWaypointCount');
+    if (countEl) {
+      const count = state.pathEditMode.currentPath.length;
+      countEl.textContent = `${count} waypoint${count !== 1 ? 's' : ''}`;
+    }
+  }
+  
+  // Disable non-path interactions during edit mode
+  function disableNonPathInteractions() {
+    // Disable toolbar buttons (except essential ones)
+    document.querySelectorAll('.tool-btn:not(#btnPathSaveExit):not(#btnPathCancelExit)').forEach(btn => {
+      btn.dataset.pathEditDisabled = btn.disabled ? 'was-disabled' : 'was-enabled';
+      btn.disabled = true;
+      btn.style.opacity = '0.5';
+      btn.style.pointerEvents = 'none';
+    });
+    
+    // Disable inspector inputs
+    document.querySelectorAll('#inspectorPanel input, #inspectorPanel select, #inspectorPanel button').forEach(el => {
+      if (!el.closest('#pathEditControlPanel')) {
+        el.dataset.pathEditDisabled = el.disabled ? 'was-disabled' : 'was-enabled';
+        el.disabled = true;
+      }
+    });
+    
+    // Disable canvas interactions
+    const canvas = document.getElementById('svg');
+    if (canvas) {
+      canvas.style.pointerEvents = 'none';
+      canvas.style.opacity = '0.3';
+    }
+  }
+  
+  // Re-enable interactions after exiting edit mode
+  function enableNonPathInteractions() {
+    
+    // Re-enable toolbar buttons
+    const disabledButtons = document.querySelectorAll('.tool-btn[data-path-edit-disabled]');
+    disabledButtons.forEach(btn => {
+      if (btn.dataset.pathEditDisabled === 'was-enabled') {
+        btn.disabled = false;
+      }
+      btn.style.opacity = '';
+      btn.style.pointerEvents = '';
+      delete btn.dataset.pathEditDisabled;
+    });
+    
+    // Re-enable inspector inputs
+    const disabledInputs = document.querySelectorAll('[data-path-edit-disabled]');
+    disabledInputs.forEach(el => {
+      if (el.dataset.pathEditDisabled === 'was-enabled') {
+        el.disabled = false;
+      }
+      delete el.dataset.pathEditDisabled;
+    });
+    
+    // Re-enable canvas
+    const canvas = document.getElementById('svg');
+    if (canvas) {
+      canvas.style.pointerEvents = '';
+      canvas.style.opacity = '';
+    } else {
+    }
+  }
+  
+  // Track path edit markers for proper cleanup
+  let pathEditMarkers = [];
+  
+  // Render map view focused on path editing
+  function renderPathEditingView() {
+    
+    
+    if (!mapLibreState.map || !state.pathEditMode.active) {
+      
+      return;
+    }
+    
+    const map = mapLibreState.map;
+    
+    // Use stored coordinates from state
+    const sourceCoords = state.pathEditMode.sourceCoords;
+    const targetCoords = state.pathEditMode.targetCoords;
+    const sourceName = state.pathEditMode.sourceName || 'Source';
+    const targetName = state.pathEditMode.targetName || 'Target';
+    
+    
+    // CRITICAL: Validate coordinates before proceeding
+    if (!sourceCoords || !targetCoords || 
+        !Array.isArray(sourceCoords) || !Array.isArray(targetCoords) ||
+        sourceCoords.length < 2 || targetCoords.length < 2 ||
+        !isFinite(sourceCoords[0]) || !isFinite(sourceCoords[1]) ||
+        !isFinite(targetCoords[0]) || !isFinite(targetCoords[1]) ||
+        (sourceCoords[0] === 0 && sourceCoords[1] === 0) ||
+        (targetCoords[0] === 0 && targetCoords[1] === 0)) {
+      console.error('[PATH EDIT] INVALID coordinates - aborting render');
+      return;
+    }
+    
+    // Clear all normal map content (nodes, edges, labels) - we only want to show the editing link
+    
+    clearMapLibreContent();
+    
+    // PROPER CLEANUP: Remove all our tracked markers
+    
+    pathEditMarkers.forEach(marker => {
+      try {
+        marker.remove();
+      } catch (e) {
+        console.warn('[PATH EDIT] Error removing marker:', e);
+      }
+    });
+    pathEditMarkers = [];
+    
+    // Ensure map interactions are enabled
+    map.scrollZoom.enable();
+    map.dragPan.enable();
+    map.boxZoom.enable();
+    map.keyboard.enable();
+    map.doubleClickZoom.enable();
+    map.touchZoomRotate.enable();
+    
+    
+    
+    try {
+      // Build the current editing link path (grey baseline + blue editing path)
+      const baselineCoords = [sourceCoords, targetCoords];
+      
+      // Build the editing path with waypoints
+      const pathCoords = state.pathEditMode.currentPath.length > 0
+        ? [sourceCoords, ...state.pathEditMode.currentPath, targetCoords]
+        : baselineCoords;
+      
+      // === BASELINE LINK (grey, shows original straight line) ===
+      const baselineData = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: baselineCoords }
+      };
+      
+      if (map.getSource('path-edit-baseline')) {
+        map.getSource('path-edit-baseline').setData(baselineData);
+      } else {
+        map.addSource('path-edit-baseline', { type: 'geojson', data: baselineData });
+        map.addLayer({
+          id: 'path-edit-baseline-layer',
+          type: 'line',
+          source: 'path-edit-baseline',
+          paint: {
+            'line-color': '#9ca3af',
+            'line-width': 2,
+            'line-dasharray': [4, 4],
+            'line-opacity': 0.6
+          }
+        });
+      }
+      
+      // === CURRENT EDITING PATH (blue) ===
+      const pathData = {
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: pathCoords }
+      };
+      
+      if (map.getSource('path-edit-current')) {
+        map.getSource('path-edit-current').setData(pathData);
+      } else {
+        map.addSource('path-edit-current', { type: 'geojson', data: pathData });
+        map.addLayer({
+          id: 'path-edit-current-layer',
+          type: 'line',
+          source: 'path-edit-current',
+          paint: {
+            'line-color': '#3b82f6',
+            'line-width': 3,
+            'line-opacity': 1
+          }
+        });
+      }
+      
+      // === WAYPOINT MARKERS (using HTML markers for interactivity) ===
+      // Remove old waypoint markers
+      document.querySelectorAll('.path-edit-waypoint').forEach(el => {
+        el.closest('.maplibregl-marker')?.remove();
+      });
+      
+      // Add new waypoint markers
+      state.pathEditMode.currentPath.forEach((coord, idx) => {
+        // Validate coordinates
+        if (!Array.isArray(coord) || coord.length < 2 || 
+            typeof coord[0] !== 'number' || typeof coord[1] !== 'number' ||
+            !isFinite(coord[0]) || !isFinite(coord[1])) {
+          console.warn('[PATH EDIT] Invalid coordinate at index', idx, coord);
+          return;
+        }
+        
+        const waypointEl = document.createElement('div');
+        waypointEl.className = 'path-edit-waypoint';
+        waypointEl.dataset.index = idx;
+        waypointEl.style.cssText = `
+          width: 16px;
+          height: 16px;
+          background: #ffffff;
+          border: 3px solid #3b82f6;
+          border-radius: 50%;
+          cursor: pointer;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          transition: background 0.15s, border-color 0.15s;
+        `;
+        waypointEl.title = `Waypoint ${idx + 1} - Click to delete, drag to move`;
+        let isDragging = false;
+        let mouseDownTime = 0;
+        
+        // Hover effect
+        waypointEl.addEventListener('mouseenter', () => {
+          if (!isDragging) {
+            waypointEl.style.transform = 'scale(1.3)';
+            waypointEl.style.background = '#fee2e2';
+            waypointEl.style.borderColor = '#ef4444';
+          }
+        });
+        waypointEl.addEventListener('mouseleave', () => {
+          if (!isDragging) {
+            waypointEl.style.transform = 'scale(1)';
+            waypointEl.style.background = '#ffffff';
+            waypointEl.style.borderColor = '#3b82f6';
+          }
+        });
+        
+        // Track mousedown time to distinguish click from drag
+        waypointEl.addEventListener('mousedown', (e) => {
+          mouseDownTime = Date.now();
+        });
+        
+        // Use mouseup with timing check - only delete if it was a quick click, not a drag
+        waypointEl.addEventListener('mouseup', (e) => {
+          e.stopPropagation();
+          
+          const clickDuration = Date.now() - mouseDownTime;
+          
+          // If click was longer than 200ms, treat it as a drag attempt, not a click
+          if (clickDuration > 200) {
+            
+            return;
+          }
+          
+          // Don't delete if we were dragging
+          if (isDragging) {
+            
+            isDragging = false;
+            return;
+          }
+          
+          
+          const index = parseInt(waypointEl.dataset.index);
+          if (!isNaN(index) && index >= 0 && index < state.pathEditMode.currentPath.length) {
+            state.pathEditMode.currentPath.splice(index, 1);
+            state.pathEditMode.hasUnsavedChanges = true;
+            updatePathEditStatus();
+            updateWaypointCount();
+            renderPathEditingView();
+            showToast(`Waypoint ${index + 1} deleted`);
+          }
+        });
+        
+        
+        if (coord[0] === 0 && coord[1] === 0) {
+          console.error('[MARKER DEBUG] WARNING: Creating waypoint at 0,0!');
+        }
+        
+        const marker = new maplibregl.Marker({ 
+          element: waypointEl, 
+          draggable: true,
+          anchor: 'center'
+        })
+          .setLngLat([coord[0], coord[1]])
+          .on('dragstart', function() {
+            isDragging = true;
+          })
+          .on('dragend', function() {
+            isDragging = false;
+            const lngLat = this.getLngLat();
+            state.pathEditMode.currentPath[idx] = [lngLat.lng, lngLat.lat];
+            state.pathEditMode.hasUnsavedChanges = true;
+            updatePathEditStatus();
+            // Update the path line using stored coordinates
+            const src = state.pathEditMode.sourceCoords;
+            const tgt = state.pathEditMode.targetCoords;
+            const newPathCoords = [src, ...state.pathEditMode.currentPath, tgt];
+            if (map.getSource('path-edit-current')) {
+              map.getSource('path-edit-current').setData({
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: newPathCoords }
+              });
+            }
+          })
+          .addTo(map);
+        
+        // Track this marker for cleanup
+        pathEditMarkers.push(marker);
+        
+        // Log the marker's actual position after adding
+        const pos = marker.getLngLat();
+        
+      });
+      
+      // === ENDPOINT MARKERS (create fresh each time since we cleared them above) ===
+      const endpointMarkerA = document.createElement('div');
+      endpointMarkerA.className = 'path-edit-endpoint path-edit-endpoint-a';
+      endpointMarkerA.style.cssText = 'width:20px; height:20px; background:#22c55e; border:3px solid white; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.3);';
+      endpointMarkerA.title = `Source: ${sourceName}`;
+      
+      if (sourceCoords[0] === 0 && sourceCoords[1] === 0) {
+        console.error('[MARKER DEBUG] WARNING: Creating source endpoint at 0,0!');
+      }
+      const markerA = new maplibregl.Marker({ element: endpointMarkerA, anchor: 'center' })
+        .setLngLat(sourceCoords)
+        .addTo(map);
+      pathEditMarkers.push(markerA);
+      
+      const endpointMarkerB = document.createElement('div');
+      endpointMarkerB.className = 'path-edit-endpoint path-edit-endpoint-b';
+      endpointMarkerB.style.cssText = 'width:20px; height:20px; background:#ef4444; border:3px solid white; border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.3);';
+      endpointMarkerB.title = `Target: ${targetName}`;
+      
+      if (targetCoords[0] === 0 && targetCoords[1] === 0) {
+        console.error('[MARKER DEBUG] WARNING: Creating target endpoint at 0,0!');
+      }
+      const markerB = new maplibregl.Marker({ element: endpointMarkerB, anchor: 'center' })
+        .setLngLat(targetCoords)
+        .addTo(map);
+      pathEditMarkers.push(markerB);
+      
+      
+      
+      // Fit bounds ONLY on very first render (when entering edit mode)
+      // Don't re-fit when adding waypoints to avoid jarring camera movements
+      if (!state.pathEditMode._boundsFitted) {
+        const bounds = new maplibregl.LngLatBounds();
+        bounds.extend(sourceCoords);
+        bounds.extend(targetCoords);
+        
+        
+        map.fitBounds(bounds, {
+          padding: { top: 150, bottom: 200, left: 400, right: 150 },
+          maxZoom: 10,
+          duration: 1000
+        });
+        
+        state.pathEditMode._boundsFitted = true;
+      }
+      
+    } catch (err) {
+      console.error('[PATH EDIT] Error rendering path:', err);
+    }
+  }
+  
+  // Clear MapLibre layers for path editing
+  function clearPathEditLayers() {
+    if (!mapLibreState.map) return;
+    
+    const map = mapLibreState.map;
+    const layersToRemove = [
+      'path-edit-baseline-layer',
+      'path-edit-current-layer',
+      'path-edit-waypoints-layer'
+    ];
+    const sourcesToRemove = [
+      'path-edit-baseline',
+      'path-edit-current',
+      'path-edit-waypoints'
+    ];
+    
+    layersToRemove.forEach(id => {
+      if (map.getLayer(id)) {
+        map.removeLayer(id);
+      }
+    });
+    sourcesToRemove.forEach(id => {
+      if (map.getSource(id)) {
+        map.removeSource(id);
+      }
+    });
+    
+    // Remove endpoint markers
+    document.querySelectorAll('.path-edit-endpoint').forEach(el => {
+      el.closest('.maplibregl-marker')?.remove();
+    });
+    
+    // Remove waypoint markers
+    document.querySelectorAll('.path-edit-waypoint').forEach(el => {
+      el.closest('.maplibregl-marker')?.remove();
+    });
+  }
+  
+  // Remove path from link
+  function removePathFromLink(linkId) {
+    const edge = findEdge(linkId);
+    if (!edge) return;
+    
+    edge.pathGeometry = null;
+    edge.pathSource = null;
+    edge.pathCableRef = null;
+    
+    commit();
+    render();
+    if (mapLibreState.active && mapLibreState.map) {
+      renderMapLibreContent();
+    }
+    updateInspector();
+    showToast('Path removed from link');
+  }
+  
+  // Expose functions globally
+  window.enterPathEditMode = enterPathEditMode;
+  window.exitPathEditMode = exitPathEditMode;
+  window.updatePathGeometryUI = updatePathGeometryUI;
+  window.removePathFromLink = removePathFromLink;
+  window.updatePathEditStatus = updatePathEditStatus;
+  window.updateWaypointCount = updateWaypointCount;
+  window.renderPathEditingView = renderPathEditingView;
+  window.clearPathEditLayers = clearPathEditLayers;
+  
+  // Manual path drawing functions
+  function enableManualPathDrawing() {
+    if (!mapLibreState.map) return;
+    
+    // Remove existing click handler if any
+    mapLibreState.map.off('click', handleMapClickForPath);
+    
+    // Add click handler for adding waypoints
+    mapLibreState.map.on('click', handleMapClickForPath);
+    
+    showToast('Click on map to add waypoints');
+  }
+  
+  function handleMapClickForPath(e) {
+    if (!state.pathEditMode.active || state.pathEditMode.editMethod !== 'manual') return;
+    
+    const lngLat = [e.lngLat.lng, e.lngLat.lat];
+    state.pathEditMode.currentPath.push(lngLat);
+    state.pathEditMode.hasUnsavedChanges = true;
+    
+    updatePathEditStatus();
+    updateWaypointCount();
+    renderPathEditingView();
+  }
+  
+  // Handle KML/GeoJSON file import
+  function handlePathKmlImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      try {
+        let geojson;
+        
+        if (file.name.endsWith('.kml')) {
+          // Convert KML to GeoJSON (simplified parsing)
+          const parser = new DOMParser();
+          const kmlDoc = parser.parseFromString(event.target.result, 'text/xml');
+          const coordinates = [];
+          
+          // Extract coordinates from KML
+          const coordElements = kmlDoc.querySelectorAll('coordinates');
+          coordElements.forEach(coordEl => {
+            const coordText = coordEl.textContent.trim();
+            const points = coordText.split(/\s+/);
+            points.forEach(point => {
+              const parts = point.split(',');
+              if (parts.length >= 2) {
+                coordinates.push([parseFloat(parts[0]), parseFloat(parts[1])]);
+              }
+            });
+          });
+          
+          if (coordinates.length > 0) {
+            state.pathEditMode.currentPath = coordinates;
+          }
+        } else {
+          // Parse GeoJSON
+          geojson = JSON.parse(event.target.result);
+          
+          // Extract coordinates based on geometry type
+          let coordinates = [];
+          if (geojson.type === 'FeatureCollection') {
+            geojson.features.forEach(f => {
+              if (f.geometry?.type === 'LineString') {
+                coordinates = coordinates.concat(f.geometry.coordinates);
+              } else if (f.geometry?.type === 'MultiLineString') {
+                f.geometry.coordinates.forEach(line => {
+                  coordinates = coordinates.concat(line);
+                });
+              }
+            });
+          } else if (geojson.type === 'Feature') {
+            if (geojson.geometry?.type === 'LineString') {
+              coordinates = geojson.geometry.coordinates;
+            } else if (geojson.geometry?.type === 'MultiLineString') {
+              geojson.geometry.coordinates.forEach(line => {
+                coordinates = coordinates.concat(line);
+              });
+            }
+          } else if (geojson.type === 'LineString') {
+            coordinates = geojson.coordinates;
+          } else if (geojson.type === 'MultiLineString') {
+            geojson.coordinates.forEach(line => {
+              coordinates = coordinates.concat(line);
+            });
+          }
+          
+          if (coordinates.length > 0) {
+            state.pathEditMode.currentPath = coordinates;
+          }
+        }
+        
+        state.pathEditMode.hasUnsavedChanges = true;
+        state.pathEditMode.editMethod = 'kml-import';
+        
+        updatePathEditStatus();
+        updateWaypointCount();
+        renderPathEditingView();
+        
+        showToast(`Imported ${state.pathEditMode.currentPath.length} waypoints from file`);
+      } catch (err) {
+        console.error('[PATH EDIT] Error parsing file:', err);
+        showToast('Error parsing file. Please check the format.');
+      }
+    };
+    reader.readAsText(file);
+  }
+  
+  window.enableManualPathDrawing = enableManualPathDrawing;
+  window.handlePathKmlImport = handlePathKmlImport;
+  
+  // ============== TELEGEOGRAPHY CABLE IMPORT ==============
+  
+  // Embedded submarine cable data (curated from public sources)
+  // These are simplified routes for major cables - coordinates are [lon, lat]
+  // ============== EXTERNAL SUBMARINE CABLE DATABASE ==============
+  
+  // URL to the external submarine cable database
+  const SUBMARINE_CABLE_DB_URL = './data/submarine_cables_db.json';
+  
+  // Cache for loaded cable data
+  let submarineCableCache = null;
+  let cableDbLoadPromise = null;
+  
+  // Load submarine cable database from external JSON file
+  async function loadSubmarineCableDb() {
+    // Return cached data if available
+    if (submarineCableCache) {
+      return submarineCableCache;
+    }
+    
+    // Return existing promise if already loading
+    if (cableDbLoadPromise) {
+      return cableDbLoadPromise;
+    }
+    
+    // Start loading
+    cableDbLoadPromise = (async () => {
+      try {
+        const response = await fetch(SUBMARINE_CABLE_DB_URL);
+        if (!response.ok) {
+          throw new Error(`Failed to load cable database: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Transform the data into the format expected by NexiMap
+        submarineCableCache = transformCableDatabase(data);
+        return submarineCableCache;
+      } catch (error) {
+        console.error('[NexiMap] Error loading submarine cable database:', error);
+        cableDbLoadPromise = null; // Allow retry
+        throw error;
+      }
+    })();
+    
+    return cableDbLoadPromise;
+  }
+  
+  // Transform external database format to NexiMap internal format
+  function transformCableDatabase(dbData) {
+    const cables = {};
+    
+    if (!dbData || !dbData.cables) {
+      console.warn('[NexiMap] Invalid cable database format');
+      return cables;
+    }
+    
+    for (const [key, cable] of Object.entries(dbData.cables)) {
+      // Extract coordinates from GeoJSON geometry
+      const coordinates = extractCoordinatesFromGeometry(cable.geometry);
+      
+      if (coordinates.length === 0) {
+        console.warn(`[NexiMap] No coordinates found for cable: ${cable.name}`);
+        continue;
+      }
+      
+      // Build description from landing points
+      const landingPointNames = cable.landingPoints?.map(lp => `${lp.name}, ${lp.country}`).join(' → ') || '';
+      const ownersList = cable.owners?.join(', ') || 'Unknown';
+      
+      cables[key] = {
+        id: cable.id || key,
+        name: cable.name,
+        description: landingPointNames || `${cable.region} submarine cable`,
+        region: cable.region || 'Unknown',
+        rfs: cable.rfs || 'Unknown',
+        length: cable.length_km ? `${cable.length_km.toLocaleString()} km` : 'Unknown',
+        length_km: cable.length_km || 0,
+        owners: cable.owners || [],
+        ownersText: ownersList,
+        fiberPairs: cable.fiberPairs || 0,
+        designCapacity: cable.designCapacity || 'Unknown',
+        landingPoints: cable.landingPoints || [],
+        coordinates: coordinates,
+        originalGeometry: cable.geometry
+      };
+    }
+    
+    return cables;
+  }
+  
+  // Extract coordinates from GeoJSON geometry (LineString or MultiLineString)
+  function extractCoordinatesFromGeometry(geometry) {
+    if (!geometry || !geometry.coordinates) {
+      return [];
+    }
+    
+    let allCoords = [];
+    
+    if (geometry.type === 'LineString') {
+      // Simple LineString: [[lng, lat], [lng, lat], ...]
+      allCoords = geometry.coordinates.map(coord => [coord[0], coord[1]]);
+    } else if (geometry.type === 'MultiLineString') {
+      // MultiLineString: [[[lng, lat], ...], [[lng, lat], ...], ...]
+      // Flatten all line segments into a single path
+      // We'll concatenate them, removing duplicate junction points
+      for (let i = 0; i < geometry.coordinates.length; i++) {
+        const segment = geometry.coordinates[i];
+        for (let j = 0; j < segment.length; j++) {
+          const coord = [segment[j][0], segment[j][1]];
+          
+          // Skip if it's the same as the last point (junction point)
+          if (allCoords.length > 0) {
+            const last = allCoords[allCoords.length - 1];
+            if (Math.abs(last[0] - coord[0]) < 0.0001 && Math.abs(last[1] - coord[1]) < 0.0001) {
+              continue;
+            }
+          }
+          
+          allCoords.push(coord);
+        }
+      }
+    }
+    
+    return allCoords;
+  }
+  
+  // Reduce waypoints if too many (keep shape but reduce complexity)
+  function reduceWaypoints(coordinates, maxPoints = 100) {
+    if (coordinates.length <= maxPoints) {
+      return coordinates;
+    }
+    
+    // Always keep first and last points
+    const result = [coordinates[0]];
+    
+    // Calculate step to get roughly maxPoints
+    const step = (coordinates.length - 2) / (maxPoints - 2);
+    
+    for (let i = 1; i < maxPoints - 1; i++) {
+      const idx = Math.round(i * step);
+      if (idx < coordinates.length - 1) {
+        result.push(coordinates[idx]);
+      }
+    }
+    
+    // Add last point
+    result.push(coordinates[coordinates.length - 1]);
+    
+    return result;
+  }
+  
+  // Show Cable Database search interface
+  async function showCableDbSearch() {
+    const instructions = document.getElementById('pathEditInstructions');
+    if (!instructions) return;
+    
+    // Show loading state
+    instructions.innerHTML = `
+      <div style="text-align: center; padding: 20px;">
+        <div style="font-size: 24px; margin-bottom: 10px;">🌐</div>
+        <div style="color: #666;">Loading submarine cable database...</div>
+      </div>
+    `;
+    
+    try {
+      // Load the cable database
+      const cables = await loadSubmarineCableDb();
+      const cableCount = Object.keys(cables).length;
+      
+      if (cableCount === 0) {
+        instructions.innerHTML = `
+          <div style="color: #ef4444; padding: 10px;">
+            ⚠️ No cables found in database. Please check the data file.
+          </div>
+        `;
+        return;
+      }
+      
+      // Sort cables alphabetically by name
+      const sortedCables = Object.entries(cables)
+        .sort((a, b) => a[1].name.localeCompare(b[1].name));
+      
+      // Get unique regions for filtering
+      const regions = [...new Set(Object.values(cables).map(c => c.region))].sort();
+      
+      // Build region filter options
+      const regionOptions = regions.map(r => `<option value="${r}">${r}</option>`).join('');
+      
+      // Build cable list HTML (alphabetically sorted)
+      const cableOptions = sortedCables.map(([key, cable]) => {
+        return `<option value="${key}" data-region="${cable.region}">${cable.name}</option>`;
+      }).join('');
+      
+      instructions.innerHTML = `
+        <div style="margin-bottom: 10px;">
+          <strong>🌐 Submarine Cable Database</strong>
+          <span style="font-size: 10px; color: #888; margin-left: 8px;">${cableCount} cables</span>
+        </div>
+        
+        <div style="margin-bottom: 8px;">
+          <input type="text" id="cableSearchInput" placeholder="Search cables by name, owner..." 
+            style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; box-sizing: border-box;" />
+        </div>
+        
+        <div style="margin-bottom: 8px;">
+          <select id="cableRegionFilter" style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
+            <option value="">All Regions</option>
+            ${regionOptions}
+          </select>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+          <select id="cableDbSelect" size="6" style="width: 100%; padding: 4px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;">
+            ${cableOptions}
+          </select>
+        </div>
+        
+        <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 80px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+          Select a cable to see details.
+        </div>
+        
+        <button id="btnCableDbImport" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 500;" disabled>
+          📥 Import Selected Cable
+        </button>
+        
+        <div style="margin-top: 10px; font-size: 10px; color: #888;">
+          Data: TeleGeography + NexiMap enrichment<br>
+          For unlisted cables, use <strong>Import KML/GeoJSON</strong>.
+        </div>
+      `;
+      
+      // Set up event handlers
+      setupCableDbEventHandlers(cables);
+      
+    } catch (error) {
+      instructions.innerHTML = `
+        <div style="color: #ef4444; padding: 10px;">
+          ⚠️ Failed to load cable database:<br>
+          <span style="font-size: 11px;">${error.message}</span>
+          <div style="margin-top: 10px;">
+            <button onclick="window.showCableDbSearch()" style="padding: 6px 12px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
+              🔄 Retry
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  // Set up event handlers for cable database UI
+  function setupCableDbEventHandlers(cables) {
+    const searchInput = document.getElementById('cableSearchInput');
+    const regionFilter = document.getElementById('cableRegionFilter');
+    const select = document.getElementById('cableDbSelect');
+    const importBtn = document.getElementById('btnCableDbImport');
+    const infoDiv = document.getElementById('cableDbInfo');
+    
+    // Filter function
+    function filterCables() {
+      const searchTerm = searchInput?.value.toLowerCase() || '';
+      const selectedRegion = regionFilter?.value || '';
+      
+      const options = select?.querySelectorAll('option');
+      options?.forEach(option => {
+        const cableKey = option.value;
+        const cable = cables[cableKey];
+        if (!cable) return;
+        
+        const matchesSearch = 
+          cable.name.toLowerCase().includes(searchTerm) ||
+          cable.ownersText.toLowerCase().includes(searchTerm) ||
+          cable.description.toLowerCase().includes(searchTerm);
+        
+        const matchesRegion = !selectedRegion || cable.region === selectedRegion;
+        
+        option.style.display = (matchesSearch && matchesRegion) ? '' : 'none';
+      });
+    }
+    
+    // Search input handler
+    searchInput?.addEventListener('input', filterCables);
+    
+    // Region filter handler
+    regionFilter?.addEventListener('change', filterCables);
+    
+    // Cable selection handler
+    select?.addEventListener('change', () => {
+      const cableKey = select.value;
+      if (cableKey && cables[cableKey]) {
+        const cable = cables[cableKey];
+        
+        // Build landing points list
+        const landingPointsHtml = cable.landingPoints.length > 0
+          ? cable.landingPoints.map(lp => `<span style="background: #e5e7eb; padding: 1px 4px; border-radius: 2px; margin-right: 3px; display: inline-block; margin-bottom: 2px;">${lp.name}</span>`).join('')
+          : '<em>Not specified</em>';
+        
+        infoDiv.innerHTML = `
+          <div style="margin-bottom: 6px;">
+            <strong style="font-size: 13px; color: #111;">${cable.name}</strong>
+            <span style="font-size: 10px; color: #888; margin-left: 6px;">${cable.region}</span>
+          </div>
+          <div style="margin-bottom: 4px; font-size: 10px;">
+            <span style="color: #666;">RFS:</span> <strong>${cable.rfs}</strong> &nbsp;|&nbsp;
+            <span style="color: #666;">Length:</span> <strong>${cable.length}</strong> &nbsp;|&nbsp;
+            <span style="color: #666;">Fiber Pairs:</span> <strong>${cable.fiberPairs || '?'}</strong>
+          </div>
+          <div style="margin-bottom: 4px; font-size: 10px;">
+            <span style="color: #666;">Capacity:</span> <strong>${cable.designCapacity}</strong>
+          </div>
+          <div style="margin-bottom: 4px; font-size: 10px;">
+            <span style="color: #666;">Owners:</span> ${cable.ownersText}
+          </div>
+          <div style="font-size: 10px;">
+            <span style="color: #666;">Landing Points:</span><br>
+            ${landingPointsHtml}
+          </div>
+          <div style="margin-top: 4px; font-size: 9px; color: #aaa;">
+            ${cable.coordinates.length} waypoints in geometry
+          </div>
+        `;
+        importBtn.disabled = false;
+      } else {
+        infoDiv.innerHTML = 'Select a cable to see details.';
+        importBtn.disabled = true;
+      }
+    });
+    
+    // Double-click to import
+    select?.addEventListener('dblclick', () => {
+      const cableKey = select.value;
+      if (cableKey && cables[cableKey]) {
+        importCableFromDb(cables[cableKey]);
+      }
+    });
+    
+    // Import button handler
+    importBtn?.addEventListener('click', () => {
+      const cableKey = select?.value;
+      if (cableKey && cables[cableKey]) {
+        importCableFromDb(cables[cableKey]);
+      }
+    });
+  }
+  
+  // Import a cable from the database
+  function importCableFromDb(cable) {
+    if (!cable || !cable.coordinates || cable.coordinates.length === 0) {
+      showToast('Invalid cable data - no coordinates found');
+      return;
+    }
+    
+    // Reduce waypoints if there are too many
+    let waypoints = cable.coordinates;
+    if (waypoints.length > 150) {
+      waypoints = reduceWaypoints(waypoints, 150);
+      console.log(`[NexiMap] Reduced waypoints from ${cable.coordinates.length} to ${waypoints.length}`);
+    }
+    
+    // Apply to current path
+    state.pathEditMode.currentPath = waypoints;
+    state.pathEditMode.hasUnsavedChanges = true;
+    state.pathEditMode.editMethod = 'telegeography';
+    
+    // Store reference on the edge
+    const edge = findEdge(state.pathEditMode.linkId);
+    if (edge) {
+      edge.pathCableRef = cable.name;
+      edge.pathCableId = cable.id;
+    }
+    
+    // Update UI
+    updatePathEditStatus();
+    updateWaypointCount();
+    renderPathEditingView();
+    
+    // Update instructions area with success message
+    const instructions = document.getElementById('pathEditInstructions');
+    if (instructions) {
+      instructions.innerHTML = `
+        <div style="color: #10b981; font-weight: 500; margin-bottom: 8px;">
+          ✅ Imported "${cable.name}"
+        </div>
+        <div style="font-size: 11px; color: #666; background: #f0fdf4; padding: 8px; border-radius: 4px; border: 1px solid #86efac;">
+          <strong>${waypoints.length} waypoints</strong> loaded<br>
+          <span style="color: #888;">${cable.region} • RFS ${cable.rfs} • ${cable.length}</span><br>
+          <span style="color: #888;">${cable.ownersText}</span>
+        </div>
+        <div style="font-size: 11px; color: #666; margin-top: 8px;">
+          Click <strong>Save</strong> to apply this path, or switch to <strong>Manual</strong> mode to edit waypoints.
+        </div>
+        <button onclick="window.showCableDbSearch()" style="margin-top: 10px; padding: 6px 12px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 11px;">
+          ← Select Different Cable
+        </button>
+      `;
+    }
+    
+    showToast(`Imported ${waypoints.length} waypoints from ${cable.name}`);
+  }
+  
+  // Expose functions globally
+  window.showCableDbSearch = showCableDbSearch;
+  window.loadSubmarineCableDb = loadSubmarineCableDb;
+  
+  // Pre-load the database in the background after a short delay
+  setTimeout(() => {
+    loadSubmarineCableDb().then(cables => {
+      console.log(`[NexiMap] Submarine cable database loaded: ${Object.keys(cables).length} cables`);
+    }).catch(err => {
+      console.warn('[NexiMap] Failed to preload cable database:', err.message);
+    });
+  }, 2000);
+  
+  // ============== END EXTERNAL SUBMARINE CABLE DATABASE ==============
+
+
   // Initialize MapLibre map
   function initMapLibre() {
     if (mapLibreState.map) return; // Already initialized
@@ -31148,7 +32870,13 @@ function loadProjectObject(obj) {
       // When map style is fully loaded, render the nodes
       mapLibreState.map.on('load', () => {
         mapLibreState.isStyleLoaded = true;
-        renderMapLibreContent();
+        
+        // Only render normal content if NOT in path edit mode
+        if (state.pathEditMode && state.pathEditMode.active) {
+          console.log('[MAP LOAD] Skipping renderMapLibreContent - path edit mode active');
+        } else {
+          renderMapLibreContent();
+        }
         
         // Set up a PERSISTENT click handler for edge selection
         // This uses queryRenderedFeatures with a bbox for better hit detection
@@ -31324,9 +33052,21 @@ function loadProjectObject(obj) {
   
   // Clear all markers and lines from the map
   function clearMapLibreContent() {
-    // Remove markers
+    // Remove markers from the tracking array
     mapLibreState.markers.forEach(m => m.remove());
     mapLibreState.markers = [];
+    
+    // ALSO remove any markers in DOM that might not be in the array
+    // But preserve path-edit markers during path edit mode
+    // MapLibre puts markers in a separate container, so search the whole document
+    document.querySelectorAll('.maplibregl-marker').forEach(marker => {
+      // Skip path edit markers
+      if (marker.querySelector('.path-edit-endpoint') || 
+          marker.querySelector('.path-edit-waypoint')) {
+        return;
+      }
+      marker.remove();
+    });
     
     // Remove line layers and sources safely
     if (mapLibreState.map && mapLibreState.isStyleLoaded) {
@@ -31369,6 +33109,7 @@ function loadProjectObject(obj) {
   // Render nodes and edges on the MapLibre map
   function renderMapLibreContent() {
     
+    
     if (!mapLibreState.map || !mapLibreState.active) {
       
       return;
@@ -31377,6 +33118,14 @@ function loadProjectObject(obj) {
       
       return; // Wait for style to load
     }
+    
+    // SKIP normal rendering when in path edit mode - let renderPathEditingView handle it
+    if (state.pathEditMode && state.pathEditMode.active) {
+      
+      return;
+    }
+    
+    
     
     // Clear existing content first
     clearMapLibreContent();
@@ -31510,6 +33259,16 @@ function loadProjectObject(obj) {
           
           const edgeId = e.id || `edge-${idx}`;
           
+          // Determine coordinates - use pathGeometry if available and paths mode is enabled
+          let edgeCoordinates;
+          if (mapLibreState.pathRenderMode === 'paths' && e.pathGeometry && e.pathGeometry.length > 0) {
+            // Use the path geometry - prepend source, append target
+            edgeCoordinates = [offsetFrom, ...e.pathGeometry, offsetTo];
+          } else {
+            // Use straight line
+            edgeCoordinates = [offsetFrom, offsetTo];
+          }
+          
           // Add selection glow feature FIRST (rendered behind) if selected
           if (isSelected) {
             edgeFeatures.push({
@@ -31523,7 +33282,7 @@ function loadProjectObject(obj) {
               },
               geometry: {
                 type: 'LineString',
-                coordinates: [offsetFrom, offsetTo]
+                coordinates: edgeCoordinates
               }
             });
           }
@@ -31534,11 +33293,12 @@ function loadProjectObject(obj) {
               id: edgeId,
               color: edgeColor, // Keep original color
               width: edgeWidth,
-              selected: isSelected
+              selected: isSelected,
+              hasPath: !!(e.pathGeometry && e.pathGeometry.length > 0)
             },
             geometry: {
               type: 'LineString',
-              coordinates: [offsetFrom, offsetTo]
+              coordinates: edgeCoordinates
             }
           });
           
@@ -31688,6 +33448,10 @@ function loadProjectObject(obj) {
           });
         }
         
+        console.log('[MARKER DEBUG] Creating EDGE LABEL marker at:', labelInfo.coords, 'edge:', labelInfo.edgeId);
+        if (labelInfo.coords[0] === 0 && labelInfo.coords[1] === 0) {
+          console.error('[MARKER DEBUG] WARNING: Creating edge label at 0,0!');
+        }
         const labelMarker = new maplibregl.Marker({
           element: labelEl,
           anchor: 'center'
@@ -31795,6 +33559,10 @@ function loadProjectObject(obj) {
       el.style.cursor = selectionEnabled ? 'pointer' : 'default';
       
       // Create the marker
+      console.log('[MARKER DEBUG] Creating NODE marker at:', [n.gpsLon, n.gpsLat], 'node:', n.name || n.id);
+      if (n.gpsLon === 0 && n.gpsLat === 0) {
+        console.error('[MARKER DEBUG] WARNING: Creating node marker at 0,0!', n);
+      }
       const marker = new maplibregl.Marker({
         element: el,
         anchor: 'center'
@@ -31929,6 +33697,10 @@ function loadProjectObject(obj) {
             labelEl.style.outline = '2px solid #0096D6'; // Blue outline - same as main canvas
           }
           
+          console.log('[MARKER DEBUG] Creating NODE LABEL marker at:', [n.gpsLon, n.gpsLat], 'node:', n.name || n.id);
+          if (n.gpsLon === 0 && n.gpsLat === 0) {
+            console.error('[MARKER DEBUG] WARNING: Creating node label at 0,0!');
+          }
           const labelMarker = new maplibregl.Marker({
             element: labelEl,
             anchor: 'top'
@@ -32426,6 +34198,7 @@ function loadProjectObject(obj) {
       }
     });
   }
+  
   // Selection is always enabled now (no checkbox)
   if (mlUseCanvasColors) {
     mlUseCanvasColors.addEventListener('change', () => {
@@ -32720,6 +34493,7 @@ function loadProjectObject(obj) {
     const mapContainer = document.getElementById('maplibreContainer');
     const svgContainer = document.getElementById('svgContainer');
     const projPanel = document.getElementById('projectionPanel');
+    const btnShowPaths = document.getElementById('btnShowPaths');
     
     // Update radio buttons
     const stdRadio = document.getElementById('viewModeStandard');
@@ -32739,14 +34513,52 @@ function loadProjectObject(obj) {
       }
       
       // Show MapLibre, hide SVG
-      if (mapContainer) mapContainer.classList.add('active');
-      if (svgContainer) svgContainer.style.display = 'none';
+      if (mapContainer) {
+        mapContainer.classList.add('active');
+        // Reset any forced inline styles from deactivation
+        mapContainer.style.display = '';
+        mapContainer.style.visibility = '';
+        mapContainer.style.zIndex = '';
+      }
+      if (svgContainer) {
+        svgContainer.style.display = 'none';
+        // Reset other styles
+        svgContainer.style.visibility = '';
+        svgContainer.style.opacity = '';
+        svgContainer.style.zIndex = '';
+      }
       if (projPanel) projPanel.style.display = 'none';
+      
+      // CRITICAL: Hide wrap overflow to prevent scrollbar interference with map zoom
+      const wrap = document.getElementById('wrap');
+      if (wrap) wrap.style.overflow = 'hidden';
+      
+      // Show Paths toggle button
+      if (btnShowPaths) btnShowPaths.style.display = 'flex';
       
       // Update radios
       if (stdRadio) stdRadio.checked = false;
       if (geoRadio) geoRadio.checked = false;
       if (mapLibreRadio) mapLibreRadio.checked = true;
+      
+      // Update toolbar buttons with green active state
+      const btnMain = document.getElementById('btnMainView');
+      const btnGeoView = document.getElementById('btnGeoView');
+      const btnMapBtn = document.getElementById('btnMapLibre');
+      const activeColor = '#10b981';
+      
+      if (btnMain) {
+        btnMain.classList.remove('active');
+        btnMain.style.color = '';
+      }
+      if (btnGeoView) {
+        btnGeoView.classList.remove('active');
+        btnGeoView.style.color = '';
+      }
+      if (btnMapBtn) {
+        btnMapBtn.classList.add('active');
+        btnMapBtn.style.color = activeColor;
+      }
       
       // Initialize and render
       initMapLibre();
@@ -32763,17 +34575,82 @@ function loadProjectObject(obj) {
       
       showToast('🗺️ Geo Dynamic Map — click to select, Inspector shows details');
     } else {
+      
+      // If path edit mode was active, exit it first (without saving)
+      if (state.pathEditMode && state.pathEditMode.active) {
+        // Force exit path edit mode - this will call enableNonPathInteractions()
+        exitPathEditMode(false);
+      } else {
+        // Make sure interactions are enabled even if pathEditMode wasn't formally active
+        enableNonPathInteractions();
+      }
+      
       // Switch label settings back to canvas (will be updated if going to geoStatic)
       if (typeof switchViewLabelSettings === 'function') {
         switchViewLabelSettings('geoDynamic', 'canvas');
       }
       
       // Hide MapLibre, show SVG
-      if (mapContainer) mapContainer.classList.remove('active');
-      if (svgContainer) svgContainer.style.display = '';
+      if (mapContainer) {
+        mapContainer.classList.remove('active');
+        // Force hide the container with all style properties
+        mapContainer.style.display = 'none';
+        mapContainer.style.visibility = 'hidden';
+        mapContainer.style.zIndex = '-1';
+      }
+      if (svgContainer) {
+        // Force show with all style properties
+        svgContainer.style.display = 'block';
+        svgContainer.style.visibility = 'visible';
+        svgContainer.style.opacity = '1';
+        svgContainer.style.zIndex = '1';
+      }
+      
+      // Also force show the SVG element itself
+      const svgEl = document.getElementById('svg');
+      if (svgEl) {
+        svgEl.style.display = 'block';
+        svgEl.style.visibility = 'visible';
+        svgEl.style.opacity = '1';
+        svgEl.style.pointerEvents = 'auto';
+      }
+      
+      // RESTORE: wrap overflow when leaving map view
+      const wrap = document.getElementById('wrap');
+      if (wrap) wrap.style.overflow = 'auto';
+      
+      // Hide Paths toggle button
+      if (btnShowPaths) btnShowPaths.style.display = 'none';
+      
+      // Sync radio buttons back to Standard
+      if (stdRadio) stdRadio.checked = true;
+      if (geoRadio) geoRadio.checked = false;
+      if (mapLibreRadio) mapLibreRadio.checked = false;
+      
+      // Update toolbar buttons - back to Main view
+      const btnMain = document.getElementById('btnMainView');
+      const btnGeoView = document.getElementById('btnGeoView');
+      const btnMapBtn = document.getElementById('btnMapLibre');
+      const activeColor = '#10b981';
+      
+      if (btnMain) {
+        btnMain.classList.add('active');
+        btnMain.style.color = activeColor;
+      }
+      if (btnGeoView) {
+        btnGeoView.classList.remove('active');
+        btnGeoView.style.color = '';
+      }
+      if (btnMapBtn) {
+        btnMapBtn.classList.remove('active');
+        btnMapBtn.style.color = '';
+      }
       
       // Clear MapLibre route path when leaving
       clearMapLibreRoutePath();
+      
+      // Re-render canvas
+      render();
     }
   }
   
@@ -32782,7 +34659,11 @@ function loadProjectObject(obj) {
   if (viewModeMapLibre) {
     viewModeMapLibre.addEventListener('change', () => {
       if (viewModeMapLibre.checked) {
+        if (geoViewState && geoViewState.active) {
+          toggleGeoView(false);
+        }
         toggleMapLibreView(true);
+        updateViewButtonStates('map');
       }
     });
   }
@@ -32795,6 +34676,7 @@ function loadProjectObject(obj) {
       if (viewModeStd.checked) {
         toggleMapLibreView(false);
         toggleGeoView(false);
+        updateViewButtonStates('main');
         render();
       }
     });
@@ -32807,6 +34689,7 @@ function loadProjectObject(obj) {
       if (viewModeGeoRadio.checked) {
         toggleMapLibreView(false);
         toggleGeoView(true);
+        updateViewButtonStates('geo');
       }
     });
   }
@@ -38778,6 +40661,78 @@ function loadProjectObject(obj) {
         Print Shortcuts
       </button>
     </div>
+    <!-- Resize handles -->
+    <div class="help-center-resize-handle right" data-resize="right"></div>
+    <div class="help-center-resize-handle bottom" data-resize="bottom"></div>
+    <div class="help-center-resize-handle corner" data-resize="corner"></div>
+  </div>
+</div>
+
+<!-- Path Edit Mode Banner -->
+<div id="pathEditModeBanner">
+  <div class="banner-content">
+    <div class="banner-info">
+      <span class="banner-icon">🛤️</span>
+      <div>
+        <div class="banner-title">PATH EDITING MODE</div>
+        <div class="banner-subtitle" id="pathEditLinkName">Editing: Link L-15 (Node A → Node B)</div>
+      </div>
+    </div>
+    <div class="banner-status" id="pathEditStatus">
+      <span id="pathEditStatusIcon">●</span>
+      <span id="pathEditStatusText">No changes</span>
+    </div>
+    <div class="banner-actions">
+      <button class="banner-btn save" id="btnPathSaveExit" title="Save path and exit edit mode">💾 Save & Exit</button>
+      <button class="banner-btn exit" id="btnPathCancelExit" title="Discard changes and exit">✕ Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Path Edit Mode Overlay (dims other content) -->
+<div id="pathEditModeOverlay"></div>
+
+<!-- Path Edit Control Panel -->
+<div id="pathEditControlPanel">
+  <div class="control-header" id="pathEditPanelHeader">
+    <span class="control-title">🛤️ Path Editor</span>
+    <div style="display:flex; align-items:center; gap:8px;">
+      <span class="waypoint-count" id="pathWaypointCount">0 waypoints</span>
+      <div class="control-header-btns">
+        <button class="control-header-btn" id="btnMinimizePathPanel" title="Minimize">−</button>
+      </div>
+    </div>
+  </div>
+  
+  <div class="control-body">
+    <div class="edit-methods">
+      <button class="method-btn" id="btnMethodManual" data-method="manual" title="Draw path manually on map">
+        <span class="method-icon">✏️</span>
+        <span class="method-label">Manual</span>
+      </button>
+      <button class="method-btn" id="btnMethodCableDb" data-method="telegeography" title="Import from Cable Database">
+        <span class="method-icon">🌐</span>
+        <span class="method-label">Cable Database</span>
+      </button>
+      <button class="method-btn" id="btnMethodKML" data-method="kml-import" title="Import KML/GeoJSON">
+        <span class="method-icon">📥</span>
+        <span class="method-label">Import</span>
+      </button>
+    </div>
+    
+    <div id="pathEditInstructions" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-size: 11px; color: #0369a1; border: 1px solid #bae6fd;">
+      👆 Select a method above, then click on the map to add waypoints.
+    </div>
+    
+    <div class="control-actions" style="flex-wrap: wrap; gap: 6px;">
+      <button class="control-btn danger" id="btnPathClear" title="Clear all waypoints">🗑️ Clear</button>
+      <button class="control-btn secondary" id="btnPathUndo" title="Remove last waypoint">↩️ Undo</button>
+      <button class="control-btn primary" id="btnPathSavePanel" title="Save path and exit" style="margin-left:auto;">💾 Save</button>
+    </div>
+    
+    <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #6b7280; line-height: 1.5;">
+      <strong>Tips:</strong> Click to add • Click waypoint to delete • Scroll to zoom • Drag map to pan
+    </div>
   </div>
 </div>
 
@@ -38802,7 +40757,7 @@ function loadProjectObject(obj) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;">Version 57</p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;">Version 60</p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
@@ -39068,6 +41023,143 @@ function loadProjectObject(obj) {
     }
   });
   
+  // ============== HELP CENTER DRAG & RESIZE ==============
+  
+  const helpCenterContent = document.getElementById('helpCenterContent');
+  const helpCenterHeader = document.getElementById('helpCenterHeader');
+  
+  // Drag functionality
+  let isDragging = false;
+  let dragStartX, dragStartY, dragStartLeft, dragStartTop;
+  
+  helpCenterHeader.addEventListener('mousedown', (e) => {
+    // Don't drag if clicking on buttons
+    if (e.target.closest('button')) return;
+    
+    isDragging = true;
+    helpCenterContent.classList.add('dragging');
+    
+    const rect = helpCenterContent.getBoundingClientRect();
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragStartLeft = rect.left;
+    dragStartTop = rect.top;
+    
+    // If not already positioned, set initial position
+    if (!helpCenterContent.classList.contains('positioned')) {
+      helpCenterContent.classList.add('positioned');
+      helpCenterContent.style.left = dragStartLeft + 'px';
+      helpCenterContent.style.top = dragStartTop + 'px';
+    }
+    
+    e.preventDefault();
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    
+    const dx = e.clientX - dragStartX;
+    const dy = e.clientY - dragStartY;
+    
+    let newLeft = dragStartLeft + dx;
+    let newTop = dragStartTop + dy;
+    
+    // Keep within viewport bounds
+    const maxLeft = window.innerWidth - helpCenterContent.offsetWidth;
+    const maxTop = window.innerHeight - helpCenterContent.offsetHeight;
+    
+    newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+    newTop = Math.max(0, Math.min(newTop, maxTop));
+    
+    helpCenterContent.style.left = newLeft + 'px';
+    helpCenterContent.style.top = newTop + 'px';
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isDragging) {
+      isDragging = false;
+      helpCenterContent.classList.remove('dragging');
+    }
+  });
+  
+  // Resize functionality
+  let isResizing = false;
+  let resizeType = null;
+  let resizeStartX, resizeStartY, resizeStartWidth, resizeStartHeight, resizeStartLeft, resizeStartTop;
+  
+  document.querySelectorAll('.help-center-resize-handle').forEach(handle => {
+    handle.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizeType = handle.dataset.resize;
+      
+      const rect = helpCenterContent.getBoundingClientRect();
+      resizeStartX = e.clientX;
+      resizeStartY = e.clientY;
+      resizeStartWidth = rect.width;
+      resizeStartHeight = rect.height;
+      resizeStartLeft = rect.left;
+      resizeStartTop = rect.top;
+      
+      // If not already positioned, set initial position
+      if (!helpCenterContent.classList.contains('positioned')) {
+        helpCenterContent.classList.add('positioned');
+        helpCenterContent.style.left = resizeStartLeft + 'px';
+        helpCenterContent.style.top = resizeStartTop + 'px';
+      }
+      
+      helpCenterContent.classList.add('dragging');
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    
+    const dx = e.clientX - resizeStartX;
+    const dy = e.clientY - resizeStartY;
+    
+    const minWidth = 400;
+    const minHeight = 300;
+    const maxWidth = window.innerWidth - 40;
+    const maxHeight = window.innerHeight - 40;
+    
+    if (resizeType === 'right' || resizeType === 'corner') {
+      const newWidth = Math.max(minWidth, Math.min(resizeStartWidth + dx, maxWidth));
+      helpCenterContent.style.width = newWidth + 'px';
+      helpCenterContent.style.maxWidth = 'none';
+    }
+    
+    if (resizeType === 'bottom' || resizeType === 'corner') {
+      const newHeight = Math.max(minHeight, Math.min(resizeStartHeight + dy, maxHeight));
+      helpCenterContent.style.height = newHeight + 'px';
+      helpCenterContent.style.maxHeight = 'none';
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isResizing) {
+      isResizing = false;
+      resizeType = null;
+      helpCenterContent.classList.remove('dragging');
+    }
+  });
+  
+  // Reset position when closing
+  const originalCloseHelpCenter = closeHelpCenter;
+  closeHelpCenter = function() {
+    helpCenterContent.classList.remove('positioned', 'dragging');
+    helpCenterContent.style.left = '';
+    helpCenterContent.style.top = '';
+    helpCenterContent.style.width = '';
+    helpCenterContent.style.height = '';
+    helpCenterContent.style.maxWidth = '';
+    helpCenterContent.style.maxHeight = '';
+    originalCloseHelpCenter();
+  };
+  
+  // ============== END HELP CENTER DRAG & RESIZE ==============
+  
   // Keyboard shortcuts
   document.addEventListener('keydown', (e) => {
     // F1 to open Help Center
@@ -39203,6 +41295,167 @@ function loadProjectObject(obj) {
       }
     });
   }
+  
+  // ============== PATH EDIT MODE EVENT LISTENERS ==============
+  
+  // Edit Path Geometry button in inspector
+  document.getElementById('btnEditPathGeometry')?.addEventListener('click', () => {
+    // Access main script state via window
+    if (window.state?.selected?.type === 'edge') {
+      window.enterPathEditMode(window.state.selected.id);
+    } else {
+    }
+  });
+  
+  // Edit existing path button
+  document.getElementById('btnEditExistingPath')?.addEventListener('click', () => {
+    if (window.state?.selected?.type === 'edge') {
+      window.enterPathEditMode(window.state.selected.id);
+    }
+  });
+  
+  // Remove path button
+  document.getElementById('btnRemovePath')?.addEventListener('click', () => {
+    if (window.state?.selected?.type === 'edge') {
+      if (confirm('Remove the path geometry from this link? The link will be shown as a straight line.')) {
+        window.removePathFromLink(window.state.selected.id);
+      }
+    }
+  });
+  
+  // Path Edit Mode Banner buttons
+  document.getElementById('btnPathSaveExit')?.addEventListener('click', () => {
+    window.exitPathEditMode(true);
+  });
+  
+  document.getElementById('btnPathCancelExit')?.addEventListener('click', () => {
+    if (window.state?.pathEditMode?.hasUnsavedChanges) {
+      if (confirm('Discard unsaved changes to the path?')) {
+        window.exitPathEditMode(false);
+      }
+    } else {
+      window.exitPathEditMode(false);
+    }
+  });
+  
+  // Path Edit Control Panel method buttons
+  document.querySelectorAll('#pathEditControlPanel .method-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const method = btn.dataset.method;
+      
+      // Update active state
+      document.querySelectorAll('#pathEditControlPanel .method-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      
+      if (window.state?.pathEditMode) {
+        window.state.pathEditMode.editMethod = method;
+      }
+      
+      // Update instructions
+      const instructions = document.getElementById('pathEditInstructions');
+      if (instructions) {
+        switch (method) {
+          case 'manual':
+            instructions.innerHTML = '<strong>Manual Draw Mode:</strong> Click on the map to add waypoints. Click existing waypoints to remove them. Drag waypoints to reposition.';
+            // Enable map click for manual mode
+            if (window.mapLibreState?.map && window.enableManualPathDrawing) {
+              window.enableManualPathDrawing();
+            }
+            break;
+          case 'telegeography':
+            instructions.innerHTML = '<strong>Cable Database Import:</strong> Enter cable name to search...';
+            // Show Cable Database search interface
+            if (window.showCableDbSearch) {
+              window.showCableDbSearch();
+            }
+            break;
+          case 'kml-import':
+            instructions.innerHTML = '<strong>KML/GeoJSON Import:</strong> <input type="file" accept=".kml,.geojson,.json" id="pathKmlFileInput" style="font-size:11px;" />';
+            document.getElementById('pathKmlFileInput')?.addEventListener('change', window.handlePathKmlImport);
+            break;
+        }
+      }
+    });
+  });
+  
+  // Clear path button
+  document.getElementById('btnPathClear')?.addEventListener('click', () => {
+    if (window.state?.pathEditMode?.currentPath?.length > 0) {
+      if (confirm('Clear all waypoints from this path?')) {
+        window.state.pathEditMode.currentPath = [];
+        window.state.pathEditMode.hasUnsavedChanges = true;
+        if (window.updatePathEditStatus) window.updatePathEditStatus();
+        if (window.updateWaypointCount) window.updateWaypointCount();
+        if (window.renderPathEditingView) window.renderPathEditingView();
+      }
+    }
+  });
+  
+  // Undo last waypoint
+  document.getElementById('btnPathUndo')?.addEventListener('click', () => {
+    if (window.state?.pathEditMode?.currentPath?.length > 0) {
+      window.state.pathEditMode.currentPath.pop();
+      window.state.pathEditMode.hasUnsavedChanges = true;
+      if (window.updatePathEditStatus) window.updatePathEditStatus();
+      if (window.updateWaypointCount) window.updateWaypointCount();
+      if (window.renderPathEditingView) window.renderPathEditingView();
+    }
+  });
+  
+  // Save button in panel (same as Save & Exit in banner)
+  document.getElementById('btnPathSavePanel')?.addEventListener('click', () => {
+    window.exitPathEditMode(true);
+  });
+  
+  // Minimize path edit panel
+  document.getElementById('btnMinimizePathPanel')?.addEventListener('click', () => {
+    const panel = document.getElementById('pathEditControlPanel');
+    const btn = document.getElementById('btnMinimizePathPanel');
+    if (panel) {
+      panel.classList.toggle('minimized');
+      if (btn) {
+        btn.textContent = panel.classList.contains('minimized') ? '+' : '−';
+        btn.title = panel.classList.contains('minimized') ? 'Expand' : 'Minimize';
+      }
+    }
+  });
+  
+  // Make path edit panel draggable
+  (function() {
+    const panel = document.getElementById('pathEditControlPanel');
+    const header = document.getElementById('pathEditPanelHeader');
+    if (!panel || !header) return;
+    
+    let isDragging = false;
+    let startX, startY, startLeft, startBottom;
+    
+    header.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.control-header-btn')) return; // Don't drag when clicking buttons
+      isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = panel.getBoundingClientRect();
+      startLeft = rect.left;
+      startBottom = window.innerHeight - rect.bottom;
+      panel.style.transition = 'none';
+      e.preventDefault();
+    });
+    
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      panel.style.left = Math.max(0, startLeft + dx) + 'px';
+      panel.style.bottom = Math.max(0, startBottom - dy) + 'px';
+    });
+    
+    document.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        panel.style.transition = '';
+      }
+    });
+  })();
   
   console.log('[NexiMap] Main script fully loaded');
 })();
