@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.14 - CABLE SYSTEM BULK IMPORT WITH ENRICHED METADATA - 2025-02-04 -->
+<!-- NexiMap Studio v61.15 - CABLE SYSTEM NAME TO LINK TAGS - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -6590,6 +6590,9 @@
             </label>
             <div id="csMemberLinks" style="max-height:100px; overflow-y:auto; border:1px solid #d0d0d0; border-radius:4px; padding:4px; background:#fafafa; font-size:11px;">
               <div class="muted">No links assigned</div>
+            </div>
+            <div style="margin-top:6px;">
+              <button class="mini-btn" id="btnApplyCSNameToLinks" style="font-size:10px; padding:3px 8px;" title="Add cable system name to link tags">🏷️ Apply Name to Link Tags</button>
             </div>
           </div>
 
@@ -19672,15 +19675,31 @@ function loadProjectObject(obj) {
     }
     
     let count = 0;
+    const addedLinkIds = [];
     
     if (csAddMode === 'links') {
       csPendingItems.forEach(linkId => {
         const edge = findEdge(linkId);
         if (edge) {
           edge.cableSystemId = state.selectedCableSystem;
+          addedLinkIds.push(linkId);
           count++;
         }
       });
+      
+      // If links were added, show naming option dialog
+      if (count > 0) {
+        commit();
+        showToast(`Added ${count} links to "${cs.shortName}".`);
+        cancelAddMode();
+        updateCableSystemInspector();
+        updateCableNavigatorList();
+        render();
+        
+        // Show optional naming dialog
+        showAutoNameLinksDialog(cs, addedLinkIds);
+        return;
+      }
     } else if (csAddMode === 'nodes') {
       csPendingItems.forEach(nodeId => {
         const node = findNode(nodeId);
@@ -19703,6 +19722,58 @@ function loadProjectObject(obj) {
     updateCableSystemInspector();
     updateCableNavigatorList();
     render();
+  }
+
+  // Show dialog to optionally apply cable system name to newly added links
+  function showAutoNameLinksDialog(cs, linkIds) {
+    const links = linkIds.map(id => findEdge(id)).filter(Boolean);
+    const emptyTagLinks = links.filter(l => !l.tag || l.tag.trim() === '');
+    
+    // If all links already have tags, skip the dialog
+    if (emptyTagLinks.length === 0) return;
+    
+    const modal = document.createElement('div');
+    modal.id = 'autoNameLinksModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:11000; display:flex; align-items:center; justify-content:center;';
+    
+    modal.innerHTML = `
+      <div style="background:white; border-radius:12px; padding:20px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 12px 0; font-size:16px;">🏷️ Apply Cable System Name to Links?</h3>
+        <div style="font-size:13px; color:#666; margin-bottom:16px;">
+          ${emptyTagLinks.length} of ${links.length} link${links.length > 1 ? 's' : ''} ha${emptyTagLinks.length === 1 ? 's' : 've'} empty tag${emptyTagLinks.length > 1 ? 's' : ''}.<br>
+          Would you like to set the tag to "<strong>${cs.shortName}</strong>"?
+        </div>
+        
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button id="btnSkipAutoName" class="btn" style="padding:8px 16px;">No, Skip</button>
+          <button id="btnApplyAutoName" class="btn primary" style="padding:8px 16px;">Yes, Apply</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    modal.querySelector('#btnSkipAutoName').addEventListener('click', () => modal.remove());
+    modal.querySelector('#btnApplyAutoName').addEventListener('click', () => {
+      let count = 0;
+      emptyTagLinks.forEach(link => {
+        link.tag = cs.shortName;
+        count++;
+      });
+      
+      if (count > 0) {
+        commit();
+        render();
+        updateInspector();
+        showToast(`Applied "${cs.shortName}" to ${count} link tag${count > 1 ? 's' : ''}.`);
+      }
+      modal.remove();
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
   }
 
   // Handle canvas clicks during add mode
@@ -19751,6 +19822,135 @@ function loadProjectObject(obj) {
   }
   if (btnCancelAddToCS) {
     btnCancelAddToCS.addEventListener('click', cancelAddMode);
+  }
+
+  // Apply Cable System name to Link Tags button
+  const btnApplyCSNameToLinks = document.getElementById('btnApplyCSNameToLinks');
+  if (btnApplyCSNameToLinks) {
+    btnApplyCSNameToLinks.addEventListener('click', () => {
+      if (!state.selectedCableSystem) {
+        showToast('No cable system selected.');
+        return;
+      }
+      showApplyCSNameDialog();
+    });
+  }
+
+  function showApplyCSNameDialog() {
+    const cs = findCableSystem(state.selectedCableSystem);
+    if (!cs) return;
+    
+    const links = getCableSystemLinks(cs.id);
+    if (links.length === 0) {
+      showToast('No links assigned to this cable system.');
+      return;
+    }
+    
+    // Count links with empty vs non-empty tags
+    const emptyTagLinks = links.filter(l => !l.tag || l.tag.trim() === '');
+    const nonEmptyTagLinks = links.filter(l => l.tag && l.tag.trim() !== '');
+    
+    // Create dialog
+    const modal = document.createElement('div');
+    modal.id = 'applyCSNameModal';
+    modal.style.cssText = 'position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:11000; display:flex; align-items:center; justify-content:center;';
+    
+    modal.innerHTML = `
+      <div style="background:white; border-radius:12px; padding:20px; max-width:450px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+        <h3 style="margin:0 0 12px 0; font-size:16px;">🏷️ Apply Cable System Name to Link Tags</h3>
+        <div style="font-size:13px; color:#666; margin-bottom:16px;">
+          Cable System: <strong>${cs.shortName}</strong> (${cs.name})<br>
+          ${links.length} link${links.length > 1 ? 's' : ''} assigned
+          ${emptyTagLinks.length > 0 ? `<br><span style="color:#10b981;">• ${emptyTagLinks.length} with empty tag</span>` : ''}
+          ${nonEmptyTagLinks.length > 0 ? `<br><span style="color:#f59e0b;">• ${nonEmptyTagLinks.length} with existing tag</span>` : ''}
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px; font-weight:500;">Name to apply:</label>
+          <select id="csNameToApply" style="width:100%; padding:8px; border:1px solid #d0d0d0; border-radius:6px; margin-top:4px; font-size:13px;">
+            <option value="${cs.shortName}">${cs.shortName} (Short Name)</option>
+            <option value="${cs.name}">${cs.name} (Full Name)</option>
+          </select>
+        </div>
+        
+        <div style="margin-bottom:16px;">
+          <label style="font-size:12px; font-weight:500;">Apply to:</label>
+          <div style="margin-top:6px;">
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+              <input type="radio" name="applyMode" value="empty" checked />
+              <span style="font-size:13px;">Only links with empty tags (${emptyTagLinks.length})</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+              <input type="radio" name="applyMode" value="append" />
+              <span style="font-size:13px;">Append to existing tags (all ${links.length})</span>
+            </label>
+            <label style="display:flex; align-items:center; gap:8px; padding:6px 0; cursor:pointer;">
+              <input type="radio" name="applyMode" value="replace" />
+              <span style="font-size:13px;">Replace all tags (all ${links.length})</span>
+            </label>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:8px; justify-content:flex-end;">
+          <button id="btnCancelApplyCSName" class="btn" style="padding:8px 16px;">Cancel</button>
+          <button id="btnConfirmApplyCSName" class="btn primary" style="padding:8px 16px;">Apply</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Event handlers
+    modal.querySelector('#btnCancelApplyCSName').addEventListener('click', () => modal.remove());
+    modal.querySelector('#btnConfirmApplyCSName').addEventListener('click', () => {
+      const nameToApply = modal.querySelector('#csNameToApply').value;
+      const applyMode = modal.querySelector('input[name="applyMode"]:checked').value;
+      
+      let count = 0;
+      links.forEach(link => {
+        const currentTag = (link.tag || '').trim();
+        
+        if (applyMode === 'empty') {
+          // Only apply to empty tags
+          if (!currentTag) {
+            link.tag = nameToApply;
+            count++;
+          }
+        } else if (applyMode === 'append') {
+          // Append to existing (with separator if not empty)
+          if (currentTag) {
+            // Check if name is already in the tag
+            if (!currentTag.includes(nameToApply)) {
+              link.tag = currentTag + ' | ' + nameToApply;
+              count++;
+            }
+          } else {
+            link.tag = nameToApply;
+            count++;
+          }
+        } else if (applyMode === 'replace') {
+          // Replace all
+          link.tag = nameToApply;
+          count++;
+        }
+      });
+      
+      if (count > 0) {
+        commit();
+        render();
+        updateInspector();
+        showToast(`Applied "${nameToApply}" to ${count} link${count > 1 ? 's' : ''}.`);
+      } else {
+        showToast('No links were modified.');
+      }
+      
+      modal.remove();
+    });
+    
+    // Close on backdrop click
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
   }
 
   function highlightItemOnCanvas(type, id) {
