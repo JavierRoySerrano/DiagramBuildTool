@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.12 - WITH SEGMENT SELECTOR - 2025-02-04 -->
+<!-- NexiMap Studio v61.12b - WITH SEGMENT SELECTOR + SCROLLABLE PANEL - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -207,6 +207,8 @@
     }
     #pathEditControlPanel .control-body {
       padding: 16px;
+      max-height: calc(100vh - 250px);
+      overflow-y: auto;
     }
     #pathEditControlPanel .edit-methods {
       display: flex;
@@ -32645,7 +32647,7 @@ function loadProjectObject(obj) {
           </select>
         </div>
         
-        <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 80px; max-height: 150px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+        <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 60px; max-height: 100px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
           Select a cable to see details.<br>
           <span style="font-size: 10px; color: #888;">🔀 = Multiple segments (you can select which ones to import)</span>
         </div>
