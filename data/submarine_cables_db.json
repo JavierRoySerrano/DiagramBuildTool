@@ -169,7 +169,8 @@
       ],
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 400
+      "capacityTbps": 400,
+      "shortName": "Amiti\u00e9"
     },
     "marea": {
       "id": "marea",
@@ -237,7 +238,8 @@
       },
       "status": "Active",
       "rfsYear": 2018,
-      "capacityTbps": 200
+      "capacityTbps": 200,
+      "shortName": "MAREA"
     },
     "dunant": {
       "id": "dunant",
@@ -303,7 +305,8 @@
       },
       "status": "Active",
       "rfsYear": 2021,
-      "capacityTbps": 250
+      "capacityTbps": 250,
+      "shortName": "Dunant"
     },
     "havfrue-aec-2": {
       "id": "havfrue-aec-2",
@@ -416,7 +419,8 @@
       ],
       "status": "Active",
       "rfsYear": 2020,
-      "capacityTbps": 108
+      "capacityTbps": 108,
+      "shortName": "Havfrue"
     },
     "aec-1": {
       "id": "aec-1",
@@ -478,7 +482,8 @@
       },
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 100
+      "capacityTbps": 100,
+      "shortName": "AEC-1"
     },
     "seabras-1": {
       "id": "seabras-1",
@@ -540,7 +545,8 @@
       },
       "status": "Active",
       "rfsYear": 2018,
-      "capacityTbps": 72
+      "capacityTbps": 72,
+      "shortName": "SEABRAS-1"
     },
     "seacom": {
       "id": "seacom",
@@ -698,7 +704,8 @@
       ],
       "status": "Active",
       "rfsYear": 2009,
-      "capacityTbps": 1.5
+      "capacityTbps": 1.5,
+      "shortName": "SEACOM"
     },
     "seamewe-4": {
       "id": "seamewe-4",
@@ -788,7 +795,8 @@
       },
       "status": "Active",
       "rfsYear": 2005,
-      "capacityTbps": 1.28
+      "capacityTbps": 1.28,
+      "shortName": "SMW-4"
     },
     "peace": {
       "id": "peace",
@@ -915,7 +923,8 @@
       ],
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 96
+      "capacityTbps": 96,
+      "shortName": "PEACE"
     },
     "seamewe-5": {
       "id": "seamewe-5",
@@ -1001,7 +1010,8 @@
       },
       "status": "Active",
       "rfsYear": 2016,
-      "capacityTbps": 24
+      "capacityTbps": 24,
+      "shortName": "SMW-5"
     },
     "seamewe-6": {
       "id": "seamewe-6",
@@ -1158,7 +1168,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 126
+      "capacityTbps": 126,
+      "shortName": "SMW-6"
     },
     "imewe": {
       "id": "imewe",
@@ -1284,7 +1295,8 @@
       ],
       "status": "Active",
       "rfsYear": 2010,
-      "capacityTbps": 3.84
+      "capacityTbps": 3.84,
+      "shortName": "IMEWE"
     },
     "aae-1": {
       "id": "aae-1",
@@ -1378,7 +1390,8 @@
       },
       "status": "Active",
       "rfsYear": 2017,
-      "capacityTbps": 40
+      "capacityTbps": 40,
+      "shortName": "AAE-1"
     },
     "blue": {
       "id": "blue",
@@ -1497,7 +1510,8 @@
       ],
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 500
+      "capacityTbps": 500,
+      "shortName": "Blue"
     },
     "raman": {
       "id": "raman",
@@ -1763,7 +1777,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 200
+      "capacityTbps": 200,
+      "shortName": "Raman"
     },
     "iex": {
       "id": "iex",
@@ -1837,7 +1852,8 @@
       },
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 200
+      "capacityTbps": 200,
+      "shortName": "IEX"
     },
     "iax": {
       "id": "iax",
@@ -1939,7 +1955,8 @@
       ],
       "status": "Active",
       "rfsYear": 2023,
-      "capacityTbps": 200
+      "capacityTbps": 200,
+      "shortName": "IAX"
     },
     "mist": {
       "id": "mist",
@@ -2001,7 +2018,8 @@
       },
       "status": "Planned",
       "rfsYear": 2026,
-      "capacityTbps": 80
+      "capacityTbps": 80,
+      "shortName": "MIST"
     },
     "bbg": {
       "id": "bbg",
@@ -2123,7 +2141,8 @@
       ],
       "status": "Active",
       "rfsYear": 2019,
-      "capacityTbps": 16
+      "capacityTbps": 16,
+      "shortName": "BBG"
     },
     "falcon": {
       "id": "falcon",
@@ -2185,7 +2204,8 @@
       },
       "status": "Active",
       "rfsYear": 2006,
-      "capacityTbps": 2.56
+      "capacityTbps": 2.56,
+      "shortName": "FALCON"
     },
     "hawk": {
       "id": "hawk",
@@ -2239,7 +2259,8 @@
       },
       "status": "Active",
       "rfsYear": 2019,
-      "capacityTbps": 6.0
+      "capacityTbps": 6.0,
+      "shortName": "HAWK"
     },
     "tgn-gulf": {
       "id": "tgn-gulf",
@@ -2289,7 +2310,8 @@
       },
       "status": "Active",
       "rfsYear": 2003,
-      "capacityTbps": 1.28
+      "capacityTbps": 1.28,
+      "shortName": "TGN-Gulf"
     },
     "tic": {
       "id": "tic",
@@ -2347,7 +2369,8 @@
       },
       "status": "Active",
       "rfsYear": 2008,
-      "capacityTbps": 10
+      "capacityTbps": 10,
+      "shortName": "TIC"
     },
     "i2i": {
       "id": "i2i",
@@ -2402,7 +2425,8 @@
       },
       "status": "Active",
       "rfsYear": 2003,
-      "capacityTbps": 8.4
+      "capacityTbps": 8.4,
+      "shortName": "i2i"
     },
     "sjc2": {
       "id": "sjc2",
@@ -2468,7 +2492,8 @@
       },
       "status": "Active",
       "rfsYear": 2021,
-      "capacityTbps": 126
+      "capacityTbps": 126,
+      "shortName": "SJC2"
     },
     "tgn-ia": {
       "id": "tgn-ia",
@@ -2522,7 +2547,8 @@
       },
       "status": "Active",
       "rfsYear": 2002,
-      "capacityTbps": 2.56
+      "capacityTbps": 2.56,
+      "shortName": "TGN-IA"
     },
     "aag": {
       "id": "aag",
@@ -2592,7 +2618,8 @@
       },
       "status": "Active",
       "rfsYear": 2009,
-      "capacityTbps": 2.88
+      "capacityTbps": 2.88,
+      "shortName": "AAG"
     },
     "adc": {
       "id": "adc",
@@ -2657,7 +2684,8 @@
       },
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 140
+      "capacityTbps": 140,
+      "shortName": "ADC"
     },
     "echo": {
       "id": "echo",
@@ -2768,7 +2796,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2026,
-      "capacityTbps": 144
+      "capacityTbps": 144,
+      "shortName": "Echo"
     },
     "bifrost": {
       "id": "bifrost",
@@ -2888,7 +2917,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 144
+      "capacityTbps": 144,
+      "shortName": "Bifrost"
     },
     "juno": {
       "id": "juno",
@@ -2994,7 +3024,8 @@
       ],
       "status": "Planned",
       "rfsYear": 2026,
-      "capacityTbps": 350
+      "capacityTbps": 350,
+      "shortName": "JUNO"
     },
     "jupiter": {
       "id": "jupiter",
@@ -3128,7 +3159,8 @@
       ],
       "status": "Active",
       "rfsYear": 2020,
-      "capacityTbps": 60
+      "capacityTbps": 60,
+      "shortName": "Jupiter"
     },
     "faster": {
       "id": "faster",
@@ -3227,7 +3259,8 @@
       ],
       "status": "Active",
       "rfsYear": 2016,
-      "capacityTbps": 60
+      "capacityTbps": 60,
+      "shortName": "FASTER"
     },
     "tgn-pacific": {
       "id": "tgn-pacific",
@@ -3321,7 +3354,8 @@
       ],
       "status": "Active",
       "rfsYear": 2002,
-      "capacityTbps": 2.56
+      "capacityTbps": 2.56,
+      "shortName": "TGN-Pacific"
     },
     "e2a": {
       "id": "e2a",
@@ -3494,7 +3528,8 @@
       ],
       "status": "Active",
       "rfsYear": 2025,
-      "capacityTbps": 108
+      "capacityTbps": 108,
+      "shortName": "E2A"
     },
     "unity": {
       "id": "unity",
@@ -3593,7 +3628,8 @@
       ],
       "status": "Active",
       "rfsYear": 2010,
-      "capacityTbps": 7.68
+      "capacityTbps": 7.68,
+      "shortName": "Unity"
     },
     "ace": {
       "id": "ace",
@@ -3723,7 +3759,8 @@
       ],
       "status": "Active",
       "rfsYear": 2012,
-      "capacityTbps": 12.8
+      "capacityTbps": 12.8,
+      "shortName": "ACE"
     },
     "main-one": {
       "id": "main-one",
@@ -3793,7 +3830,8 @@
       },
       "status": "Active",
       "rfsYear": 2010,
-      "capacityTbps": 10
+      "capacityTbps": 10,
+      "shortName": "MainOne"
     },
     "wacs": {
       "id": "wacs",
@@ -3887,7 +3925,8 @@
       },
       "status": "Active",
       "rfsYear": 2012,
-      "capacityTbps": 14.5
+      "capacityTbps": 14.5,
+      "shortName": "WACS"
     },
     "equiano": {
       "id": "equiano",
@@ -3965,7 +4004,8 @@
       },
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 200
+      "capacityTbps": 200,
+      "shortName": "Equiano"
     },
     "2africa": {
       "id": "2africa",
@@ -4141,7 +4181,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2024,
-      "capacityTbps": 180
+      "capacityTbps": 180,
+      "shortName": "2Africa"
     },
     "indigo-west": {
       "id": "indigo-west",
@@ -4199,7 +4240,8 @@
       },
       "status": "Active",
       "rfsYear": 2019,
-      "capacityTbps": 36
+      "capacityTbps": 36,
+      "shortName": "Indigo-W"
     },
     "indigo-central": {
       "id": "indigo-central",
@@ -4261,7 +4303,8 @@
       },
       "status": "Active",
       "rfsYear": 2019,
-      "capacityTbps": 36
+      "capacityTbps": 36,
+      "shortName": "Indigo-C"
     },
     "asc": {
       "id": "asc",
@@ -4320,7 +4363,8 @@
       },
       "status": "Active",
       "rfsYear": 2018,
-      "capacityTbps": 40
+      "capacityTbps": 40,
+      "shortName": "ASC"
     },
     "southern-cross-next": {
       "id": "southern-cross-next",
@@ -4441,7 +4485,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 72
+      "capacityTbps": 72,
+      "shortName": "SX NEXT"
     },
     "sccn": {
       "id": "sccn",
@@ -4574,7 +4619,8 @@
       ],
       "status": "Active",
       "rfsYear": 2000,
-      "capacityTbps": 2.4
+      "capacityTbps": 2.4,
+      "shortName": "SCCN"
     },
     "globe": {
       "id": "globe",
@@ -4620,7 +4666,8 @@
       },
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 80
+      "capacityTbps": 80,
+      "shortName": "Globe"
     },
     "firmina": {
       "id": "firmina",
@@ -5227,7 +5274,8 @@
       ],
       "status": "Active",
       "rfsYear": 2023,
-      "capacityTbps": 144
+      "capacityTbps": 144,
+      "shortName": "Firmina"
     },
     "amx-1": {
       "id": "amx-1",
@@ -5337,7 +5385,8 @@
       ],
       "status": "Active",
       "rfsYear": 2014,
-      "capacityTbps": 55
+      "capacityTbps": 55,
+      "shortName": "AMX-1"
     },
     "brusa": {
       "id": "brusa",
@@ -5436,7 +5485,8 @@
       ],
       "status": "Active",
       "rfsYear": 2018,
-      "capacityTbps": 70
+      "capacityTbps": 70,
+      "shortName": "BRUSA"
     },
     "ellalink": {
       "id": "ellalink",
@@ -5494,7 +5544,8 @@
       },
       "status": "Active",
       "rfsYear": 2021,
-      "capacityTbps": 100
+      "capacityTbps": 100,
+      "shortName": "EllaLink"
     },
     "medusa": {
       "id": "medusa",
@@ -6003,7 +6054,8 @@
       ],
       "status": "Under Construction",
       "rfsYear": 2025,
-      "capacityTbps": 240
+      "capacityTbps": 240,
+      "shortName": "Medusa"
     },
     "ice-iv": {
       "id": "ice-iv",
@@ -6413,7 +6465,8 @@
       ],
       "status": "Planned",
       "rfsYear": 2027,
-      "capacityTbps": 80
+      "capacityTbps": 80,
+      "shortName": "ICE-IV"
     },
     "plcn": {
       "id": "plcn",
@@ -6547,7 +6600,8 @@
       ],
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 144
+      "capacityTbps": 144,
+      "shortName": "PLCN"
     },
     "tgn-wer": {
       "id": "tgn-wer",
@@ -6700,7 +6754,8 @@
       ],
       "status": "Active",
       "rfsYear": 2002,
-      "capacityTbps": 5.12
+      "capacityTbps": 5.12,
+      "shortName": "TGN-WER"
     },
     "apcn-2": {
       "id": "apcn-2",
@@ -7101,7 +7156,8 @@
       ],
       "status": "Active",
       "rfsYear": 2001,
-      "capacityTbps": 2.56
+      "capacityTbps": 2.56,
+      "shortName": "APCN-2"
     },
     "eac-c2c": {
       "id": "eac-c2c",
@@ -7501,7 +7557,8 @@
       ],
       "status": "Active",
       "rfsYear": 2008,
-      "capacityTbps": 17.92
+      "capacityTbps": 17.92,
+      "shortName": "EAC-C2C"
     },
     "grace-hopper": {
       "id": "grace-hopper",
@@ -7631,7 +7688,8 @@
       ],
       "status": "Active",
       "rfsYear": 2022,
-      "capacityTbps": 352
+      "capacityTbps": 352,
+      "shortName": "Grace Hopper"
     },
     "tgn-a-south": {
       "id": "tgn-a-south",
@@ -7751,7 +7809,8 @@
           "approxLength_km": 2000,
           "waypointCount": 5
         }
-      ]
+      ],
+      "shortName": "TGN-A South"
     }
   }
 }
