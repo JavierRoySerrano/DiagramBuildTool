@@ -32472,17 +32472,13 @@ function loadProjectObject(obj) {
     }
     
     for (const [key, cable] of Object.entries(dbData.cables)) {
-      // Extract coordinates from GeoJSON geometry
-      const coordinates = extractCoordinatesFromGeometry(cable.geometry);
-      
-      if (coordinates.length === 0) {
-        console.warn(`[NexiMap] No coordinates found for cable: ${cable.name}`);
-        continue;
-      }
-      
       // Build description from landing points
       const landingPointNames = cable.landingPoints?.map(lp => `${lp.name}, ${lp.country}`).join(' → ') || '';
       const ownersList = cable.owners?.join(', ') || 'Unknown';
+      
+      // Check if this is a MultiLineString with multiple segments
+      const isMultiSegment = cable.geometry?.type === 'MultiLineString' && 
+                             cable.geometry?.coordinates?.length > 1;
       
       cables[key] = {
         id: cable.id || key,
@@ -32497,8 +32493,10 @@ function loadProjectObject(obj) {
         fiberPairs: cable.fiberPairs || 0,
         designCapacity: cable.designCapacity || 'Unknown',
         landingPoints: cable.landingPoints || [],
-        coordinates: coordinates,
-        originalGeometry: cable.geometry
+        geometry: cable.geometry,
+        segments: cable.segments || null, // Named segments if available
+        isMultiSegment: isMultiSegment,
+        segmentCount: isMultiSegment ? cable.geometry.coordinates.length : 1
       };
     }
     
@@ -32506,7 +32504,8 @@ function loadProjectObject(obj) {
   }
   
   // Extract coordinates from GeoJSON geometry (LineString or MultiLineString)
-  function extractCoordinatesFromGeometry(geometry) {
+  // Can extract specific segments if selectedSegments array is provided
+  function extractCoordinatesFromGeometry(geometry, selectedSegments = null) {
     if (!geometry || !geometry.coordinates) {
       return [];
     }
@@ -32518,22 +32517,26 @@ function loadProjectObject(obj) {
       allCoords = geometry.coordinates.map(coord => [coord[0], coord[1]]);
     } else if (geometry.type === 'MultiLineString') {
       // MultiLineString: [[[lng, lat], ...], [[lng, lat], ...], ...]
-      // Flatten all line segments into a single path
-      // We'll concatenate them, removing duplicate junction points
-      for (let i = 0; i < geometry.coordinates.length; i++) {
-        const segment = geometry.coordinates[i];
-        for (let j = 0; j < segment.length; j++) {
-          const coord = [segment[j][0], segment[j][1]];
-          
-          // Skip if it's the same as the last point (junction point)
-          if (allCoords.length > 0) {
-            const last = allCoords[allCoords.length - 1];
-            if (Math.abs(last[0] - coord[0]) < 0.0001 && Math.abs(last[1] - coord[1]) < 0.0001) {
-              continue;
+      // If selectedSegments is provided, only include those segments
+      const segmentsToInclude = selectedSegments || 
+        Array.from({length: geometry.coordinates.length}, (_, i) => i);
+      
+      for (const segmentIndex of segmentsToInclude) {
+        if (segmentIndex >= 0 && segmentIndex < geometry.coordinates.length) {
+          const segment = geometry.coordinates[segmentIndex];
+          for (let j = 0; j < segment.length; j++) {
+            const coord = [segment[j][0], segment[j][1]];
+            
+            // Skip if it's the same as the last point (junction point)
+            if (allCoords.length > 0) {
+              const last = allCoords[allCoords.length - 1];
+              if (Math.abs(last[0] - coord[0]) < 0.0001 && Math.abs(last[1] - coord[1]) < 0.0001) {
+                continue;
+              }
             }
+            
+            allCoords.push(coord);
           }
-          
-          allCoords.push(coord);
         }
       }
     }
@@ -32566,10 +32569,18 @@ function loadProjectObject(obj) {
     return result;
   }
   
+  // Currently selected cable for segment selection
+  let currentSelectedCable = null;
+  let currentSelectedSegments = [];
+  
   // Show Cable Database search interface
   async function showCableDbSearch() {
     const instructions = document.getElementById('pathEditInstructions');
     if (!instructions) return;
+    
+    // Reset selection state
+    currentSelectedCable = null;
+    currentSelectedSegments = [];
     
     // Show loading state
     instructions.innerHTML = `
@@ -32605,7 +32616,8 @@ function loadProjectObject(obj) {
       
       // Build cable list HTML (alphabetically sorted)
       const cableOptions = sortedCables.map(([key, cable]) => {
-        return `<option value="${key}" data-region="${cable.region}">${cable.name}</option>`;
+        const multiIcon = cable.isMultiSegment ? ' 🔀' : '';
+        return `<option value="${key}" data-region="${cable.region}">${cable.name}${multiIcon}</option>`;
       }).join('');
       
       instructions.innerHTML = `
@@ -32632,8 +32644,13 @@ function loadProjectObject(obj) {
           </select>
         </div>
         
-        <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 80px; max-height: 120px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
-          Select a cable to see details.
+        <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 80px; max-height: 150px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
+          Select a cable to see details.<br>
+          <span style="font-size: 10px; color: #888;">🔀 = Multiple segments (you can select which ones to import)</span>
+        </div>
+        
+        <div id="segmentSelectorContainer" style="display: none; margin-bottom: 10px;">
+          <!-- Segment checkboxes will be inserted here -->
         </div>
         
         <button id="btnCableDbImport" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 500;" disabled>
@@ -32671,6 +32688,7 @@ function loadProjectObject(obj) {
     const select = document.getElementById('cableDbSelect');
     const importBtn = document.getElementById('btnCableDbImport');
     const infoDiv = document.getElementById('cableDbInfo');
+    const segmentContainer = document.getElementById('segmentSelectorContainer');
     
     // Filter function
     function filterCables() {
@@ -32705,6 +32723,7 @@ function loadProjectObject(obj) {
       const cableKey = select.value;
       if (cableKey && cables[cableKey]) {
         const cable = cables[cableKey];
+        currentSelectedCable = cable;
         
         // Build landing points list
         const landingPointsHtml = cable.landingPoints.length > 0
@@ -32714,6 +32733,7 @@ function loadProjectObject(obj) {
         infoDiv.innerHTML = `
           <div style="margin-bottom: 6px;">
             <strong style="font-size: 13px; color: #111;">${cable.name}</strong>
+            ${cable.isMultiSegment ? '<span style="font-size: 10px; background: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 3px; margin-left: 6px;">🔀 Multi-segment</span>' : ''}
             <span style="font-size: 10px; color: #888; margin-left: 6px;">${cable.region}</span>
           </div>
           <div style="margin-bottom: 4px; font-size: 10px;">
@@ -32731,22 +32751,89 @@ function loadProjectObject(obj) {
             <span style="color: #666;">Landing Points:</span><br>
             ${landingPointsHtml}
           </div>
-          <div style="margin-top: 4px; font-size: 9px; color: #aaa;">
-            ${cable.coordinates.length} waypoints in geometry
-          </div>
         `;
+        
+        // Show segment selector if this is a multi-segment cable
+        if (cable.isMultiSegment && segmentContainer) {
+          // Reset selected segments - select all by default
+          currentSelectedSegments = Array.from({length: cable.segmentCount}, (_, i) => i);
+          
+          // Build segment checkboxes
+          let segmentHtml = `
+            <div style="font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #374151;">
+              📐 Select Segments to Import:
+              <button id="btnSelectAllSegments" style="margin-left: 8px; font-size: 10px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">All</button>
+              <button id="btnSelectNoneSegments" style="margin-left: 4px; font-size: 10px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">None</button>
+            </div>
+            <div style="max-height: 100px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 4px; padding: 6px; background: #fff;">
+          `;
+          
+          for (let i = 0; i < cable.segmentCount; i++) {
+            const segmentName = cable.segments?.[i]?.name || `Segment ${i + 1}`;
+            const coordCount = cable.geometry.coordinates[i]?.length || 0;
+            segmentHtml += `
+              <label style="display: flex; align-items: center; gap: 6px; padding: 3px 0; cursor: pointer; font-size: 11px;">
+                <input type="checkbox" class="segment-checkbox" data-index="${i}" checked style="cursor: pointer;">
+                <span>${segmentName}</span>
+                <span style="color: #999; font-size: 9px;">(${coordCount} pts)</span>
+              </label>
+            `;
+          }
+          
+          segmentHtml += `</div>`;
+          segmentContainer.innerHTML = segmentHtml;
+          segmentContainer.style.display = 'block';
+          
+          // Set up segment checkbox handlers
+          segmentContainer.querySelectorAll('.segment-checkbox').forEach(cb => {
+            cb.addEventListener('change', () => {
+              updateSelectedSegments();
+            });
+          });
+          
+          // Select All button
+          document.getElementById('btnSelectAllSegments')?.addEventListener('click', () => {
+            segmentContainer.querySelectorAll('.segment-checkbox').forEach(cb => cb.checked = true);
+            updateSelectedSegments();
+          });
+          
+          // Select None button
+          document.getElementById('btnSelectNoneSegments')?.addEventListener('click', () => {
+            segmentContainer.querySelectorAll('.segment-checkbox').forEach(cb => cb.checked = false);
+            updateSelectedSegments();
+          });
+          
+        } else if (segmentContainer) {
+          segmentContainer.style.display = 'none';
+          currentSelectedSegments = [];
+        }
+        
         importBtn.disabled = false;
       } else {
-        infoDiv.innerHTML = 'Select a cable to see details.';
+        infoDiv.innerHTML = 'Select a cable to see details.<br><span style="font-size: 10px; color: #888;">🔀 = Multiple segments (you can select which ones to import)</span>';
         importBtn.disabled = true;
+        if (segmentContainer) segmentContainer.style.display = 'none';
       }
     });
+    
+    // Update selected segments from checkboxes
+    function updateSelectedSegments() {
+      currentSelectedSegments = [];
+      segmentContainer?.querySelectorAll('.segment-checkbox:checked').forEach(cb => {
+        currentSelectedSegments.push(parseInt(cb.dataset.index));
+      });
+      
+      // Update import button state
+      if (importBtn) {
+        importBtn.disabled = currentSelectedCable?.isMultiSegment && currentSelectedSegments.length === 0;
+      }
+    }
     
     // Double-click to import
     select?.addEventListener('dblclick', () => {
       const cableKey = select.value;
       if (cableKey && cables[cableKey]) {
-        importCableFromDb(cables[cableKey]);
+        importCableFromDb(cables[cableKey], currentSelectedSegments);
       }
     });
     
@@ -32754,23 +32841,35 @@ function loadProjectObject(obj) {
     importBtn?.addEventListener('click', () => {
       const cableKey = select?.value;
       if (cableKey && cables[cableKey]) {
-        importCableFromDb(cables[cableKey]);
+        importCableFromDb(cables[cableKey], currentSelectedSegments);
       }
     });
   }
   
   // Import a cable from the database
-  function importCableFromDb(cable) {
-    if (!cable || !cable.coordinates || cable.coordinates.length === 0) {
-      showToast('Invalid cable data - no coordinates found');
+  function importCableFromDb(cable, selectedSegments = null) {
+    if (!cable || !cable.geometry) {
+      showToast('Invalid cable data - no geometry found');
+      return;
+    }
+    
+    // Extract coordinates, optionally filtering by selected segments
+    const segmentsToUse = (cable.isMultiSegment && selectedSegments && selectedSegments.length > 0) 
+      ? selectedSegments 
+      : null;
+    
+    let waypoints = extractCoordinatesFromGeometry(cable.geometry, segmentsToUse);
+    
+    if (waypoints.length === 0) {
+      showToast('No coordinates found for selected segments');
       return;
     }
     
     // Reduce waypoints if there are too many
-    let waypoints = cable.coordinates;
     if (waypoints.length > 150) {
+      const originalCount = waypoints.length;
       waypoints = reduceWaypoints(waypoints, 150);
-      console.log(`[NexiMap] Reduced waypoints from ${cable.coordinates.length} to ${waypoints.length}`);
+      console.log(`[NexiMap] Reduced waypoints from ${originalCount} to ${waypoints.length}`);
     }
     
     // Apply to current path
@@ -32783,12 +32882,22 @@ function loadProjectObject(obj) {
     if (edge) {
       edge.pathCableRef = cable.name;
       edge.pathCableId = cable.id;
+      if (segmentsToUse) {
+        edge.pathCableSegments = segmentsToUse;
+      }
     }
     
     // Update UI
     updatePathEditStatus();
     updateWaypointCount();
     renderPathEditingView();
+    
+    // Build segment info text
+    let segmentInfo = '';
+    if (cable.isMultiSegment && segmentsToUse) {
+      const segmentNames = segmentsToUse.map(i => cable.segments?.[i]?.name || `Segment ${i + 1}`).join(', ');
+      segmentInfo = `<br><span style="color: #888;">Segments: ${segmentNames}</span>`;
+    }
     
     // Update instructions area with success message
     const instructions = document.getElementById('pathEditInstructions');
@@ -32801,6 +32910,7 @@ function loadProjectObject(obj) {
           <strong>${waypoints.length} waypoints</strong> loaded<br>
           <span style="color: #888;">${cable.region} • RFS ${cable.rfs} • ${cable.length}</span><br>
           <span style="color: #888;">${cable.ownersText}</span>
+          ${segmentInfo}
         </div>
         <div style="font-size: 11px; color: #666; margin-top: 8px;">
           Click <strong>Save</strong> to apply this path, or switch to <strong>Manual</strong> mode to edit waypoints.
@@ -32811,7 +32921,10 @@ function loadProjectObject(obj) {
       `;
     }
     
-    showToast(`Imported ${waypoints.length} waypoints from ${cable.name}`);
+    const segmentText = cable.isMultiSegment && segmentsToUse 
+      ? ` (${segmentsToUse.length} of ${cable.segmentCount} segments)` 
+      : '';
+    showToast(`Imported ${waypoints.length} waypoints from ${cable.name}${segmentText}`);
   }
   
   // Expose functions globally
