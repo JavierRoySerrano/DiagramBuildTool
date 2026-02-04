@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.25 - IMPORT MODAL WITH API DATA SOURCE TOGGLE - 2025-02-04 -->
+<!-- NexiMap Studio v61.24 - CLOUDFLARE WORKER API PROXY FOR TELEGEOGRAPHY - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -6870,26 +6870,21 @@
       <div style="padding:16px 20px; border-bottom:1px solid #e0e0e0; display:flex; justify-content:space-between; align-items:center;">
         <div>
           <h3 style="margin:0; font-size:18px;">📥 Import Cable Systems</h3>
-          <div style="font-size:12px; color:#666; margin-top:4px;">Select cables to create as Cable System objects with full metadata</div>
+          <div style="font-size:12px; color:#666; margin-top:4px;">Select cables to import as Cable System objects</div>
         </div>
         <button id="btnCloseCsBulkImport" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666; padding:0 8px;">&times;</button>
       </div>
       
-      <!-- Data Source Toggle -->
-      <div style="padding:12px 20px; border-bottom:1px solid #e0e0e0; background:#f0f9ff;">
-        <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <span style="font-size:12px; font-weight:600; color:#0369a1;">Data Source:</span>
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid transparent; background:white;" id="labelSourceLocal">
-            <input type="radio" name="csBulkSource" id="csBulkSourceLocal" value="local" checked style="margin:0;" />
-            <span style="font-size:12px;">📁 Local Database</span>
-            <span style="font-size:10px; color:#666;">(~59 cables)</span>
-          </label>
-          <label style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid transparent; background:white;" id="labelSourceAPI">
-            <input type="radio" name="csBulkSource" id="csBulkSourceAPI" value="api" style="margin:0;" />
-            <span style="font-size:12px;">🌐 TeleGeography API</span>
-            <span style="font-size:10px; color:#666;">(500+ cables)</span>
-          </label>
-        </div>
+      <div style="padding:10px 20px; border-bottom:1px solid #e0e0e0; background:#f0f9ff; display:flex; gap:16px; align-items:center;">
+        <span style="font-size:12px; font-weight:600; color:#0369a1;">Source:</span>
+        <label id="lblSrcLocal" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid #0369a1; background:#e0f2fe;">
+          <input type="radio" name="csBulkSrc" id="rdoSrcLocal" value="local" checked style="margin:0;" />
+          <span style="font-size:12px;">📁 Local Database</span>
+        </label>
+        <label id="lblSrcAPI" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid transparent; background:white;">
+          <input type="radio" name="csBulkSrc" id="rdoSrcAPI" value="api" style="margin:0;" />
+          <span style="font-size:12px;">🌐 TeleGeography API (500+)</span>
+        </label>
       </div>
       
       <div style="padding:12px 20px; border-bottom:1px solid #e0e0e0; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
@@ -19690,9 +19685,6 @@ function loadProjectObject(obj) {
         const props = feature.properties;
         const meta = metaData[props.id] || {};
         
-        // Build owners text
-        const ownersList = meta.owners ? meta.owners.join(', ') : 'Unknown';
-        
         cables[props.id] = {
           id: props.id,
           name: props.name,
@@ -19702,11 +19694,9 @@ function loadProjectObject(obj) {
           rfs: meta.rfs || '',
           rfsYear: meta.rfs ? parseInt(meta.rfs) : null,
           owners: meta.owners || [],
-          ownersText: ownersList,
           length_km: meta.length ? parseFloat(meta.length.replace(/,/g, '').replace(' km', '')) : null,
           url: meta.url || null,
           geometry: feature.geometry,
-          description: `${props.name} submarine cable system`,
           source: 'TeleGeography API'
         };
       });
@@ -20273,15 +20263,17 @@ function loadProjectObject(obj) {
   // ========== CABLE SYSTEM BULK IMPORT ==========
   let csBulkImportSelection = new Set();
   let csBulkImportCables = {};
-  let csBulkCurrentSource = 'local'; // 'local' or 'api'
+  let csBulkUseAPI = false;
 
   async function showCableSystemBulkImportModal() {
     const modal = document.getElementById('csBulkImportModal');
     const cableList = document.getElementById('csBulkCableList');
     const regionFilter = document.getElementById('csBulkRegionFilter');
     const searchInput = document.getElementById('csBulkSearchInput');
-    const sourceLocal = document.getElementById('csBulkSourceLocal');
-    const sourceAPI = document.getElementById('csBulkSourceAPI');
+    const rdoLocal = document.getElementById('rdoSrcLocal');
+    const rdoAPI = document.getElementById('rdoSrcAPI');
+    const lblLocal = document.getElementById('lblSrcLocal');
+    const lblAPI = document.getElementById('lblSrcAPI');
     
     if (!modal) return;
     
@@ -20292,67 +20284,58 @@ function loadProjectObject(obj) {
     // Show modal
     modal.style.display = 'flex';
     
-    // Setup source toggle listeners (only once)
-    if (!sourceLocal._listenerAdded) {
-      sourceLocal.addEventListener('change', () => {
-        if (sourceLocal.checked) {
-          csBulkCurrentSource = 'local';
-          loadCsBulkImportData();
+    // Setup source toggle (once)
+    if (rdoLocal && !rdoLocal._bound) {
+      rdoLocal.addEventListener('change', function() {
+        if (this.checked) {
+          csBulkUseAPI = false;
+          lblLocal.style.borderColor = '#0369a1';
+          lblLocal.style.background = '#e0f2fe';
+          lblAPI.style.borderColor = 'transparent';
+          lblAPI.style.background = 'white';
+          loadBulkImportCables();
         }
       });
-      sourceLocal._listenerAdded = true;
+      rdoLocal._bound = true;
     }
-    if (!sourceAPI._listenerAdded) {
-      sourceAPI.addEventListener('change', () => {
-        if (sourceAPI.checked) {
-          csBulkCurrentSource = 'api';
-          loadCsBulkImportData();
+    if (rdoAPI && !rdoAPI._bound) {
+      rdoAPI.addEventListener('change', function() {
+        if (this.checked) {
+          csBulkUseAPI = true;
+          lblAPI.style.borderColor = '#0369a1';
+          lblAPI.style.background = '#e0f2fe';
+          lblLocal.style.borderColor = 'transparent';
+          lblLocal.style.background = 'white';
+          loadBulkImportCables();
         }
       });
-      sourceAPI._listenerAdded = true;
+      rdoAPI._bound = true;
     }
     
-    // Load data based on current source
-    await loadCsBulkImportData();
+    // Load cables
+    await loadBulkImportCables();
   }
   
-  async function loadCsBulkImportData() {
+  async function loadBulkImportCables() {
     const cableList = document.getElementById('csBulkCableList');
     const regionFilter = document.getElementById('csBulkRegionFilter');
     const searchInput = document.getElementById('csBulkSearchInput');
-    const labelLocal = document.getElementById('labelSourceLocal');
-    const labelAPI = document.getElementById('labelSourceAPI');
     
-    // Reset selection
+    // Reset
     csBulkImportSelection.clear();
     csBulkImportCables = {};
     updateCsBulkSelectedCount();
     
-    // Update visual styling for selected source
-    if (labelLocal && labelAPI) {
-      labelLocal.style.borderColor = csBulkCurrentSource === 'local' ? '#0369a1' : 'transparent';
-      labelLocal.style.background = csBulkCurrentSource === 'local' ? '#e0f2fe' : 'white';
-      labelAPI.style.borderColor = csBulkCurrentSource === 'api' ? '#0369a1' : 'transparent';
-      labelAPI.style.background = csBulkCurrentSource === 'api' ? '#e0f2fe' : 'white';
-    }
-    
     // Show loading
-    const sourceLabel = csBulkCurrentSource === 'api' ? 'TeleGeography API' : 'local database';
-    cableList.innerHTML = `<div style="text-align:center; padding:40px; color:#666;">
-      <div style="font-size:24px; margin-bottom:10px;">${csBulkCurrentSource === 'api' ? '🌐' : '📁'}</div>
-      Loading from ${sourceLabel}...
-    </div>`;
+    const srcName = csBulkUseAPI ? 'TeleGeography API' : 'local database';
+    const srcIcon = csBulkUseAPI ? '🌐' : '📁';
+    cableList.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">' +
+      '<div style="font-size:24px; margin-bottom:10px;">' + srcIcon + '</div>' +
+      'Loading from ' + srcName + '...</div>';
     
     try {
-      let db;
-      if (csBulkCurrentSource === 'api') {
-        // Load from TeleGeography API via Cloudflare Worker
-        db = await loadFromTeleGeographyAPI();
-      } else {
-        // Load from local database
-        db = await loadSubmarineCableDb();
-      }
-      
+      // Load cable database
+      const db = csBulkUseAPI ? await loadFromTeleGeographyAPI() : await loadSubmarineCableDb();
       const cables = db.cables || {};
       csBulkImportCables = cables;
       
@@ -20361,20 +20344,20 @@ function loadProjectObject(obj) {
       
       // Populate region filter
       regionFilter.innerHTML = '<option value="">All Regions</option>' + 
-        regions.map(r => `<option value="${r}">${r}</option>`).join('');
+        regions.map(r => '<option value="' + r + '">' + r + '</option>').join('');
       
-      // Reset search
+      // Clear search
       if (searchInput) searchInput.value = '';
       
       // Render cable list
       renderCsBulkImportList();
       
     } catch (error) {
-      cableList.innerHTML = `<div style="color:#ef4444; padding:20px; text-align:center;">
-        ⚠️ Failed to load from ${csBulkCurrentSource === 'api' ? 'TeleGeography API' : 'local database'}: ${error.message}
-        <br><br>
-        <button onclick="loadCsBulkImportData()" class="btn">🔄 Retry</button>
-      </div>`;
+      cableList.innerHTML = '<div style="color:#ef4444; padding:20px; text-align:center;">' +
+        '⚠️ Failed to load: ' + error.message +
+        '<br><br>' +
+        '<button onclick="loadBulkImportCables()" class="btn">🔄 Retry</button>' +
+        '</div>';
     }
   }
 
