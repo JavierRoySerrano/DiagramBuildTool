@@ -20634,12 +20634,20 @@ function loadProjectObject(obj) {
         name: cable.name,
         type: 'wet',
         rfsYear: !isNaN(rfsYear) ? rfsYear : currentYear + 1,
+        rfs: cable.rfs || '',
         fiberPairs: cable.fiberPairs || 8,
         status: status,
         capacityTbps: capacityTbps || 100,
-        owners: cable.owners?.join(', ') || '',
+        owners: cable.owners || [],
+        region: cable.region || 'Unknown',
+        color: cable.color || '#0077b6',
+        length_km: cable.length_km || null,
+        url: cable.url || null,
+        geometry: cable.geometry || null,  // IMPORTANT: Include geometry for export
         filterTags: filterTags,
         notes: notes,
+        description: cable.description || '',
+        source: cable.source || 'Submarine Cable Database',
         // Store reference to original cable data for potential path import
         _sourceDbId: cableKey
       };
