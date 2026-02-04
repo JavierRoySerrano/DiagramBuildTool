@@ -19560,12 +19560,36 @@ function loadProjectObject(obj) {
   
   function toggleCableVisorMaximize() {
     const panel = document.getElementById('cableVisorPanel');
-    if (panel) {
-      panel.classList.toggle('maximized');
-      // Resize map after animation
-      if (cableVisorState.map) {
-        setTimeout(() => cableVisorState.map.resize(), 350);
+    if (!panel) return;
+    
+    panel.classList.toggle('maximized');
+    
+    if (panel.classList.contains('maximized')) {
+      // Store original position/size before maximizing
+      panel._originalStyle = {
+        width: panel.style.width,
+        height: panel.style.height,
+        left: panel.style.left,
+        top: panel.style.top
+      };
+      // Clear inline styles so CSS !important takes over
+      panel.style.width = '';
+      panel.style.height = '';
+      panel.style.left = '';
+      panel.style.top = '';
+    } else {
+      // Restore original position/size
+      if (panel._originalStyle) {
+        panel.style.width = panel._originalStyle.width;
+        panel.style.height = panel._originalStyle.height;
+        panel.style.left = panel._originalStyle.left;
+        panel.style.top = panel._originalStyle.top;
       }
+    }
+    
+    // Resize map after animation
+    if (cableVisorState.map) {
+      setTimeout(() => cableVisorState.map.resize(), 350);
     }
   }
   
