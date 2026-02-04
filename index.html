@@ -6857,9 +6857,10 @@
         <div class="muted" style="padding:12px; text-align:center;">No cable systems defined.<br/>Click "New" to create one.</div>
       </div>
       <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn primary" id="btnNewCableSystem" style="flex:1; min-width:60px;">+ New</button>
-        <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:60px;" title="Bulk import cable systems from database">📥 Import</button>
-        <button class="btn" id="btnDeleteCableSystem" style="flex:1; min-width:60px;">Delete</button>
+        <button class="btn primary" id="btnNewCableSystem" style="flex:1; min-width:50px;">+ New</button>
+        <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:50px;" title="Import cable systems from database or API">📥 Import</button>
+        <button class="btn" id="btnExportCableSystems" style="flex:1; min-width:50px;" title="Export cable systems to JSON">📤 Export</button>
+        <button class="btn" id="btnDeleteCableSystem" style="flex:1; min-width:50px;">Delete</button>
       </div>
     </div>
   </aside>
@@ -19236,6 +19237,14 @@ function loadProjectObject(obj) {
     });
   }
 
+  // Export cable systems button
+  const btnExportCableSystems = document.getElementById('btnExportCableSystems');
+  if (btnExportCableSystems) {
+    btnExportCableSystems.addEventListener('click', () => {
+      exportCableSystems();
+    });
+  }
+
   // Delete cable system button
   if (btnDeleteCableSystem) {
     btnDeleteCableSystem.addEventListener('click', () => {
@@ -20488,7 +20497,7 @@ function loadProjectObject(obj) {
       if (status === 'Planned') return '🔵';          // Future
     }
     // Fallback to RFS-based inference
-    if (!rfs || rfs === 'Unknown') return '❓';
+    if (!rfs || rfs === 'Unknown') return '⚪';  // Unknown status - neutral circle
     const year = parseInt(rfs);
     const currentYear = new Date().getFullYear();
     if (year > currentYear) return '🔵'; // Planned
@@ -20508,6 +20517,59 @@ function loadProjectObject(obj) {
     const modal = document.getElementById('csBulkImportModal');
     if (modal) modal.style.display = 'none';
     csBulkImportSelection.clear();
+  }
+
+  // Export cable systems to JSON file
+  function exportCableSystems() {
+    if (state.cableSystems.length === 0) {
+      showToast('No cable systems to export.');
+      return;
+    }
+    
+    // Build export object matching our internal database format
+    const exportData = {
+      version: '1.0',
+      lastUpdated: new Date().toISOString().split('T')[0],
+      source: 'NexiMap Studio Export',
+      exportedAt: new Date().toISOString(),
+      cableCount: state.cableSystems.length,
+      cables: {}
+    };
+    
+    state.cableSystems.forEach(cs => {
+      // Create a cable entry with all available data
+      exportData.cables[cs.id] = {
+        id: cs.id,
+        name: cs.name,
+        shortName: cs.shortName || cs.name,
+        color: cs.color || '#0077b6',
+        region: cs.region || 'Unknown',
+        status: cs.status || 'operational',
+        rfs: cs.rfs || '',
+        rfsYear: cs.rfsYear || null,
+        owners: cs.owners || [],
+        ownersText: cs.owners ? cs.owners.join(', ') : '',
+        length_km: cs.length_km || null,
+        url: cs.url || null,
+        geometry: cs.geometry || null,
+        description: cs.description || '',
+        source: cs.source || 'NexiMap'
+      };
+    });
+    
+    // Create and download JSON file
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cable_systems_export_' + new Date().toISOString().split('T')[0] + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('Exported ' + state.cableSystems.length + ' cable system(s) to JSON.');
   }
 
   function executeCsBulkImport() {
