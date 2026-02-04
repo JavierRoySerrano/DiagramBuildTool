@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.21 - FIX CABLE DATABASE LOADING FORMAT - 2025-02-04 -->
+<!-- NexiMap Studio v61.21 - MULTI-SELECT + BULK DELETE CABLE SYSTEMS - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -699,6 +699,8 @@
     }
     .cable-system-item:hover { background: #f5f5f5; }
     .cable-system-item.selected { background: #e3f2fd; border-left: 3px solid #0096D6; }
+    .cable-system-item.multi-selected { background: #fef3c7; border-left: 3px solid #f59e0b; }
+    .cable-system-item.multi-selected.selected { background: #dbeafe; border-left: 3px solid #3b82f6; }
     .cable-system-item .cs-name { font-weight: 500; font-size: 12px; }
     .cable-system-item .cs-fullname { font-size: 10px; color: #666; }
     .cable-system-item .cs-count { font-size: 10px; color: #888; }
@@ -6829,12 +6831,26 @@
             <input type="checkbox" id="cableNavGroupByRegion" checked style="width:12px; height:12px;" />
             Group by Region
           </label>
+          <label style="font-size:10px; color:#666; display:flex; align-items:center; gap:4px;">
+            <input type="checkbox" id="cableNavMultiSelect" style="width:12px; height:12px;" />
+            Multi-select
+          </label>
           <div style="flex:1;"></div>
           <div style="display:flex; gap:4px; font-size:9px;">
             <span title="Operational" style="display:flex; align-items:center; gap:2px;"><span class="cs-status-badge operational"></span>RFS</span>
             <span title="Under Construction" style="display:flex; align-items:center; gap:2px;"><span class="cs-status-badge under-construction"></span>WIP</span>
             <span title="Planned" style="display:flex; align-items:center; gap:2px;"><span class="cs-status-badge planned"></span>Plan</span>
           </div>
+        </div>
+      </div>
+      <!-- Multi-select toolbar (hidden by default) -->
+      <div id="cableNavMultiSelectBar" style="display:none; padding:6px 12px; background:#e0f2fe; border-bottom:1px solid #7dd3fc;">
+        <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+          <span style="font-size:11px; font-weight:500; color:#0369a1;"><span id="csMultiSelectCount">0</span> selected</span>
+          <div style="flex:1;"></div>
+          <button class="btn" id="btnCsSelectAll" style="padding:3px 8px; font-size:10px;">✓ All</button>
+          <button class="btn" id="btnCsSelectNone" style="padding:3px 8px; font-size:10px;">✗ None</button>
+          <button class="btn" id="btnCsDeleteSelected" style="padding:3px 8px; font-size:10px; background:#fee2e2; border-color:#fca5a5; color:#b91c1c;">🗑️ Delete</button>
         </div>
       </div>
       <div id="cableSystemList" style="flex:1; overflow-y:auto; padding:4px;">
@@ -19254,17 +19270,24 @@ function loadProjectObject(obj) {
       return 'planned';
     }
     
+    const multiSelectMode = document.getElementById('cableNavMultiSelect')?.checked || false;
+    
     // Helper to render a single cable system item
     function renderCSItem(cs) {
       const linkCount = getCableSystemLinks(cs.id).length;
       const nodeCount = getCableSystemNodes(cs.id).length;
       const isSelected = state.selectedCableSystem === cs.id;
+      const isMultiSelected = state.multiSelectedCableSystems?.has(cs.id) || false;
       const statusClass = getStatusClass(cs);
       const rfsText = cs.rfsYear ? cs.rfsYear : '';
       
+      const checkboxHtml = multiSelectMode ? 
+        `<input type="checkbox" class="cs-multi-checkbox" data-cs-id="${cs.id}" ${isMultiSelected ? 'checked' : ''} style="width:14px; height:14px; accent-color:#0077b6; cursor:pointer;" />` : '';
+      
       return `
-        <div class="cable-system-item ${isSelected ? 'selected' : ''}" data-cs-id="${cs.id}">
+        <div class="cable-system-item ${isSelected ? 'selected' : ''} ${isMultiSelected ? 'multi-selected' : ''}" data-cs-id="${cs.id}">
           <div style="display:flex; align-items:center; gap:6px; min-width:0; flex:1;">
+            ${checkboxHtml}
             <span class="cs-status-badge ${statusClass}" title="${statusClass}"></span>
             <div style="min-width:0; flex:1;">
               <div class="cs-name">${escapeHtml(cs.shortName || cs.name)}</div>
@@ -19329,8 +19352,9 @@ function loadProjectObject(obj) {
     // Add click handlers for cable system items
     cableSystemList.querySelectorAll('.cable-system-item').forEach(item => {
       item.addEventListener('click', (e) => {
-        // Don't trigger if clicking the visor button
+        // Don't trigger if clicking the visor button or checkbox
         if (e.target.classList.contains('btn-show-visor')) return;
+        if (e.target.classList.contains('cs-multi-checkbox')) return;
         const csId = parseInt(item.dataset.csId);
         selectCableSystem(csId);
       });
@@ -19338,6 +19362,7 @@ function loadProjectObject(obj) {
       // Double-click opens the Cable System Details panel
       item.addEventListener('dblclick', (e) => {
         if (e.target.classList.contains('btn-show-visor')) return;
+        if (e.target.classList.contains('cs-multi-checkbox')) return;
         const csId = parseInt(item.dataset.csId);
         selectCableSystem(csId);
         // Open the Cable System Details panel
@@ -19348,6 +19373,22 @@ function loadProjectObject(obj) {
           if (btnToggleCableInspector) btnToggleCableInspector.classList.add('active');
           updateCableSystemInspector();
         }
+      });
+    });
+    
+    // Add click handlers for multi-select checkboxes
+    cableSystemList.querySelectorAll('.cs-multi-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const csId = parseInt(checkbox.dataset.csId);
+        if (!state.multiSelectedCableSystems) state.multiSelectedCableSystems = new Set();
+        
+        if (checkbox.checked) {
+          state.multiSelectedCableSystems.add(csId);
+        } else {
+          state.multiSelectedCableSystems.delete(csId);
+        }
+        updateCsMultiSelectCount();
       });
     });
     
@@ -19372,6 +19413,16 @@ function loadProjectObject(obj) {
         }
       });
     });
+    
+    // Update multi-select count
+    updateCsMultiSelectCount();
+  }
+  
+  function updateCsMultiSelectCount() {
+    const countEl = document.getElementById('csMultiSelectCount');
+    if (countEl && state.multiSelectedCableSystems) {
+      countEl.textContent = state.multiSelectedCableSystems.size;
+    }
   }
 
   function selectCableSystem(csId) {
@@ -19380,6 +19431,74 @@ function loadProjectObject(obj) {
     updateCableSystemInspector();
     render();
   }
+  
+  // Multi-select functions for Cable Systems
+  function toggleCsMultiSelectMode() {
+    const multiSelectBar = document.getElementById('cableNavMultiSelectBar');
+    const checkbox = document.getElementById('cableNavMultiSelect');
+    if (multiSelectBar) {
+      multiSelectBar.style.display = checkbox?.checked ? 'block' : 'none';
+    }
+    if (!checkbox?.checked) {
+      // Clear selections when disabling multi-select
+      state.multiSelectedCableSystems = new Set();
+    }
+    updateCableNavigatorList();
+  }
+  
+  function selectAllCableSystems() {
+    if (!state.multiSelectedCableSystems) state.multiSelectedCableSystems = new Set();
+    state.cableSystems.forEach(cs => state.multiSelectedCableSystems.add(cs.id));
+    updateCableNavigatorList();
+  }
+  
+  function deselectAllCableSystems() {
+    state.multiSelectedCableSystems = new Set();
+    updateCableNavigatorList();
+  }
+  
+  function deleteSelectedCableSystems() {
+    if (!state.multiSelectedCableSystems || state.multiSelectedCableSystems.size === 0) {
+      showToast('No cable systems selected', 'warning');
+      return;
+    }
+    
+    const count = state.multiSelectedCableSystems.size;
+    const confirmed = confirm(`Delete ${count} selected cable system(s)?\n\nThis will also unmap all associated links and nodes.`);
+    
+    if (confirmed) {
+      const idsToDelete = Array.from(state.multiSelectedCableSystems);
+      
+      idsToDelete.forEach(csId => {
+        // Unmap links
+        state.edges.forEach(e => {
+          if (e.cableSystemId === csId) e.cableSystemId = null;
+        });
+        // Unmap nodes
+        state.nodes.forEach(n => {
+          if (n.cableSystemId === csId) n.cableSystemId = null;
+        });
+        // Remove cable system
+        const idx = state.cableSystems.findIndex(cs => cs.id === csId);
+        if (idx !== -1) state.cableSystems.splice(idx, 1);
+      });
+      
+      state.multiSelectedCableSystems = new Set();
+      state.selectedCableSystem = null;
+      
+      updateCableNavigatorList();
+      updateCableSystemInspector();
+      render();
+      
+      showToast(`Deleted ${count} cable system(s)`, 'success');
+    }
+  }
+  
+  // Initialize multi-select event handlers
+  document.getElementById('cableNavMultiSelect')?.addEventListener('change', toggleCsMultiSelectMode);
+  document.getElementById('btnCsSelectAll')?.addEventListener('click', selectAllCableSystems);
+  document.getElementById('btnCsSelectNone')?.addEventListener('click', deselectAllCableSystems);
+  document.getElementById('btnCsDeleteSelected')?.addEventListener('click', deleteSelectedCableSystems);
 
   // ======================
   // Cable Visor Panel
