@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.17 - FIX DATA TABLE CABLE SYSTEM FIELD - 2025-02-04 -->
+<!-- NexiMap Studio v61.18 - USE SHORT NAME FROM JSON DATABASE - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19364,19 +19364,8 @@ function loadProjectObject(obj) {
       const cable = csBulkImportCables[cableKey];
       if (!cable) continue;
       
-      // Generate short name (abbreviation or truncated name)
-      let shortName = cable.name;
-      // If name has dashes, use as-is for short names like SEA-ME-WE
-      if (shortName.length > 15 && !shortName.includes('-')) {
-        // Create acronym from first letters
-        const words = shortName.split(/\s+/);
-        if (words.length > 1) {
-          shortName = words.map(w => w[0].toUpperCase()).join('');
-          if (shortName.length < 3) shortName = cable.name.substring(0, 12);
-        } else {
-          shortName = shortName.substring(0, 12);
-        }
-      }
+      // Use shortName from JSON database, fallback to name if not available
+      const shortName = cable.shortName || cable.name;
       
       // Use status from enriched database metadata, with fallback to RFS-based inference
       let status = 'planned';
