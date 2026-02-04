@@ -40,7 +40,7 @@
   "cables": {
     "amitie": {
       "id": "amitie",
-      "name": "Amitié",
+      "name": "Amiti\u00e9",
       "region": "Europe-North America",
       "rfs": "2022",
       "length_km": 6234,
@@ -4512,7 +4512,7 @@
       "rfs": "2014",
       "length_km": 17500,
       "owners": [
-        "América Móvil"
+        "Am\u00e9rica M\u00f3vil"
       ],
       "fiberPairs": 4,
       "designCapacity": "80+ Tbps",
@@ -5543,6 +5543,938 @@
           ]
         ]
       }
+    },
+    "tgn-wer": {
+      "id": "tgn-wer",
+      "name": "TGN Western Europe Ring",
+      "region": "IntraEurope",
+      "rfs": "2002",
+      "length_km": 3578,
+      "owners": [
+        "Tata Communications"
+      ],
+      "fiberPairs": 4,
+      "designCapacity": "3.84 Tbps",
+      "landingPoints": [
+        {
+          "name": "Seixal",
+          "country": "Portugal",
+          "coordinates": [
+            -9.1,
+            38.64
+          ]
+        },
+        {
+          "name": "Bilbao",
+          "country": "Spain",
+          "coordinates": [
+            -2.93,
+            43.26
+          ]
+        },
+        {
+          "name": "Highbridge",
+          "country": "UK",
+          "coordinates": [
+            -2.98,
+            51.22
+          ]
+        }
+      ],
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              -9.1,
+              38.64
+            ],
+            [
+              -9.5,
+              39.0
+            ],
+            [
+              -9.8,
+              40.5
+            ],
+            [
+              -8.5,
+              42.5
+            ],
+            [
+              -5.0,
+              43.8
+            ],
+            [
+              -2.93,
+              43.26
+            ]
+          ],
+          [
+            [
+              -2.93,
+              43.26
+            ],
+            [
+              -4.0,
+              45.0
+            ],
+            [
+              -5.0,
+              47.5
+            ],
+            [
+              -4.5,
+              49.5
+            ],
+            [
+              -3.5,
+              50.8
+            ],
+            [
+              -2.98,
+              51.22
+            ]
+          ],
+          [
+            [
+              -2.98,
+              51.22
+            ],
+            [
+              -5.0,
+              50.5
+            ],
+            [
+              -8.0,
+              48.0
+            ],
+            [
+              -9.5,
+              44.0
+            ],
+            [
+              -10.0,
+              41.0
+            ],
+            [
+              -9.1,
+              38.64
+            ]
+          ]
+        ]
+      },
+      "segments": [
+        {
+          "name": "Portugal - Spain (Seixal to Bilbao)",
+          "index": 0
+        },
+        {
+          "name": "Spain - UK (Bilbao to Highbridge)",
+          "index": 1
+        },
+        {
+          "name": "UK - Portugal (Highbridge to Seixal)",
+          "index": 2
+        }
+      ]
+    },
+    "apcn-2": {
+      "id": "apcn-2",
+      "name": "APCN-2 (Asia Pacific Cable Network 2)",
+      "region": "IntraAsia",
+      "rfs": "2001",
+      "length_km": 19000,
+      "owners": [
+        "Consortium (AT&T, BT, China Telecom, China Unicom, Chunghwa Telecom, KDDI, KT, NTT, PLDT, SingTel, Telstra, Verizon)"
+      ],
+      "fiberPairs": 4,
+      "designCapacity": "2.56 Tbps",
+      "landingPoints": [
+        {
+          "name": "Ajigaura",
+          "country": "Japan",
+          "coordinates": [
+            140.58,
+            36.38
+          ]
+        },
+        {
+          "name": "Shima",
+          "country": "Japan",
+          "coordinates": [
+            136.83,
+            34.32
+          ]
+        },
+        {
+          "name": "Busan",
+          "country": "South Korea",
+          "coordinates": [
+            129.07,
+            35.1
+          ]
+        },
+        {
+          "name": "Qingdao",
+          "country": "China",
+          "coordinates": [
+            120.38,
+            36.07
+          ]
+        },
+        {
+          "name": "Shantou",
+          "country": "China",
+          "coordinates": [
+            116.68,
+            23.35
+          ]
+        },
+        {
+          "name": "Chongming",
+          "country": "China",
+          "coordinates": [
+            121.4,
+            31.62
+          ]
+        },
+        {
+          "name": "Toucheng",
+          "country": "Taiwan",
+          "coordinates": [
+            121.83,
+            24.85
+          ]
+        },
+        {
+          "name": "Tanshui",
+          "country": "Taiwan",
+          "coordinates": [
+            121.43,
+            25.17
+          ]
+        },
+        {
+          "name": "Lantau Island",
+          "country": "Hong Kong",
+          "coordinates": [
+            113.95,
+            22.25
+          ]
+        },
+        {
+          "name": "Batangas",
+          "country": "Philippines",
+          "coordinates": [
+            121.05,
+            13.75
+          ]
+        },
+        {
+          "name": "Mersing",
+          "country": "Malaysia",
+          "coordinates": [
+            103.83,
+            2.43
+          ]
+        },
+        {
+          "name": "Changi",
+          "country": "Singapore",
+          "coordinates": [
+            104.0,
+            1.35
+          ]
+        }
+      ],
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              104.0,
+              1.35
+            ],
+            [
+              103.83,
+              2.43
+            ],
+            [
+              105.0,
+              5.0
+            ],
+            [
+              110.0,
+              8.0
+            ],
+            [
+              116.0,
+              12.0
+            ],
+            [
+              121.05,
+              13.75
+            ]
+          ],
+          [
+            [
+              121.05,
+              13.75
+            ],
+            [
+              119.5,
+              18.0
+            ],
+            [
+              118.0,
+              21.0
+            ],
+            [
+              113.95,
+              22.25
+            ]
+          ],
+          [
+            [
+              113.95,
+              22.25
+            ],
+            [
+              115.5,
+              22.8
+            ],
+            [
+              116.68,
+              23.35
+            ]
+          ],
+          [
+            [
+              116.68,
+              23.35
+            ],
+            [
+              118.5,
+              24.0
+            ],
+            [
+              121.43,
+              25.17
+            ]
+          ],
+          [
+            [
+              121.43,
+              25.17
+            ],
+            [
+              121.83,
+              24.85
+            ]
+          ],
+          [
+            [
+              121.83,
+              24.85
+            ],
+            [
+              123.0,
+              27.0
+            ],
+            [
+              125.0,
+              30.0
+            ],
+            [
+              121.4,
+              31.62
+            ]
+          ],
+          [
+            [
+              121.4,
+              31.62
+            ],
+            [
+              120.38,
+              36.07
+            ]
+          ],
+          [
+            [
+              120.38,
+              36.07
+            ],
+            [
+              124.0,
+              35.5
+            ],
+            [
+              129.07,
+              35.1
+            ]
+          ],
+          [
+            [
+              129.07,
+              35.1
+            ],
+            [
+              132.0,
+              34.5
+            ],
+            [
+              136.83,
+              34.32
+            ]
+          ],
+          [
+            [
+              136.83,
+              34.32
+            ],
+            [
+              139.0,
+              35.0
+            ],
+            [
+              140.58,
+              36.38
+            ]
+          ],
+          [
+            [
+              140.58,
+              36.38
+            ],
+            [
+              142.0,
+              34.0
+            ],
+            [
+              140.0,
+              30.0
+            ],
+            [
+              135.0,
+              25.0
+            ],
+            [
+              130.0,
+              20.0
+            ],
+            [
+              125.0,
+              16.0
+            ],
+            [
+              121.05,
+              13.75
+            ]
+          ]
+        ]
+      },
+      "segments": [
+        {
+          "name": "Singapore - Philippines (Changi to Batangas)",
+          "index": 0
+        },
+        {
+          "name": "Philippines - Hong Kong (Batangas to Lantau)",
+          "index": 1
+        },
+        {
+          "name": "Hong Kong - China South (Lantau to Shantou)",
+          "index": 2
+        },
+        {
+          "name": "China South - Taiwan (Shantou to Tanshui)",
+          "index": 3
+        },
+        {
+          "name": "Taiwan Internal (Tanshui to Toucheng)",
+          "index": 4
+        },
+        {
+          "name": "Taiwan - China East (Toucheng to Chongming)",
+          "index": 5
+        },
+        {
+          "name": "China Internal (Chongming to Qingdao)",
+          "index": 6
+        },
+        {
+          "name": "China - Korea (Qingdao to Busan)",
+          "index": 7
+        },
+        {
+          "name": "Korea - Japan West (Busan to Shima)",
+          "index": 8
+        },
+        {
+          "name": "Japan Internal (Shima to Ajigaura)",
+          "index": 9
+        },
+        {
+          "name": "Japan - Philippines (Ajigaura to Batangas) - Ring closure",
+          "index": 10
+        }
+      ]
+    },
+    "eac-c2c": {
+      "id": "eac-c2c",
+      "name": "EAC-C2C (East Asia Crossing / City-to-City)",
+      "region": "IntraAsia",
+      "rfs": "2002",
+      "length_km": 36800,
+      "owners": [
+        "Telstra"
+      ],
+      "fiberPairs": 8,
+      "designCapacity": "30.72 Tbps",
+      "landingPoints": [
+        {
+          "name": "Ajigaura",
+          "country": "Japan",
+          "coordinates": [
+            140.58,
+            36.38
+          ]
+        },
+        {
+          "name": "Shima",
+          "country": "Japan",
+          "coordinates": [
+            136.83,
+            34.32
+          ]
+        },
+        {
+          "name": "Busan",
+          "country": "South Korea",
+          "coordinates": [
+            129.07,
+            35.1
+          ]
+        },
+        {
+          "name": "Qingdao",
+          "country": "China",
+          "coordinates": [
+            120.38,
+            36.07
+          ]
+        },
+        {
+          "name": "Shanghai",
+          "country": "China",
+          "coordinates": [
+            121.5,
+            31.23
+          ]
+        },
+        {
+          "name": "Fangshan",
+          "country": "Taiwan",
+          "coordinates": [
+            120.6,
+            22.25
+          ]
+        },
+        {
+          "name": "Toucheng",
+          "country": "Taiwan",
+          "coordinates": [
+            121.83,
+            24.85
+          ]
+        },
+        {
+          "name": "Shenzhen",
+          "country": "China",
+          "coordinates": [
+            114.05,
+            22.55
+          ]
+        },
+        {
+          "name": "Tseung Kwan O",
+          "country": "Hong Kong",
+          "coordinates": [
+            114.26,
+            22.31
+          ]
+        },
+        {
+          "name": "Cavite",
+          "country": "Philippines",
+          "coordinates": [
+            120.9,
+            14.48
+          ]
+        },
+        {
+          "name": "Nasugbu",
+          "country": "Philippines",
+          "coordinates": [
+            120.63,
+            14.07
+          ]
+        },
+        {
+          "name": "Changi",
+          "country": "Singapore",
+          "coordinates": [
+            104.0,
+            1.35
+          ]
+        }
+      ],
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              104.0,
+              1.35
+            ],
+            [
+              108.0,
+              5.0
+            ],
+            [
+              115.0,
+              10.0
+            ],
+            [
+              120.63,
+              14.07
+            ]
+          ],
+          [
+            [
+              120.63,
+              14.07
+            ],
+            [
+              120.9,
+              14.48
+            ]
+          ],
+          [
+            [
+              120.9,
+              14.48
+            ],
+            [
+              118.0,
+              18.0
+            ],
+            [
+              114.26,
+              22.31
+            ]
+          ],
+          [
+            [
+              114.26,
+              22.31
+            ],
+            [
+              114.05,
+              22.55
+            ]
+          ],
+          [
+            [
+              114.05,
+              22.55
+            ],
+            [
+              117.0,
+              23.0
+            ],
+            [
+              120.6,
+              22.25
+            ]
+          ],
+          [
+            [
+              120.6,
+              22.25
+            ],
+            [
+              121.5,
+              23.5
+            ],
+            [
+              121.83,
+              24.85
+            ]
+          ],
+          [
+            [
+              121.83,
+              24.85
+            ],
+            [
+              123.0,
+              28.0
+            ],
+            [
+              121.5,
+              31.23
+            ]
+          ],
+          [
+            [
+              121.5,
+              31.23
+            ],
+            [
+              120.38,
+              36.07
+            ]
+          ],
+          [
+            [
+              120.38,
+              36.07
+            ],
+            [
+              125.0,
+              35.5
+            ],
+            [
+              129.07,
+              35.1
+            ]
+          ],
+          [
+            [
+              129.07,
+              35.1
+            ],
+            [
+              133.0,
+              34.0
+            ],
+            [
+              136.83,
+              34.32
+            ]
+          ],
+          [
+            [
+              136.83,
+              34.32
+            ],
+            [
+              140.0,
+              35.5
+            ],
+            [
+              140.58,
+              36.38
+            ]
+          ],
+          [
+            [
+              140.58,
+              36.38
+            ],
+            [
+              142.0,
+              33.0
+            ],
+            [
+              138.0,
+              28.0
+            ],
+            [
+              130.0,
+              22.0
+            ],
+            [
+              125.0,
+              17.0
+            ],
+            [
+              120.9,
+              14.48
+            ]
+          ]
+        ]
+      },
+      "segments": [
+        {
+          "name": "Singapore - Philippines South (Changi to Nasugbu)",
+          "index": 0
+        },
+        {
+          "name": "Philippines Internal (Nasugbu to Cavite)",
+          "index": 1
+        },
+        {
+          "name": "Philippines - Hong Kong (Cavite to Tseung Kwan O)",
+          "index": 2
+        },
+        {
+          "name": "Hong Kong - China (Tseung Kwan O to Shenzhen)",
+          "index": 3
+        },
+        {
+          "name": "China - Taiwan South (Shenzhen to Fangshan)",
+          "index": 4
+        },
+        {
+          "name": "Taiwan Internal (Fangshan to Toucheng)",
+          "index": 5
+        },
+        {
+          "name": "Taiwan - Shanghai (Toucheng to Shanghai)",
+          "index": 6
+        },
+        {
+          "name": "China Internal (Shanghai to Qingdao)",
+          "index": 7
+        },
+        {
+          "name": "China - Korea (Qingdao to Busan)",
+          "index": 8
+        },
+        {
+          "name": "Korea - Japan West (Busan to Shima)",
+          "index": 9
+        },
+        {
+          "name": "Japan Internal (Shima to Ajigaura)",
+          "index": 10
+        },
+        {
+          "name": "Japan - Philippines (Ajigaura to Cavite) - Ring closure",
+          "index": 11
+        }
+      ]
+    },
+    "grace-hopper": {
+      "id": "grace-hopper",
+      "name": "Grace Hopper",
+      "region": "Europe-North America",
+      "rfs": "2022",
+      "length_km": 7191,
+      "owners": [
+        "Google"
+      ],
+      "fiberPairs": 16,
+      "designCapacity": "352 Tbps",
+      "landingPoints": [
+        {
+          "name": "Bellport, New York",
+          "country": "USA",
+          "coordinates": [
+            -72.94,
+            40.76
+          ]
+        },
+        {
+          "name": "Bude",
+          "country": "UK",
+          "coordinates": [
+            -4.54,
+            50.83
+          ]
+        },
+        {
+          "name": "Bilbao (Sopelana)",
+          "country": "Spain",
+          "coordinates": [
+            -2.99,
+            43.38
+          ]
+        }
+      ],
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [
+              -72.94,
+              40.76
+            ],
+            [
+              -68.0,
+              42.0
+            ],
+            [
+              -55.0,
+              46.0
+            ],
+            [
+              -45.0,
+              48.0
+            ],
+            [
+              -35.0,
+              49.5
+            ],
+            [
+              -25.0,
+              50.0
+            ],
+            [
+              -15.0,
+              50.5
+            ],
+            [
+              -10.0,
+              50.5
+            ],
+            [
+              -4.54,
+              50.83
+            ]
+          ],
+          [
+            [
+              -25.0,
+              50.0
+            ],
+            [
+              -20.0,
+              48.0
+            ],
+            [
+              -15.0,
+              46.0
+            ],
+            [
+              -10.0,
+              44.5
+            ],
+            [
+              -5.0,
+              43.5
+            ],
+            [
+              -2.99,
+              43.38
+            ]
+          ]
+        ]
+      },
+      "segments": [
+        {
+          "name": "USA - UK (New York to Bude)",
+          "index": 0
+        },
+        {
+          "name": "Branch to Spain (Bilbao)",
+          "index": 1
+        }
+      ]
     }
   }
 }
