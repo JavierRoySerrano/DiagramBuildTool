@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.12b - WITH SEGMENT SELECTOR + SCROLLABLE PANEL - 2025-02-04 -->
+<!-- NexiMap Studio v61.13 - LIVE SEGMENT EDITOR + DESCRIPTIONS - 2025-02-04 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32836,7 +32836,7 @@ function loadProjectObject(obj) {
     select?.addEventListener('dblclick', () => {
       const cableKey = select.value;
       if (cableKey && cables[cableKey]) {
-        importCableFromDb(cables[cableKey], currentSelectedSegments);
+        importCableFromDb(cables[cableKey], currentSelectedSegments, false);
       }
     });
     
@@ -32844,13 +32844,14 @@ function loadProjectObject(obj) {
     importBtn?.addEventListener('click', () => {
       const cableKey = select?.value;
       if (cableKey && cables[cableKey]) {
-        importCableFromDb(cables[cableKey], currentSelectedSegments);
+        importCableFromDb(cables[cableKey], currentSelectedSegments, true);
       }
     });
   }
   
   // Import a cable from the database
-  function importCableFromDb(cable, selectedSegments = null) {
+  // If showLiveEditor is true, keep the segment selector visible for live editing
+  function importCableFromDb(cable, selectedSegments = null, showLiveEditor = false) {
     if (!cable || !cable.geometry) {
       showToast('Invalid cable data - no geometry found');
       return;
@@ -32895,16 +32896,20 @@ function loadProjectObject(obj) {
     updateWaypointCount();
     renderPathEditingView();
     
-    // Build segment info text
-    let segmentInfo = '';
-    if (cable.isMultiSegment && segmentsToUse) {
-      const segmentNames = segmentsToUse.map(i => cable.segments?.[i]?.name || `Segment ${i + 1}`).join(', ');
-      segmentInfo = `<br><span style="color: #888;">Segments: ${segmentNames}</span>`;
-    }
-    
-    // Update instructions area with success message
+    // Build segment info for display
     const instructions = document.getElementById('pathEditInstructions');
-    if (instructions) {
+    
+    // If multi-segment cable and showLiveEditor, show live segment editor
+    if (cable.isMultiSegment && showLiveEditor && instructions) {
+      showLiveSegmentEditor(cable, segmentsToUse || []);
+    } else if (instructions) {
+      // Show simple success message
+      let segmentInfo = '';
+      if (cable.isMultiSegment && segmentsToUse) {
+        const segmentNames = segmentsToUse.map(i => cable.segments?.[i]?.name || `Segment ${i + 1}`).join(', ');
+        segmentInfo = `<br><span style="color: #888;">Segments: ${segmentNames}</span>`;
+      }
+      
       instructions.innerHTML = `
         <div style="color: #10b981; font-weight: 500; margin-bottom: 8px;">
           ✅ Imported "${cable.name}"
@@ -32928,6 +32933,148 @@ function loadProjectObject(obj) {
       ? ` (${segmentsToUse.length} of ${cable.segmentCount} segments)` 
       : '';
     showToast(`Imported ${waypoints.length} waypoints from ${cable.name}${segmentText}`);
+  }
+  
+  // Show live segment editor after import - allows toggling segments and seeing changes on map
+  function showLiveSegmentEditor(cable, initialSelectedSegments) {
+    const instructions = document.getElementById('pathEditInstructions');
+    if (!instructions) return;
+    
+    // Store current cable for live updates
+    currentSelectedCable = cable;
+    currentSelectedSegments = [...initialSelectedSegments];
+    
+    // Build the live editor UI
+    let segmentListHtml = '';
+    for (let i = 0; i < cable.segmentCount; i++) {
+      const seg = cable.segments?.[i] || {};
+      const segmentName = seg.name || `Segment ${i + 1}`;
+      const description = seg.description || '';
+      const isChecked = currentSelectedSegments.includes(i);
+      const coordCount = cable.geometry.coordinates[i]?.length || 0;
+      const approxKm = seg.approxLength_km ? `~${seg.approxLength_km} km` : `${coordCount} pts`;
+      
+      segmentListHtml += `
+        <label style="display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px; cursor: pointer; font-size: 11px; background: ${isChecked ? '#f0fdf4' : '#fff'}; border: 1px solid ${isChecked ? '#86efac' : '#e5e7eb'}; border-radius: 4px; margin-bottom: 4px;">
+          <input type="checkbox" class="live-segment-checkbox" data-index="${i}" ${isChecked ? 'checked' : ''} style="cursor: pointer; margin-top: 2px;">
+          <div style="flex: 1;">
+            <div style="font-weight: 500; color: #111;">${segmentName}</div>
+            <div style="font-size: 10px; color: #666;">${approxKm}</div>
+            ${description && description !== segmentName ? `<div style="font-size: 9px; color: #888; margin-top: 2px;">${description}</div>` : ''}
+          </div>
+        </label>
+      `;
+    }
+    
+    instructions.innerHTML = `
+      <div style="color: #10b981; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+        <span>✅ ${cable.name}</span>
+        <span style="font-size: 10px; font-weight: normal; color: #666;">${cable.length}</span>
+      </div>
+      
+      <div style="font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #374151; display: flex; align-items: center; justify-content: space-between;">
+        <span>📐 Toggle Segments (live preview):</span>
+        <div>
+          <button id="btnLiveSelectAll" style="font-size: 9px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; margin-right: 4px;">All</button>
+          <button id="btnLiveSelectNone" style="font-size: 9px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">None</button>
+        </div>
+      </div>
+      
+      <div id="liveSegmentList" style="max-height: 180px; overflow-y: auto; margin-bottom: 10px;">
+        ${segmentListHtml}
+      </div>
+      
+      <div style="font-size: 10px; color: #666; background: #f8f9fa; padding: 6px 8px; border-radius: 4px; margin-bottom: 8px;">
+        <strong id="liveWaypointInfo">${state.pathEditMode.currentPath?.length || 0} waypoints</strong> from 
+        <strong>${currentSelectedSegments.length}</strong> of ${cable.segmentCount} segments
+      </div>
+      
+      <div style="font-size: 10px; color: #666;">
+        Toggle checkboxes to see changes on map instantly.<br>
+        Click <strong>Save</strong> when done.
+      </div>
+      
+      <button onclick="window.showCableDbSearch()" style="margin-top: 8px; padding: 6px 12px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 11px;">
+        ← Select Different Cable
+      </button>
+    `;
+    
+    // Set up live toggle handlers
+    const checkboxes = instructions.querySelectorAll('.live-segment-checkbox');
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        updateLiveSegments(cable);
+      });
+    });
+    
+    // Select All button
+    document.getElementById('btnLiveSelectAll')?.addEventListener('click', () => {
+      instructions.querySelectorAll('.live-segment-checkbox').forEach(cb => cb.checked = true);
+      updateLiveSegments(cable);
+    });
+    
+    // Select None button  
+    document.getElementById('btnLiveSelectNone')?.addEventListener('click', () => {
+      instructions.querySelectorAll('.live-segment-checkbox').forEach(cb => cb.checked = false);
+      updateLiveSegments(cable);
+    });
+  }
+  
+  // Update path live when segments are toggled
+  function updateLiveSegments(cable) {
+    const instructions = document.getElementById('pathEditInstructions');
+    if (!instructions) return;
+    
+    // Get currently checked segments
+    currentSelectedSegments = [];
+    instructions.querySelectorAll('.live-segment-checkbox:checked').forEach(cb => {
+      currentSelectedSegments.push(parseInt(cb.dataset.index));
+    });
+    
+    // Update visual state of checkboxes
+    instructions.querySelectorAll('.live-segment-checkbox').forEach(cb => {
+      const label = cb.closest('label');
+      if (label) {
+        label.style.background = cb.checked ? '#f0fdf4' : '#fff';
+        label.style.borderColor = cb.checked ? '#86efac' : '#e5e7eb';
+      }
+    });
+    
+    // Extract new waypoints
+    let waypoints = extractCoordinatesFromGeometry(cable.geometry, 
+      currentSelectedSegments.length > 0 ? currentSelectedSegments : null);
+    
+    // Reduce if needed
+    if (waypoints.length > 150) {
+      waypoints = reduceWaypoints(waypoints, 150);
+    }
+    
+    // Update the path
+    state.pathEditMode.currentPath = waypoints;
+    state.pathEditMode.hasUnsavedChanges = true;
+    
+    // Update edge reference
+    const edge = findEdge(state.pathEditMode.linkId);
+    if (edge) {
+      edge.pathCableSegments = currentSelectedSegments.length > 0 ? [...currentSelectedSegments] : null;
+    }
+    
+    // Update UI
+    updatePathEditStatus();
+    updateWaypointCount();
+    renderPathEditingView();
+    
+    // Update info display
+    const infoEl = document.getElementById('liveWaypointInfo');
+    if (infoEl) {
+      infoEl.textContent = `${waypoints.length} waypoints`;
+    }
+    
+    // Update parent info
+    const parentInfo = infoEl?.closest('div');
+    if (parentInfo) {
+      parentInfo.innerHTML = `<strong id="liveWaypointInfo">${waypoints.length} waypoints</strong> from <strong>${currentSelectedSegments.length}</strong> of ${cable.segmentCount} segments`;
+    }
   }
   
   // Expose functions globally
