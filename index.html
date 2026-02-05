@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.39 - CABLE METADATA API FIX (submarine-cable-meta worker) - 2025-02-05 -->
+<!-- NexiMap Studio v61.40 - LIFECYCLE/LIVE STATUS SEPARATION + Refresh RFS Metadata button - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7047,6 +7047,9 @@
       <div style="padding:4px 12px 8px; display:flex; gap:8px;">
         <button class="btn" id="btnBatchAutoMatchFA" style="flex:1; font-size:10px; padding:4px 8px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="Auto-match all cable systems with FiberAtlantic for live status">🔗 Link All to FiberAtlantic</button>
         <button class="btn" id="btnRefreshLiveStatus" style="flex:1; font-size:10px; padding:4px 8px; background:#eff6ff; border-color:#93c5fd; color:#1e40af;" title="Refresh live status from FiberAtlantic for all linked cables">🔄 Refresh Live</button>
+      </div>
+      <div style="padding:0 12px 8px; display:flex; gap:8px;">
+        <button class="btn" id="btnRefreshMetadata" style="flex:1; font-size:10px; padding:4px 8px; background:#fefce8; border-color:#fde047; color:#854d0e;" title="Refresh lifecycle metadata (RFS year, status) from submarine-cable-meta API for all cable systems">📋 Refresh RFS Metadata</button>
       </div>
     </div>
   </aside>
@@ -18837,16 +18840,17 @@ function loadProjectObject(obj) {
     geometry: c.geometry || null,
     source: c.source || '',
     description: c.description || '',
-    // Restore FiberAtlantic fields
+    // Restore FiberAtlantic fields (live operational status)
     fiberAtlanticId: c.fiberAtlanticId || null,
     fiberAtlanticName: c.fiberAtlanticName || null,
     fiberAtlanticConfidence: c.fiberAtlanticConfidence || null,
-    faLiveStatus: c.faLiveStatus || null
+    faLiveStatus: c.faLiveStatus || null,
+    // Restore cable metadata API reference (lifecycle status source)
+    _sourceDbId: c._sourceDbId || null
   };
   });
 
   // Data migration: fix cables with incorrect rfsYear/status from older saves
-  // If a cable has faLiveStatus='online'/'outage' or status looks operational but rfsYear is wrong, fix it
   const migrationYear = new Date().getFullYear();
   state.cableSystems.forEach(csItem => {
     // Ensure rfsYear is populated from rfs string if missing
@@ -18857,14 +18861,10 @@ function loadProjectObject(obj) {
       }
     }
 
-    // If FA says it's online, has an outage, or is active — it's clearly operational
-    // (an outage means it WAS in service, so status should be operational)
-    const faStatus = (csItem.faLiveStatus || '').toLowerCase();
-    if (faStatus === 'online' || faStatus === 'outage' || faStatus === 'active' || faStatus === 'out' || faStatus === 'up') {
-      if (csItem.status !== 'operational') {
-        csItem.status = 'operational';
-      }
-    }
+    // NOTE: faLiveStatus (from FiberAtlantic) is LIVE operational status (online/outage)
+    // and must NOT be used to set lifecycle status. Lifecycle status comes from the
+    // submarine-cable-meta API (rfs/wip/planned). These are two independent systems.
+
     // If status is 'planned' but rfsYear is in the past, the cable is already in service
     if (csItem.status === 'planned' && csItem.rfsYear && csItem.rfsYear <= migrationYear) {
       csItem.status = 'operational';
@@ -19862,6 +19862,122 @@ function loadProjectObject(obj) {
     } finally {
       btn.disabled = false;
       btn.textContent = '🔄 Refresh Live';
+    }
+  });
+
+  // ======================
+  // Refresh RFS Metadata from submarine-cable-meta API
+  // Updates lifecycle status (rfs/wip/planned) and rfsYear — independent from FiberAtlantic live status
+  // ======================
+  document.getElementById('btnRefreshMetadata')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btnRefreshMetadata');
+    if (!btn) return;
+
+    if (state.cableSystems.length === 0) {
+      showToast('No cable systems to refresh.', 'warning');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Fetching metadata...';
+
+    try {
+      // Fetch all cable metadata from the submarine-cable-meta API
+      const metaResponse = await fetch(`${CABLE_META_API}/cables`);
+      if (!metaResponse.ok) {
+        throw new Error(`Metadata API returned ${metaResponse.status}`);
+      }
+      const metaJson = await metaResponse.json();
+      const cablesArray = metaJson.cables || metaJson;
+
+      // Build lookup by id (slug) and by name (lowercase, for fuzzy matching)
+      const metaById = {};
+      const metaByName = {};
+      (Array.isArray(cablesArray) ? cablesArray : []).forEach(cable => {
+        metaById[cable.id] = cable;
+        if (cable.name) metaByName[cable.name.toLowerCase().trim()] = cable;
+      });
+
+      console.log(`[CableSystem] Loaded metadata for ${Object.keys(metaById).length} cables from submarine-cable-meta`);
+
+      let updated = 0;
+      const currentYear = new Date().getFullYear();
+
+      state.cableSystems.forEach(cs => {
+        // Try matching: 1) _sourceDbId, 2) name exact match, 3) shortName exact match
+        let meta = null;
+        if (cs._sourceDbId && metaById[cs._sourceDbId]) {
+          meta = metaById[cs._sourceDbId];
+        }
+        if (!meta && cs.name) {
+          meta = metaByName[cs.name.toLowerCase().trim()] || null;
+        }
+        if (!meta && cs.shortName) {
+          meta = metaByName[cs.shortName.toLowerCase().trim()] || null;
+        }
+
+        if (!meta) return; // No match found for this cable system
+
+        // Store the source DB id for future refreshes
+        if (!cs._sourceDbId && meta.id) {
+          cs._sourceDbId = meta.id;
+        }
+
+        // Update rfsYear from metadata
+        let newRfsYear = null;
+        if (typeof meta.rfs_year === 'number') {
+          newRfsYear = meta.rfs_year;
+        } else if (meta.rfs && typeof meta.rfs === 'string') {
+          const parsed = parseInt(meta.rfs);
+          if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) newRfsYear = parsed;
+        }
+
+        // Update rfs string
+        if (meta.rfs) {
+          cs.rfs = meta.rfs;
+        }
+
+        if (newRfsYear !== null) {
+          cs.rfsYear = newRfsYear;
+        }
+
+        // Map meta API status to NexiMap internal status
+        // Meta API returns: rfs, wip, planned, unknown
+        // NexiMap uses: operational, under-construction, planned, decommissioned
+        let newStatus = null;
+        if (meta.status === 'rfs') {
+          newStatus = 'operational';
+        } else if (meta.status === 'wip') {
+          newStatus = 'under-construction';
+        } else if (meta.status === 'planned') {
+          newStatus = 'planned';
+        } else if (newRfsYear) {
+          // Fallback: infer from rfsYear
+          if (newRfsYear <= currentYear) newStatus = 'operational';
+          else if (newRfsYear <= currentYear + 2) newStatus = 'under-construction';
+          else newStatus = 'planned';
+        }
+
+        if (newStatus && cs.status !== newStatus) {
+          cs.status = newStatus;
+          updated++;
+        } else if (newRfsYear && cs.rfsYear !== newRfsYear) {
+          updated++; // rfsYear changed even if status didn't
+        }
+      });
+
+      commit();
+      updateCableNavigatorList();
+      const matched = state.cableSystems.filter(cs => cs._sourceDbId && metaById[cs._sourceDbId]).length +
+                       state.cableSystems.filter(cs => !cs._sourceDbId && cs.name && metaByName[cs.name.toLowerCase().trim()]).length;
+      showToast(`Refreshed metadata: ${updated} updated, ${matched} of ${state.cableSystems.length} matched`, 'success');
+
+    } catch (err) {
+      console.error('[CableSystem] Metadata refresh failed:', err);
+      showToast('Metadata refresh failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '📋 Refresh RFS Metadata';
     }
   });
 
