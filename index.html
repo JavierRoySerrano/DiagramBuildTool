@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.37 - INLINE FA MATCHING + RFS FIX + DUAL STATUS - 2025-02-05 -->
+<!-- NexiMap Studio v61.38 - RFS DATE FIX + IMPORT DATA QUALITY - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -4494,7 +4494,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.37</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.38</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -18843,6 +18843,23 @@ function loadProjectObject(obj) {
   };
   });
 
+  // Data migration: fix cables with incorrect rfsYear/status from older saves
+  // If a cable has faLiveStatus='online'/'outage' or status looks operational but rfsYear is wrong, fix it
+  const migrationYear = new Date().getFullYear();
+  state.cableSystems.forEach(csItem => {
+    // If FA says it's online or has an outage, it's clearly operational
+    const faStatus = (csItem.faLiveStatus || '').toLowerCase();
+    if (faStatus === 'online' || faStatus === 'outage' || faStatus === 'active') {
+      if (csItem.status !== 'operational') {
+        csItem.status = 'operational';
+      }
+    }
+    // If status is 'operational' but rfsYear is in the future, rfsYear was guessed wrong — clear it
+    if (csItem.status === 'operational' && csItem.rfsYear && csItem.rfsYear > migrationYear) {
+      csItem.rfsYear = null;
+    }
+  });
+
   // Load multilink groups (backward compatible - empty array if not present)
   const mlgs = Array.isArray(obj.multilinkGroups) ? obj.multilinkGroups : [];
   state.multilinkGroups = mlgs.map(mlg => ({
@@ -19496,12 +19513,12 @@ function loadProjectObject(obj) {
       // Check explicit status first
       if (cs.status === 'decommissioned') return 'decommissioned';
       if (cs.status === 'operational' || cs.status === 'Active') return 'operational';
+      if (cs.status === 'under-construction' || cs.status === 'Under Construction') return 'under-construction';
       // Then check rfsYear
       const rfsYear = cs.rfsYear;
       if (rfsYear === null || rfsYear === undefined) {
         // No RFS data — infer from status string if possible
         if (cs.status === 'planned' || cs.status === 'Planned') return 'planned';
-        if (cs.status === 'Under Construction') return 'under-construction';
         return 'planned'; // Default for unknown
       }
       if (rfsYear <= currentYear) return 'operational';
@@ -21438,19 +21455,28 @@ function loadProjectObject(obj) {
       if (cable.status === 'Active') {
         status = 'operational';
       } else if (cable.status === 'Under Construction') {
-        status = 'planned'; // Treat under construction as planned
+        status = 'under-construction';
       } else if (cable.status === 'Planned') {
         status = 'planned';
       } else {
         // Fallback: infer from RFS year if status not available
-        const rfsYear = cable.rfsYear || parseInt(cable.rfs);
-        if (!isNaN(rfsYear) && rfsYear <= currentYear) {
+        const rfsCheck = cable.rfsYear || parseInt(cable.rfs);
+        if (!isNaN(rfsCheck) && rfsCheck <= currentYear) {
           status = 'operational';
         }
       }
 
-      // Use RFS year from enriched metadata
-      const rfsYear = cable.rfsYear || parseInt(cable.rfs) || (currentYear + 1);
+      // Determine RFS year from metadata
+      // Priority: explicit rfsYear > parsed rfs string > infer from status > null
+      let rfsYear = null;
+      if (cable.rfsYear && typeof cable.rfsYear === 'number') {
+        rfsYear = cable.rfsYear;
+      } else if (cable.rfs && cable.rfs !== 'Unknown' && cable.rfs !== '') {
+        const parsed = parseInt(cable.rfs);
+        if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) rfsYear = parsed;
+      }
+      // If status is Active but no RFS year, leave rfsYear as null rather than guessing
+      // The getStatusClass function will use the status field as fallback
 
       // Use capacity from enriched metadata, with fallback to parsed designCapacity
       let capacityTbps = cable.capacityTbps || 0;
@@ -21481,7 +21507,7 @@ function loadProjectObject(obj) {
         shortName: shortName,
         name: cable.name,
         type: 'wet',
-        rfsYear: !isNaN(rfsYear) ? rfsYear : currentYear + 1,
+        rfsYear: rfsYear,
         rfs: cable.rfs || '',
         fiberPairs: cable.fiberPairs || 8,
         status: status,
@@ -44006,7 +44032,7 @@ function loadProjectObject(obj) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.37 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.38 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
