@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.38 - RFS DATE FIX + IMPORT DATA QUALITY - 2025-02-05 -->
+<!-- NexiMap Studio v61.39 - CABLE METADATA API FIX (submarine-cable-meta worker) - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -20523,34 +20523,85 @@ function loadProjectObject(obj) {
 
   // Cloudflare Worker proxy URL for TeleGeography API
   const CABLE_API_PROXY = 'https://submarine-cable-api.fcoroyse-spam.workers.dev';
+  const CABLE_META_API = 'https://submarine-cable-meta.fcoroyse-spam.workers.dev';
 
-  // Load cable data from TeleGeography API via Cloudflare Worker proxy
+  // Load cable data from TeleGeography API via Cloudflare Worker proxies
+  // Uses CABLE_API_PROXY for GeoJSON geometry and CABLE_META_API for enriched metadata with RFS status
   async function loadFromTeleGeographyAPI() {
     const listEl = document.getElementById('cableVisorCableList');
     if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading from TeleGeography API via proxy...</div>';
 
     try {
-      // Fetch cable GeoJSON via Cloudflare Worker proxy
+      // Fetch cable GeoJSON via Cloudflare Worker proxy (geometry data)
       const geoResponse = await fetch(`${CABLE_API_PROXY}/cable-geo`);
       if (!geoResponse.ok) throw new Error(`Failed to fetch cable geometry: ${geoResponse.status}`);
       const geoData = await geoResponse.json();
 
-      // Fetch cable metadata via proxy
-      const metaResponse = await fetch(`${CABLE_API_PROXY}/cables`);
+      // Fetch enriched cable metadata via the dedicated metadata API
+      // This returns full metadata including rfs, rfs_year, is_planned, owners, suppliers, landing_points
       let metaData = {};
-      if (metaResponse.ok) {
-        const metaJson = await metaResponse.json();
-        // Index by cable ID
-        metaJson.forEach(cable => {
-          metaData[cable.id] = cable;
-        });
+      try {
+        const metaResponse = await fetch(`${CABLE_META_API}/cables`);
+        if (metaResponse.ok) {
+          const metaJson = await metaResponse.json();
+          // The /cables endpoint returns { count, fetched_at, cables: [...] }
+          const cablesArray = metaJson.cables || metaJson;
+          (Array.isArray(cablesArray) ? cablesArray : []).forEach(cable => {
+            metaData[cable.id] = cable;
+          });
+          console.log(`[CableVisor] Loaded enriched metadata for ${Object.keys(metaData).length} cables from submarine-cable-meta`);
+        }
+      } catch (metaErr) {
+        console.warn('[CableVisor] Metadata API unavailable, falling back to basic data:', metaErr.message);
       }
 
       // Convert to our database format
       const cables = {};
+      const currentYear = new Date().getFullYear();
+
       geoData.features.forEach(feature => {
         const props = feature.properties;
         const meta = metaData[props.id] || {};
+
+        // Determine RFS year from enriched metadata
+        let rfsYear = null;
+        if (typeof meta.rfs_year === 'number') {
+          rfsYear = meta.rfs_year;
+        } else if (meta.rfs && typeof meta.rfs === 'string') {
+          const parsed = parseInt(meta.rfs);
+          if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) rfsYear = parsed;
+        }
+
+        // Map enriched status to NexiMap internal status
+        // The meta API returns: rfs, wip, planned, unknown
+        // NexiMap uses: operational, under-construction, planned, decommissioned
+        let status = 'planned';
+        if (meta.status === 'rfs') {
+          status = 'operational';
+        } else if (meta.status === 'wip') {
+          status = 'under-construction';
+        } else if (meta.status === 'planned') {
+          status = 'planned';
+        } else if (rfsYear) {
+          // Fallback: infer from rfsYear if meta API didn't provide status
+          if (rfsYear <= currentYear) status = 'operational';
+          else if (rfsYear <= currentYear + 2) status = 'under-construction';
+        }
+
+        // Parse owners: meta API returns owners as array, fallback to owners_raw string
+        let owners = [];
+        if (Array.isArray(meta.owners) && meta.owners.length > 0) {
+          owners = meta.owners;
+        } else if (meta.owners_raw && typeof meta.owners_raw === 'string') {
+          owners = meta.owners_raw.split(',').map(o => o.trim()).filter(Boolean);
+        }
+
+        // Parse length from meta API (format: "45,000 km")
+        let length_km = null;
+        if (meta.length && typeof meta.length === 'string') {
+          length_km = parseFloat(meta.length.replace(/,/g, '').replace(' km', ''));
+          if (isNaN(length_km)) length_km = null;
+        }
 
         cables[props.id] = {
           id: props.id,
@@ -20558,17 +20609,23 @@ function loadProjectObject(obj) {
           shortName: props.name.length > 20 ? props.name.substring(0, 18) + '...' : props.name,
           color: props.color || '#939597',
           region: inferRegionFromCoordinates(feature.geometry),
-          rfs: meta.rfs || '',
-          rfsYear: meta.rfs ? parseInt(meta.rfs) : null,
-          owners: meta.owners || [],
-          ownersText: meta.owners ? meta.owners.join(', ') : 'TeleGeography',
+          status: status,
+          rfs: meta.rfs || (rfsYear ? String(rfsYear) : ''),
+          rfsYear: rfsYear,
+          is_planned: meta.is_planned != null ? meta.is_planned : null,
+          owners: owners,
+          ownersText: owners.length > 0 ? owners.join(', ') : 'Unknown',
+          suppliers: Array.isArray(meta.suppliers) ? meta.suppliers : [],
           description: props.name + ' submarine cable',
-          length_km: meta.length ? parseFloat(meta.length.replace(/,/g, '').replace(' km', '')) : null,
+          length_km: length_km,
           url: meta.url || null,
+          landingPoints: meta.landing_points || [],
           geometry: feature.geometry,
           source: 'TeleGeography API'
         };
       });
+
+      console.log(`[CableVisor] Built ${Object.keys(cables).length} cables with enriched metadata`);
 
       return {
         version: '1.0',
@@ -21477,11 +21534,11 @@ function loadProjectObject(obj) {
 
       // Use status from enriched database metadata, with fallback to RFS-based inference
       let status = 'planned';
-      if (cable.status === 'Active') {
+      if (cable.status === 'Active' || cable.status === 'operational') {
         status = 'operational';
-      } else if (cable.status === 'Under Construction') {
+      } else if (cable.status === 'Under Construction' || cable.status === 'under-construction') {
         status = 'under-construction';
-      } else if (cable.status === 'Planned') {
+      } else if (cable.status === 'Planned' || cable.status === 'planned') {
         status = 'planned';
       } else {
         // Fallback: infer from RFS year if status not available
@@ -21521,8 +21578,9 @@ function loadProjectObject(obj) {
         if (capMatch) capacityTbps = parseFloat(capMatch[1]);
       }
 
-      // Build notes from landing points
-      const landingPointNotes = cable.landingPoints?.map(lp => `${lp.name}, ${lp.country}`).join(' → ') || '';
+      // Build notes from landing points (support both landingPoints and landing_points)
+      const lps = cable.landingPoints || cable.landing_points || [];
+      const landingPointNotes = lps.map(lp => `${lp.name}${lp.country ? ', ' + lp.country : ''}`).join(' → ') || '';
       const notes = [
         cable.length_km ? `Length: ${cable.length_km.toLocaleString()} km` : '',
         cable.status ? `Status: ${cable.status}` : '',
