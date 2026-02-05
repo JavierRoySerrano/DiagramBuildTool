@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.40 - LIFECYCLE/LIVE STATUS SEPARATION + Refresh RFS Metadata button - 2025-02-05 -->
+<!-- NexiMap Studio v61.40 - RFS STATUS + FIBERATLANTIC CROSS-CHECK (tg-cablesystem-rfs-metadata + fiberatlantic-api) - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7047,9 +7047,6 @@
       <div style="padding:4px 12px 8px; display:flex; gap:8px;">
         <button class="btn" id="btnBatchAutoMatchFA" style="flex:1; font-size:10px; padding:4px 8px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="Auto-match all cable systems with FiberAtlantic for live status">🔗 Link All to FiberAtlantic</button>
         <button class="btn" id="btnRefreshLiveStatus" style="flex:1; font-size:10px; padding:4px 8px; background:#eff6ff; border-color:#93c5fd; color:#1e40af;" title="Refresh live status from FiberAtlantic for all linked cables">🔄 Refresh Live</button>
-      </div>
-      <div style="padding:0 12px 8px; display:flex; gap:8px;">
-        <button class="btn" id="btnRefreshMetadata" style="flex:1; font-size:10px; padding:4px 8px; background:#fefce8; border-color:#fde047; color:#854d0e;" title="Refresh lifecycle metadata (RFS year, status) from submarine-cable-meta API for all cable systems">📋 Refresh RFS Metadata</button>
       </div>
     </div>
   </aside>
@@ -18840,17 +18837,16 @@ function loadProjectObject(obj) {
     geometry: c.geometry || null,
     source: c.source || '',
     description: c.description || '',
-    // Restore FiberAtlantic fields (live operational status)
+    // Restore FiberAtlantic fields
     fiberAtlanticId: c.fiberAtlanticId || null,
     fiberAtlanticName: c.fiberAtlanticName || null,
     fiberAtlanticConfidence: c.fiberAtlanticConfidence || null,
-    faLiveStatus: c.faLiveStatus || null,
-    // Restore cable metadata API reference (lifecycle status source)
-    _sourceDbId: c._sourceDbId || null
+    faLiveStatus: c.faLiveStatus || null
   };
   });
 
   // Data migration: fix cables with incorrect rfsYear/status from older saves
+  // If a cable has faLiveStatus='online'/'outage' or status looks operational but rfsYear is wrong, fix it
   const migrationYear = new Date().getFullYear();
   state.cableSystems.forEach(csItem => {
     // Ensure rfsYear is populated from rfs string if missing
@@ -18861,10 +18857,14 @@ function loadProjectObject(obj) {
       }
     }
 
-    // NOTE: faLiveStatus (from FiberAtlantic) is LIVE operational status (online/outage)
-    // and must NOT be used to set lifecycle status. Lifecycle status comes from the
-    // submarine-cable-meta API (rfs/wip/planned). These are two independent systems.
-
+    // If FA says it's online, has an outage, or is active — it's clearly operational
+    // (an outage means it WAS in service, so status should be operational)
+    const faStatus = (csItem.faLiveStatus || '').toLowerCase();
+    if (faStatus === 'online' || faStatus === 'outage' || faStatus === 'active' || faStatus === 'out' || faStatus === 'up') {
+      if (csItem.status !== 'operational') {
+        csItem.status = 'operational';
+      }
+    }
     // If status is 'planned' but rfsYear is in the past, the cable is already in service
     if (csItem.status === 'planned' && csItem.rfsYear && csItem.rfsYear <= migrationYear) {
       csItem.status = 'operational';
@@ -19866,122 +19866,6 @@ function loadProjectObject(obj) {
   });
 
   // ======================
-  // Refresh RFS Metadata from submarine-cable-meta API
-  // Updates lifecycle status (rfs/wip/planned) and rfsYear — independent from FiberAtlantic live status
-  // ======================
-  document.getElementById('btnRefreshMetadata')?.addEventListener('click', async () => {
-    const btn = document.getElementById('btnRefreshMetadata');
-    if (!btn) return;
-
-    if (state.cableSystems.length === 0) {
-      showToast('No cable systems to refresh.', 'warning');
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = '⏳ Fetching metadata...';
-
-    try {
-      // Fetch all cable metadata from the submarine-cable-meta API
-      const metaResponse = await fetch(`${CABLE_META_API}/cables`);
-      if (!metaResponse.ok) {
-        throw new Error(`Metadata API returned ${metaResponse.status}`);
-      }
-      const metaJson = await metaResponse.json();
-      const cablesArray = metaJson.cables || metaJson;
-
-      // Build lookup by id (slug) and by name (lowercase, for fuzzy matching)
-      const metaById = {};
-      const metaByName = {};
-      (Array.isArray(cablesArray) ? cablesArray : []).forEach(cable => {
-        metaById[cable.id] = cable;
-        if (cable.name) metaByName[cable.name.toLowerCase().trim()] = cable;
-      });
-
-      console.log(`[CableSystem] Loaded metadata for ${Object.keys(metaById).length} cables from submarine-cable-meta`);
-
-      let updated = 0;
-      const currentYear = new Date().getFullYear();
-
-      state.cableSystems.forEach(cs => {
-        // Try matching: 1) _sourceDbId, 2) name exact match, 3) shortName exact match
-        let meta = null;
-        if (cs._sourceDbId && metaById[cs._sourceDbId]) {
-          meta = metaById[cs._sourceDbId];
-        }
-        if (!meta && cs.name) {
-          meta = metaByName[cs.name.toLowerCase().trim()] || null;
-        }
-        if (!meta && cs.shortName) {
-          meta = metaByName[cs.shortName.toLowerCase().trim()] || null;
-        }
-
-        if (!meta) return; // No match found for this cable system
-
-        // Store the source DB id for future refreshes
-        if (!cs._sourceDbId && meta.id) {
-          cs._sourceDbId = meta.id;
-        }
-
-        // Update rfsYear from metadata
-        let newRfsYear = null;
-        if (typeof meta.rfs_year === 'number') {
-          newRfsYear = meta.rfs_year;
-        } else if (meta.rfs && typeof meta.rfs === 'string') {
-          const parsed = parseInt(meta.rfs);
-          if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) newRfsYear = parsed;
-        }
-
-        // Update rfs string
-        if (meta.rfs) {
-          cs.rfs = meta.rfs;
-        }
-
-        if (newRfsYear !== null) {
-          cs.rfsYear = newRfsYear;
-        }
-
-        // Map meta API status to NexiMap internal status
-        // Meta API returns: rfs, wip, planned, unknown
-        // NexiMap uses: operational, under-construction, planned, decommissioned
-        let newStatus = null;
-        if (meta.status === 'rfs') {
-          newStatus = 'operational';
-        } else if (meta.status === 'wip') {
-          newStatus = 'under-construction';
-        } else if (meta.status === 'planned') {
-          newStatus = 'planned';
-        } else if (newRfsYear) {
-          // Fallback: infer from rfsYear
-          if (newRfsYear <= currentYear) newStatus = 'operational';
-          else if (newRfsYear <= currentYear + 2) newStatus = 'under-construction';
-          else newStatus = 'planned';
-        }
-
-        if (newStatus && cs.status !== newStatus) {
-          cs.status = newStatus;
-          updated++;
-        } else if (newRfsYear && cs.rfsYear !== newRfsYear) {
-          updated++; // rfsYear changed even if status didn't
-        }
-      });
-
-      commit();
-      updateCableNavigatorList();
-      const matched = state.cableSystems.filter(cs => cs._sourceDbId && metaById[cs._sourceDbId]).length +
-                       state.cableSystems.filter(cs => !cs._sourceDbId && cs.name && metaByName[cs.name.toLowerCase().trim()]).length;
-      showToast(`Refreshed metadata: ${updated} updated, ${matched} of ${state.cableSystems.length} matched`, 'success');
-
-    } catch (err) {
-      console.error('[CableSystem] Metadata refresh failed:', err);
-      showToast('Metadata refresh failed: ' + err.message, 'error');
-    } finally {
-      btn.disabled = false;
-      btn.textContent = '📋 Refresh RFS Metadata';
-    }
-  });
-
-  // ======================
   // Inline FA Matching Popover (for unlinked cables in navigator)
   // ======================
   let activeInlinePopover = null;
@@ -20388,23 +20272,69 @@ function loadProjectObject(obj) {
 
     // Detail grid
     const grid = document.getElementById('visorDetailGrid');
+    const currentYear = new Date().getFullYear();
     const items = [
       cable.region ? { label: 'Region', value: cable.region } : null,
       cable.rfs ? { label: 'RFS', value: cable.rfs } : null,
+      cable.status ? { label: 'Status', value: cable.status.charAt(0).toUpperCase() + cable.status.slice(1).replace('-', ' ') } : null,
+      // Show debug fields only for current-year RFS cables
+      (cable.rfsYear === currentYear && cable._statusSource) ? { label: 'Status Source', value: cable._statusSource } : null,
+      (cable.rfsYear === currentYear && cable._faMatchName) ? { label: 'FA Match', value: cable._faMatchName } : null,
+      (cable.rfsYear === currentYear && cable._faStatus) ? { label: 'FA Live Status', value: cable._faStatus } : null,
       cable.length_km ? { label: 'Length', value: `${Math.round(cable.length_km).toLocaleString()} km` } : null,
       cable.fiberPairs ? { label: 'Fiber Pairs', value: cable.fiberPairs } : null,
       cable.designCapacity && cable.designCapacity !== 'Unknown' ? { label: 'Capacity', value: cable.designCapacity } :
         (cable.capacityTbps ? { label: 'Capacity', value: `${cable.capacityTbps} Tbps` } : null),
       cable.ownersText ? { label: 'Owners', value: cable.ownersText } :
         (cable.owners && cable.owners.length ? { label: 'Owners', value: Array.isArray(cable.owners) ? cable.owners.join(', ') : cable.owners } : null),
+      cable.suppliers && cable.suppliers.length ? { label: 'Suppliers', value: Array.isArray(cable.suppliers) ? cable.suppliers.join(', ') : cable.suppliers } : null,
+      cable.url ? { label: 'Website', value: cable.url } : null,
     ].filter(Boolean);
 
-    grid.innerHTML = items.map(item => `
-      <div class="visor-detail-item">
-        <div class="visor-detail-label">${item.label}</div>
-        <div class="visor-detail-value">${escapeHtml(String(item.value))}</div>
-      </div>
-    `).join('');
+    grid.innerHTML = items.map(item => {
+      let valueHtml = escapeHtml(String(item.value));
+
+      // Color-code FA Live Status
+      if (item.label === 'FA Live Status') {
+        const val = String(item.value).toLowerCase();
+        if (val === 'online' || val === 'active') {
+          valueHtml = `<span style="color:#22c55e;font-weight:600;">● ${escapeHtml(String(item.value))}</span>`;
+        } else if (val === 'outage' || val === 'fault') {
+          valueHtml = `<span style="color:#ef4444;font-weight:600;">● ${escapeHtml(String(item.value))}</span>`;
+        } else {
+          valueHtml = `<span style="color:#f59e0b;">● ${escapeHtml(String(item.value))}</span>`;
+        }
+      }
+
+      // Color-code Status field
+      if (item.label === 'Status') {
+        const val = String(item.value).toLowerCase();
+        if (val.includes('operational')) {
+          valueHtml = `<span style="color:#22c55e;font-weight:600;">${escapeHtml(String(item.value))}</span>`;
+        } else if (val.includes('under') || val.includes('construction')) {
+          valueHtml = `<span style="color:#f59e0b;font-weight:600;">${escapeHtml(String(item.value))}</span>`;
+        } else if (val.includes('planned')) {
+          valueHtml = `<span style="color:#3b82f6;font-weight:600;">${escapeHtml(String(item.value))}</span>`;
+        }
+      }
+
+      // Make URL clickable
+      if (item.label === 'Website' && item.value) {
+        valueHtml = `<a href="${escapeHtml(String(item.value))}" target="_blank" style="color:#0077b6;text-decoration:underline;word-break:break-all;">${escapeHtml(String(item.value))}</a>`;
+      }
+
+      // Style debug fields
+      if (item.label === 'Status Source') {
+        valueHtml = `<span style="color:#94a3b8;font-style:italic;font-size:11px;">${escapeHtml(String(item.value))}</span>`;
+      }
+
+      return `
+        <div class="visor-detail-item">
+          <div class="visor-detail-label">${item.label}</div>
+          <div class="visor-detail-value">${valueHtml}</div>
+        </div>
+      `;
+    }).join('');
 
     // Landing points / CLS
     const lpContainer = document.getElementById('visorLandingPoints');
@@ -20639,47 +20569,89 @@ function loadProjectObject(obj) {
 
   // Cloudflare Worker proxy URL for TeleGeography API
   const CABLE_API_PROXY = 'https://submarine-cable-api.fcoroyse-spam.workers.dev';
-  const CABLE_META_API = 'https://submarine-cable-meta.fcoroyse-spam.workers.dev';
+  const CABLE_META_API = 'https://tg-cablesystem-rfs-metadata.fcoroyse-spam.workers.dev';
 
   // Load cable data from TeleGeography API via Cloudflare Worker proxies
-  // Uses CABLE_API_PROXY for GeoJSON geometry and CABLE_META_API for enriched metadata with RFS status
+  // Uses CABLE_API_PROXY for GeoJSON geometry and CABLE_META_API (tg-cablesystem-rfs-metadata) for per-cable RFS/metadata
+  // Cross-checks with FiberAtlantic ONLY for cables where rfs_year == current year
   async function loadFromTeleGeographyAPI() {
     const listEl = document.getElementById('cableVisorCableList');
     if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading from TeleGeography API via proxy...</div>';
 
     try {
-      // Fetch cable GeoJSON via Cloudflare Worker proxy (geometry data)
+      // Step 1: Fetch cable GeoJSON via Cloudflare Worker proxy (geometry data)
       const geoResponse = await fetch(`${CABLE_API_PROXY}/cable-geo`);
       if (!geoResponse.ok) throw new Error(`Failed to fetch cable geometry: ${geoResponse.status}`);
       const geoData = await geoResponse.json();
 
-      // Fetch enriched cable metadata via the dedicated metadata API
-      // This returns full metadata including rfs, rfs_year, is_planned, owners, suppliers, landing_points
+      const totalCables = geoData.features ? geoData.features.length : 0;
+      console.log(`[CableVisor] Loaded ${totalCables} cable geometries`);
+
+      // Step 2: Fetch per-cable metadata from tg-cablesystem-rfs-metadata
+      // The /cable/{slug} endpoint returns: { id, name, rfs, rfs_year, is_planned, owners, suppliers, length, landing_points, url }
+      if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading metadata for ${totalCables} cables... <span id="metaProgress">0</span>/${totalCables}</div>`;
+
       let metaData = {};
-      try {
-        const metaResponse = await fetch(`${CABLE_META_API}/cables`);
-        if (metaResponse.ok) {
-          const metaJson = await metaResponse.json();
-          // The /cables endpoint returns { count, fetched_at, cables: [...] }
-          const cablesArray = metaJson.cables || metaJson;
-          (Array.isArray(cablesArray) ? cablesArray : []).forEach(cable => {
-            metaData[cable.id] = cable;
-          });
-          console.log(`[CableVisor] Loaded enriched metadata for ${Object.keys(metaData).length} cables from submarine-cable-meta`);
-        }
-      } catch (metaErr) {
-        console.warn('[CableVisor] Metadata API unavailable, falling back to basic data:', metaErr.message);
+      let metaFetched = 0;
+      let metaErrors = 0;
+
+      // Batch fetch metadata in parallel (max 10 concurrent)
+      const batchSize = 10;
+      const features = geoData.features || [];
+      for (let i = 0; i < features.length; i += batchSize) {
+        const batch = features.slice(i, i + batchSize);
+        const promises = batch.map(async (feature) => {
+          const cableId = feature.properties?.id;
+          if (!cableId) return;
+          try {
+            const resp = await fetch(`${CABLE_META_API}/cable/${cableId}`);
+            if (resp.ok) {
+              const data = await resp.json();
+              metaData[cableId] = data;
+            } else {
+              metaErrors++;
+            }
+          } catch (e) {
+            metaErrors++;
+          }
+          metaFetched++;
+          const progEl = document.getElementById('metaProgress');
+          if (progEl) progEl.textContent = metaFetched;
+        });
+        await Promise.all(promises);
       }
 
-      // Convert to our database format
-      const cables = {};
+      console.log(`[CableVisor] Fetched metadata for ${Object.keys(metaData).length} cables (${metaErrors} errors) from tg-cablesystem-rfs-metadata`);
+
+      // Step 3: Fetch FiberAtlantic cable list for live status cross-check (current-year RFS only)
       const currentYear = new Date().getFullYear();
+      const currentYearCables = features.filter(f => {
+        const m = metaData[f.properties?.id];
+        return m && (m.rfs_year === currentYear || (m.rfs && parseInt(m.rfs) === currentYear));
+      });
+
+      let faCables = null;
+      if (currentYearCables.length > 0) {
+        if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Cross-checking ${currentYearCables.length} cables with RFS ${currentYear} against FiberAtlantic...</div>`;
+        try {
+          faCables = await fetchFiberAtlanticCables(true);
+          console.log(`[CableVisor] FiberAtlantic cable list: ${faCables ? faCables.length : 0} cables (for ${currentYearCables.length} current-year RFS cross-checks)`);
+        } catch (faErr) {
+          console.warn('[CableVisor] FiberAtlantic unavailable for cross-check:', faErr.message);
+        }
+      } else {
+        console.log(`[CableVisor] No cables with RFS ${currentYear} — skipping FiberAtlantic cross-check`);
+      }
+
+      // Step 4: Build cable database with smart status logic
+      const cables = {};
+      let statusDebugLog = [];
 
       geoData.features.forEach(feature => {
         const props = feature.properties;
         const meta = metaData[props.id] || {};
 
-        // Determine RFS year from enriched metadata
+        // Determine RFS year from metadata
         let rfsYear = null;
         if (typeof meta.rfs_year === 'number') {
           rfsYear = meta.rfs_year;
@@ -20688,28 +20660,87 @@ function loadProjectObject(obj) {
           if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) rfsYear = parsed;
         }
 
-        // Map enriched status to NexiMap internal status
-        // The meta API returns: rfs, wip, planned, unknown
-        // NexiMap uses: operational, under-construction, planned, decommissioned
+        // Status logic:
+        // rfs_year < currentYear  → operational (green)
+        // rfs_year > currentYear  → planned (blue)
+        // rfs_year == currentYear → check FiberAtlantic: online = operational, else under-construction (pending)
+        // no rfs_year             → check is_planned flag
         let status = 'planned';
-        if (meta.status === 'rfs') {
+        let statusSource = 'default';
+        let faStatus = null;
+        let faMatchName = null;
+
+        if (rfsYear && rfsYear < currentYear) {
           status = 'operational';
-        } else if (meta.status === 'wip') {
-          status = 'under-construction';
-        } else if (meta.status === 'planned') {
+          statusSource = 'rfs_year < current';
+        } else if (rfsYear && rfsYear > currentYear) {
           status = 'planned';
-        } else if (rfsYear) {
-          // Fallback: infer from rfsYear if meta API didn't provide status
-          if (rfsYear <= currentYear) status = 'operational';
-          else if (rfsYear <= currentYear + 2) status = 'under-construction';
+          statusSource = 'rfs_year > current';
+        } else if (rfsYear && rfsYear === currentYear) {
+          // RFS this year — cross-check with FiberAtlantic
+          status = 'under-construction'; // Default: pending until FA confirms
+          statusSource = 'rfs_year == current (pending)';
+
+          if (faCables) {
+            const faMatch = autoMatchFiberAtlantic(props.name, faCables);
+            if (faMatch && faMatch.match) {
+              faMatchName = faMatch.match.name;
+              faStatus = (faMatch.match.status || '').toLowerCase().trim();
+              if (faStatus === 'online' || faStatus === 'active') {
+                status = 'operational';
+                statusSource = 'FA confirms online';
+              } else if (faStatus === 'outage' || faStatus === 'fault') {
+                status = 'operational'; // It's RFS and known to FA, just having issues
+                statusSource = `FA: ${faStatus} (RFS but fault)`;
+              } else {
+                statusSource = `FA: ${faStatus || 'no status'} (not yet online)`;
+              }
+            } else {
+              statusSource = 'rfs_year == current (no FA match)';
+            }
+          }
+        } else if (!rfsYear) {
+          // No RFS year — use is_planned flag
+          if (meta.is_planned === false) {
+            status = 'operational';
+            statusSource = 'is_planned=false (no rfs_year)';
+          } else if (meta.is_planned === true) {
+            status = 'planned';
+            statusSource = 'is_planned=true (no rfs_year)';
+          } else {
+            status = 'planned';
+            statusSource = 'no rfs data';
+          }
         }
 
-        // Parse owners: meta API returns owners as array, fallback to owners_raw string
+        // Log debug info for current-year RFS cables
+        if (rfsYear === currentYear) {
+          statusDebugLog.push({
+            name: props.name,
+            id: props.id,
+            rfsYear: rfsYear,
+            rfs: meta.rfs || null,
+            status: status,
+            statusSource: statusSource,
+            faMatch: faMatchName,
+            faStatus: faStatus
+          });
+        }
+
+        // Parse owners: TG API returns owners as comma-separated string
         let owners = [];
-        if (Array.isArray(meta.owners) && meta.owners.length > 0) {
+        if (typeof meta.owners === 'string' && meta.owners) {
+          owners = meta.owners.split(',').map(o => o.trim()).filter(Boolean);
+        } else if (Array.isArray(meta.owners) && meta.owners.length > 0) {
           owners = meta.owners;
-        } else if (meta.owners_raw && typeof meta.owners_raw === 'string') {
-          owners = meta.owners_raw.split(',').map(o => o.trim()).filter(Boolean);
+        }
+
+        // Parse suppliers
+        let suppliers = [];
+        if (typeof meta.suppliers === 'string' && meta.suppliers) {
+          suppliers = meta.suppliers.split(',').map(s => s.trim()).filter(Boolean);
+        } else if (Array.isArray(meta.suppliers)) {
+          suppliers = meta.suppliers;
         }
 
         // Parse length from meta API (format: "45,000 km")
@@ -20731,17 +20762,31 @@ function loadProjectObject(obj) {
           is_planned: meta.is_planned != null ? meta.is_planned : null,
           owners: owners,
           ownersText: owners.length > 0 ? owners.join(', ') : 'Unknown',
-          suppliers: Array.isArray(meta.suppliers) ? meta.suppliers : [],
+          suppliers: suppliers,
           description: props.name + ' submarine cable',
           length_km: length_km,
           url: meta.url || null,
           landingPoints: meta.landing_points || [],
           geometry: feature.geometry,
-          source: 'TeleGeography API'
+          source: 'TeleGeography API',
+          // Debug fields for current-year RFS cables
+          _faStatus: faStatus,
+          _faMatchName: faMatchName,
+          _statusSource: statusSource
         };
       });
 
-      console.log(`[CableVisor] Built ${Object.keys(cables).length} cables with enriched metadata`);
+      // Log debug summary for current-year cables
+      if (statusDebugLog.length > 0) {
+        console.group(`[CableVisor] 🔍 RFS ${currentYear} Cross-Check Debug (${statusDebugLog.length} cables)`);
+        console.table(statusDebugLog);
+        console.groupEnd();
+      }
+
+      const opCount = Object.values(cables).filter(c => c.status === 'operational').length;
+      const ucCount = Object.values(cables).filter(c => c.status === 'under-construction').length;
+      const plCount = Object.values(cables).filter(c => c.status === 'planned').length;
+      console.log(`[CableVisor] Status summary: ${opCount} operational, ${ucCount} under-construction/pending, ${plCount} planned`);
 
       return {
         version: '1.0',
@@ -20866,13 +20911,21 @@ function loadProjectObject(obj) {
       return colors[Math.abs(hash) % colors.length];
     }
 
-    // Get status class
+    // Get status class — status is already computed by loadFromTeleGeographyAPI
     function getStatusClass(cable) {
-      const currentYear = new Date().getFullYear();
-      const rfsYear = parseInt(cable.rfs) || 9999;
-      if (rfsYear <= currentYear) return 'operational';
-      if (rfsYear <= currentYear + 2) return 'under-construction';
+      if (cable.status === 'operational') return 'operational';
+      if (cable.status === 'under-construction') return 'under-construction';
       return 'planned';
+    }
+
+    // Build debug tooltip for status
+    function getStatusTooltip(cable) {
+      const parts = [`Status: ${cable.status}`];
+      if (cable.rfsYear) parts.push(`RFS: ${cable.rfsYear}`);
+      if (cable._statusSource) parts.push(`Source: ${cable._statusSource}`);
+      if (cable._faMatchName) parts.push(`FA Match: ${cable._faMatchName}`);
+      if (cable._faStatus) parts.push(`FA Status: ${cable._faStatus}`);
+      return parts.join('\n');
     }
 
     let html = '';
@@ -20880,18 +20933,32 @@ function loadProjectObject(obj) {
       const isSelected = cableVisorState.selectedCables.has(cable.id);
       const color = getCableColor(cable.id);
       const statusClass = getStatusClass(cable);
+      const statusTooltip = getStatusTooltip(cable);
       const rfsYear = cable.rfs || '';
       const length = cable.length_km ? `${Math.round(cable.length_km).toLocaleString()} km` : '';
       const hasGeometry = cable.geometry && cable.geometry.coordinates;
 
+      // FA cross-check indicator for current-year RFS cables only
+      const currentYear = new Date().getFullYear();
+      let faIndicator = '';
+      if (cable.rfsYear === currentYear) {
+        if (cable._faStatus === 'online' || cable._faStatus === 'active') {
+          faIndicator = '<span style="color:#22c55e;font-size:9px;font-weight:600;margin-left:4px;" title="FiberAtlantic confirms ONLINE">✓FA</span>';
+        } else if (cable._faStatus) {
+          faIndicator = `<span style="color:#f59e0b;font-size:9px;font-weight:600;margin-left:4px;" title="FiberAtlantic: ${escapeHtml(cable._faStatus)}">⏳FA</span>`;
+        } else {
+          faIndicator = '<span style="color:#94a3b8;font-size:9px;margin-left:4px;" title="No FiberAtlantic match found">?FA</span>';
+        }
+      }
+
       html += `
-        <div class="visor-cable-item ${isSelected ? 'selected' : ''}" data-cable-id="${cable.id}" title="${hasGeometry ? 'Click to show on map' : 'No geometry data'}">
+        <div class="visor-cable-item ${isSelected ? 'selected' : ''}" data-cable-id="${cable.id}" title="${escapeHtml(statusTooltip)}">
           <input type="checkbox" ${isSelected ? 'checked' : ''} />
           <span class="cs-status-badge ${statusClass}"></span>
           <div class="cable-color" style="background:${color};"></div>
           <div class="visor-cable-info">
-            <div class="visor-cable-name">${escapeHtml(cable.shortName || cable.name)}</div>
-            <div class="visor-cable-meta">${rfsYear}${length ? ' • ' + length : ''}${!hasGeometry ? ' • No map data' : ''}</div>
+            <div class="visor-cable-name">${escapeHtml(cable.shortName || cable.name)}${faIndicator}</div>
+            <div class="visor-cable-meta">${rfsYear}${length ? ' • ' + length : ''}${cable.rfsYear === currentYear && cable._statusSource ? ' • ' + escapeHtml(cable._statusSource) : ''}${!hasGeometry ? ' • No map data' : ''}</div>
           </div>
         </div>
       `;
