@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.44 - Collapsible Cable Visor detail panel - 2025-02-05 -->
+<!-- NexiMap Studio v61.45 - Collapsible detail panel + checkbox fix - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -851,29 +851,36 @@
     /* Cable Visor Detail Panel (collapsible, below map, above list) */
     #cableVisorDetailPanel {
       background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-      border-top: 1px solid #e0e0e0;
+      border-top: 2px solid #0077b6;
       border-bottom: 1px solid #e0e0e0;
       display: none;
       font-size: 12px;
     }
     #cableVisorDetailPanel.show { display: block; }
     .visor-detail-header {
-      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
       cursor: pointer; user-select: none;
+      background: linear-gradient(180deg, #e8f4f8 0%, #f0f7fa 100%);
+      border-bottom: 1px solid #d0e4ed;
     }
-    .visor-detail-header:hover { background: #f1f5f9; }
-    .visor-detail-header h4 { margin: 0; font-size: 13px; font-weight: 600; color: #1e293b; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .visor-detail-header:hover { background: linear-gradient(180deg, #d9edf5 0%, #e4f0f6 100%); }
+    .visor-detail-header h4 { margin: 0; font-size: 13px; font-weight: 600; color: #0077b6; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .visor-detail-toggle {
-      font-size: 10px; color: #94a3b8; transition: transform 0.2s; flex-shrink: 0;
+      font-size: 10px; color: #0077b6; transition: transform 0.2s; flex-shrink: 0;
+      background: white; border: 1px solid #b8d8e8; border-radius: 3px; padding: 2px 5px;
     }
     .visor-detail-toggle.expanded { transform: rotate(180deg); }
+    .visor-detail-expand-hint {
+      font-size: 10px; color: #64748b; flex-shrink: 0;
+    }
     .visor-detail-body {
       max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out;
       padding: 0 14px;
     }
     .visor-detail-body.expanded {
-      max-height: 300px; overflow-y: auto; padding: 0 14px 12px;
+      max-height: 300px; overflow-y: auto; padding: 4px 14px 12px;
     }
+    #cableVisorDetailPanel.show .visor-detail-expand-hint.hidden { display: none; }
     .visor-detail-status {
       display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
       border-radius: 12px; font-size: 11px; font-weight: 600;
@@ -4505,7 +4512,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.44</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.45</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -21076,7 +21083,7 @@ function loadProjectObject(obj) {
 
     let html = '';
     cables.forEach(cable => {
-      const isSelected = cableVisorState.selectedCables.has(cable.id);
+      const isSelected = cableVisorState.selectedCables.has(String(cable.id));
       const color = getCableColor(cable.id);
       const statusClass = getStatusClass(cable);
       const statusTooltip = getStatusTooltip(cable);
@@ -21298,9 +21305,9 @@ function loadProjectObject(obj) {
         const shortName = (cable.shortName || '').toLowerCase();
         if (!name.includes(search) && !shortName.includes(search)) return;
       }
-      if (!cableVisorState.selectedCables.has(cable.id)) {
-        cableVisorState.selectedCables.add(cable.id);
-        addCableToVisorMap(cable.id);
+      if (!cableVisorState.selectedCables.has(String(cable.id))) {
+        cableVisorState.selectedCables.add(String(cable.id));
+        addCableToVisorMap(String(cable.id));
       }
     });
 
@@ -21348,11 +21355,11 @@ function loadProjectObject(obj) {
 
       if (matchingCable) {
         // Select it in the visor
-        if (!cableVisorState.selectedCables.has(matchingCable.id)) {
-          toggleCableVisorSelection(matchingCable.id);
+        if (!cableVisorState.selectedCables.has(String(matchingCable.id))) {
+          toggleCableVisorSelection(String(matchingCable.id));
         }
         // Zoom to it
-        setTimeout(() => zoomToCable(matchingCable.id), 500);
+        setTimeout(() => zoomToCable(String(matchingCable.id)), 500);
 
         // Update search to show it
         const searchEl = document.getElementById('cableVisorSearch');
@@ -44488,7 +44495,7 @@ function loadProjectObject(obj) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.44 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.45 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
