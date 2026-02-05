@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<!-- NexiMap Studio v61.43 - Three-source cable library + full UTF-8 encoding fix - 2025-02-05 -->
+<!-- NexiMap Studio v61.44 - Collapsible Cable Visor detail panel - 2025-02-05 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -848,22 +848,32 @@
     .fa-inline-popover-item .fa-item-status.outage { background: #fee2e2; color: #991b1b; }
     .fa-inline-popover-item .fa-item-status.other { background: #f1f5f9; color: #475569; }
 
-    /* Cable Visor Detail Panel (below map, above list) */
+    /* Cable Visor Detail Panel (collapsible, below map, above list) */
     #cableVisorDetailPanel {
       background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
       border-top: 1px solid #e0e0e0;
       border-bottom: 1px solid #e0e0e0;
-      max-height: 220px;
-      overflow-y: auto;
       display: none;
-      padding: 12px 14px;
       font-size: 12px;
     }
     #cableVisorDetailPanel.show { display: block; }
     .visor-detail-header {
-      display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 8px; padding: 8px 14px;
+      cursor: pointer; user-select: none;
     }
-    .visor-detail-header h4 { margin: 0; font-size: 14px; font-weight: 600; color: #1e293b; flex: 1; }
+    .visor-detail-header:hover { background: #f1f5f9; }
+    .visor-detail-header h4 { margin: 0; font-size: 13px; font-weight: 600; color: #1e293b; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .visor-detail-toggle {
+      font-size: 10px; color: #94a3b8; transition: transform 0.2s; flex-shrink: 0;
+    }
+    .visor-detail-toggle.expanded { transform: rotate(180deg); }
+    .visor-detail-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.25s ease-out;
+      padding: 0 14px;
+    }
+    .visor-detail-body.expanded {
+      max-height: 300px; overflow-y: auto; padding: 0 14px 12px;
+    }
     .visor-detail-status {
       display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px;
       border-radius: 12px; font-size: 11px; font-weight: 600;
@@ -4495,7 +4505,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.43</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.44</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -20366,14 +20376,28 @@ function loadProjectObject(obj) {
       lpContainer.style.display = 'none';
     }
 
-    // Show panel
+    // Show panel (collapsed by default — just the header bar)
     detailPanel.classList.add('show');
   }
 
   function hideVisorCableDetail() {
     const panel = document.getElementById('cableVisorDetailPanel');
     if (panel) panel.classList.remove('show');
+    const body = document.getElementById('visorDetailBody');
+    if (body) body.classList.remove('expanded');
+    const chevron = document.getElementById('visorDetailChevron');
+    if (chevron) chevron.classList.remove('expanded');
   }
+
+  // Toggle detail body expand/collapse
+  document.getElementById('visorDetailHeaderToggle')?.addEventListener('click', (e) => {
+    // Don't toggle if clicking the close button
+    if (e.target.closest('.visor-detail-close')) return;
+    const body = document.getElementById('visorDetailBody');
+    const chevron = document.getElementById('visorDetailChevron');
+    if (body) body.classList.toggle('expanded');
+    if (chevron) chevron.classList.toggle('expanded');
+  });
 
   // Setup detail panel close button
   document.getElementById('btnCloseVisorDetail')?.addEventListener('click', hideVisorCableDetail);
@@ -43726,17 +43750,20 @@ function loadProjectObject(obj) {
     </div>
   </div>
   <div id="cableVisorDetailPanel">
-    <div class="visor-detail-header">
+    <div class="visor-detail-header" id="visorDetailHeaderToggle" title="Click to expand/collapse details">
+      <span class="visor-detail-toggle" id="visorDetailChevron">▼</span>
       <h4 id="visorDetailName">Cable Name</h4>
       <span id="visorDetailStatusBadge" class="visor-detail-status unknown">
         <span class="cs-status-badge live-unknown" style="width:8px;height:8px;"></span> Unknown
       </span>
       <button class="visor-detail-close" id="btnCloseVisorDetail" title="Close details">✕</button>
     </div>
-    <div class="visor-detail-grid" id="visorDetailGrid"></div>
-    <div class="visor-landing-points" id="visorLandingPoints" style="display:none;">
-      <h5>📍 Landing Stations (CLS)</h5>
-      <div class="visor-lp-list" id="visorLpList"></div>
+    <div class="visor-detail-body" id="visorDetailBody">
+      <div class="visor-detail-grid" id="visorDetailGrid"></div>
+      <div class="visor-landing-points" id="visorLandingPoints" style="display:none;">
+        <h5>📍 Landing Stations (CLS)</h5>
+        <div class="visor-lp-list" id="visorLpList"></div>
+      </div>
     </div>
   </div>
   <div id="cableVisorList">
@@ -44461,7 +44488,7 @@ function loadProjectObject(obj) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.43 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.44 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-05</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
