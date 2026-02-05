@@ -4516,8 +4516,8 @@
         Import / Export
         <div class="submenu">
           <div class="menu-section-header">SPREADSHEET DATA</div>
-          <div class="item" id="btnDownloadTemplate">ðŸ“‹ Download Import Templateâ€¦</div>
-          <div class="item" id="btnImportProject">ðŸ“¥ Import from Spreadsheetâ€¦</div>
+          <div class="item" id="btnDownloadTemplate">📋 Download Import Templateâ€¦</div>
+          <div class="item" id="btnImportProject">📥 Import from Spreadsheetâ€¦</div>
           <div class="sep"></div>
           <div class="menu-section-header">EXPORT DATA (CSV)</div>
           <div class="item" id="btnExportNodes">Export Nodesâ€¦</div>
@@ -4568,13 +4568,13 @@
       <div class="sep"></div>
 
       <!-- Heat Map Section -->
-      <div class="menu-section-header">ðŸŒ¡ï¸ Heat Map</div>
-      <div class="item has-submenu" id="heatMapMenuItem">ðŸ”¥ Link Heat Map
+      <div class="menu-section-header">🌡ï¸ Heat Map</div>
+      <div class="item has-submenu" id="heatMapMenuItem">🔥 Link Heat Map
         <div class="submenu" id="heatMapSubmenu" style="min-width:320px;">
           <div class="menu-section-header">Heat Map Mode</div>
           <label class="item toggle-item"><input type="radio" name="heatMapMode" id="heatMapModeOff" checked /> Off (Normal View)</label>
-          <label class="item toggle-item"><input type="radio" name="heatMapMode" id="heatMapModeCapacity" /> ðŸ“Š Capacity Available</label>
-          <label class="item toggle-item"><input type="radio" name="heatMapMode" id="heatMapModePrice" /> ðŸ’° Price (MRC)</label>
+          <label class="item toggle-item"><input type="radio" name="heatMapMode" id="heatMapModeCapacity" /> 📊 Capacity Available</label>
+          <label class="item toggle-item"><input type="radio" name="heatMapMode" id="heatMapModePrice" /> 💰 Price (MRC)</label>
           <div class="sep"></div>
 
           <!-- Price Tier Selection (shown when Price mode selected) -->
@@ -4631,11 +4631,11 @@
           <div class="sep"></div>
           <!-- Legend Display Option -->
           <label class="item toggle-item"><input type="checkbox" id="heatMapShowLegend" checked /> Show Legend on Canvas</label>
-          <label class="item toggle-item" title="Use logarithmic scale for better visualization of wide value ranges"><input type="checkbox" id="heatMapUseLogarithmic" /> ðŸ“ˆ Logarithmic Scale</label>
+          <label class="item toggle-item" title="Use logarithmic scale for better visualization of wide value ranges"><input type="checkbox" id="heatMapUseLogarithmic" /> 📈 Logarithmic Scale</label>
 
           <div class="sep"></div>
           <div style="padding:8px 12px; font-size:10px; color:#666; background:#f0fdf4; border-top:1px solid #86efac;">
-            <strong>ðŸ’¡ Tip:</strong> Capacity: red=low (bad), green=high (good). Price: green=low (good), red=high (bad). Use logarithmic scale for wide ranges.
+            <strong>💡 Tip:</strong> Capacity: red=low (bad), green=high (good). Price: green=low (good), red=high (bad). Use logarithmic scale for wide ranges.
           </div>
         </div>
       </div>
@@ -4643,15 +4643,15 @@
       <div class="sep"></div>
 
       <!-- View Mode Section -->
-      <div class="menu-section-header">ðŸŒ View Mode</div>
+      <div class="menu-section-header">🌍 View Mode</div>
       <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeStandard" checked /> Standard Canvas</label>
-      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeGeo" /> ðŸŒ Geo Static Background</label>
-      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeMapLibre" /> ðŸ—ºï¸ Geo Dynamic Map</label>
+      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeGeo" /> 🌐 Geo Static Background</label>
+      <label class="item toggle-item"><input type="radio" name="viewMode" id="viewModeMapLibre" /> 🗺ï¸ Geo Dynamic Map</label>
 
       <div class="sep"></div>
 
       <!-- Geo Dynamic Map Settings - Submenu -->
-      <div class="item has-submenu" id="mapLibreSettingsItem">ðŸ—ºï¸ Geo Dynamic Map Settings
+      <div class="item has-submenu" id="mapLibreSettingsItem">🗺ï¸ Geo Dynamic Map Settings
         <div class="submenu" id="mapLibreSubmenu" style="min-width:280px;">
           <div class="menu-section-header">Map Style</div>
           <label class="item toggle-item"><input type="radio" name="mapLibreStyle" id="mapStyleLiberty" checked /> Liberty (Default)</label>
@@ -4719,14 +4719,14 @@
       </div>
 
       <!-- Geo Static Background Settings - Submenu -->
-      <div class="item has-submenu" id="geoViewSettingsItem">ðŸŒ Geo Static Background Settings
+      <div class="item has-submenu" id="geoViewSettingsItem">🌐 Geo Static Background Settings
         <div class="submenu" id="geoViewSubmenu" style="min-width:280px;">
           <div class="menu-section-header">Map Background</div>
           <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUrl" checked /> Wikimedia Map</label>
           <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceUpload" /> Uploaded Image</label>
           <label class="item toggle-item"><input type="radio" name="mapSource" id="mapSourceBuiltin" /> Built-in SVG Map</label>
-          <div class="item" id="miLoadMapUrl" style="color:#0096D6;">ðŸ”— Load from URL...</div>
-          <div class="item" id="miUploadGeoMap" style="color:#0096D6;">ðŸ“· Upload Image...</div>
+          <div class="item" id="miLoadMapUrl" style="color:#0096D6;">🔗 Load from URL...</div>
+          <div class="item" id="miUploadGeoMap" style="color:#0096D6;">📷 Upload Image...</div>
           <div class="sep"></div>
 
           <div class="menu-section-header">Element Style Mode</div>
@@ -4802,7 +4802,7 @@
             </div>
             <div style="display:flex; gap:4px; margin-top:6px;">
               <button id="projResetBtn" class="btn mini-btn" style="flex:1; font-size:10px; padding:3px 6px;">Reset</button>
-              <button id="projShowValuesBtn" class="btn mini-btn" style="flex:1; font-size:10px; padding:3px 6px;">ðŸ“‹ Copy</button>
+              <button id="projShowValuesBtn" class="btn mini-btn" style="flex:1; font-size:10px; padding:3px 6px;">📋 Copy</button>
             </div>
           </div>
         </div>
@@ -4811,11 +4811,11 @@
       <div class="sep"></div>
 
       <!-- Labels - Submenu -->
-      <div class="item has-submenu">ðŸ·ï¸ Labels
+      <div class="item has-submenu">🏷ï¸ Labels
         <div class="submenu">
           <div style="display:flex; justify-content:space-between; align-items:center; padding:4px 10px; border-bottom:1px solid #e5e5e5; margin-bottom:4px;">
             <span style="font-size:11px; color:#666;">Label Visibility</span>
-            <button id="btnPinLabels" title="Pin as floating panel" style="background:none; border:1px solid #ccc; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">ðŸ“Œ Pin</button>
+            <button id="btnPinLabels" title="Pin as floating panel" style="background:none; border:1px solid #ccc; border-radius:3px; padding:2px 6px; font-size:10px; cursor:pointer;">📌 Pin</button>
           </div>
           <div class="menu-section-header">Node Labels</div>
           <label class="item toggle-item"><input type="checkbox" id="tglShowNodeName" checked /> Node Names</label>
@@ -4837,7 +4837,7 @@
     <!-- Floating Labels Panel (pinned) -->
     <div id="floatingLabelsPanel" class="floating-panel" style="display:none; position:fixed; top:80px; right:20px; z-index:1500; background:white; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.25); min-width:200px; font-size:12px;">
       <div class="floating-panel-header" style="display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:#f5f5f5; border-radius:8px 8px 0 0; cursor:move; border-bottom:1px solid #e0e0e0;">
-        <span style="font-weight:600; font-size:12px;">ðŸ·ï¸ Labels</span>
+        <span style="font-weight:600; font-size:12px;">🏷ï¸ Labels</span>
         <div>
           <span id="floatingLabelsViewIndicator" style="font-size:10px; color:#666; margin-right:8px;">Canvas</span>
           <button id="btnCloseLabelsPanel" title="Close" style="background:none; border:none; font-size:14px; cursor:pointer; color:#666;">âœ•</button>
@@ -4861,8 +4861,8 @@
     </div>
 
     <div class="menu" id="helpMenu" hidden style="min-width:200px;">
-      <div class="item" id="miHelpCenter">ðŸ“š Help Center... <span style="opacity:0.5;float:right">F1</span></div>
-      <div class="item" id="miOnlineGuide">ðŸŒ Online User Guide...</div>
+      <div class="item" id="miHelpCenter">📚 Help Center... <span style="opacity:0.5;float:right">F1</span></div>
+      <div class="item" id="miOnlineGuide">🌐 Online User Guide...</div>
       <div class="sep"></div>
       <div class="item" id="miQuickShortcuts">âŒ¨ï¸ Quick Shortcuts</div>
       <div class="sep"></div>
@@ -4871,26 +4871,26 @@
 
     <!-- Data Menu -->
     <div class="menu" id="dataMenu" hidden style="min-width:220px;">
-      <div class="menu-section-header">ðŸ“Š DATA MANAGEMENT</div>
-      <div class="item" id="miDataTable">ðŸ“‹ Data Table View... <span style="opacity:0.5;float:right">Ctrl+T</span></div>
-      <div class="item" id="miCapacityEditor">ðŸ“Š Capacity Editor... <span style="opacity:0.5;float:right">Ctrl+K</span></div>
+      <div class="menu-section-header">📊 DATA MANAGEMENT</div>
+      <div class="item" id="miDataTable">📋 Data Table View... <span style="opacity:0.5;float:right">Ctrl+T</span></div>
+      <div class="item" id="miCapacityEditor">📊 Capacity Editor... <span style="opacity:0.5;float:right">Ctrl+K</span></div>
       <div class="sep"></div>
       <div class="menu-section-header">BULK OPERATIONS</div>
-      <div class="item" id="miBulkEditLinks">ðŸ“ Bulk Edit Links...</div>
-      <div class="item" id="miBulkEditNodes">ðŸ“ Bulk Edit Nodes...</div>
+      <div class="item" id="miBulkEditLinks">📝 Bulk Edit Links...</div>
+      <div class="item" id="miBulkEditNodes">📝 Bulk Edit Nodes...</div>
       <div class="sep"></div>
-      <div class="item" id="miRecalculateCosts">ðŸ”„ Recalculate All Costs</div>
+      <div class="item" id="miRecalculateCosts">🔄 Recalculate All Costs</div>
     </div>
 
     <!-- Settings Menu -->
     <div class="menu" id="settingsMenu" hidden style="min-width:220px;">
       <div class="menu-section-header">âš™ï¸ CONFIGURATION</div>
-      <div class="item" id="miFinancialSettings">ðŸ’° Financial Settings...</div>
-      <div class="item" id="miDisplayPrefs">ðŸŽ¨ Display Preferences...</div>
+      <div class="item" id="miFinancialSettings">💰 Financial Settings...</div>
+      <div class="item" id="miDisplayPrefs">🎨 Display Preferences...</div>
       <div class="sep"></div>
       <div class="menu-section-header">DEFAULTS</div>
-      <div class="item" id="miNodeDefaults">ðŸ“ Default Node Style...</div>
-      <div class="item" id="miLinkDefaults">ðŸ”— Default Link Style...</div>
+      <div class="item" id="miNodeDefaults">📍 Default Node Style...</div>
+      <div class="item" id="miLinkDefaults">🔗 Default Link Style...</div>
     </div>
     <input type="file" id="fileLoad" accept=".ndg,application/json" style="display:none;" />
   </div>
@@ -5513,9 +5513,9 @@
 <!-- Shape Library Panel -->
 <div id="shapeLibraryPanel">
   <div class="library-header" title="Drag to move â€¢ Double-click to reset position">
-    <span>ðŸ“š Shape Library</span>
+    <span>📚 Shape Library</span>
     <div class="library-header-actions">
-      <button class="library-header-btn" id="btnLibraryDock" title="Dock to left side">ðŸ“Œ</button>
+      <button class="library-header-btn" id="btnLibraryDock" title="Dock to left side">📌</button>
       <button class="library-header-btn" id="btnLibraryImport" title="Import SVG">+</button>
       <button class="library-header-btn" id="btnLibraryMenu" title="Library Options">â‹®</button>
       <button class="library-header-btn" id="btnLibraryClose" title="Close Library">Ã—</button>
@@ -5523,8 +5523,8 @@
   </div>
   <!-- Library Tabs -->
   <div class="library-tabs">
-    <button class="library-tab active" data-tab="nodes">ðŸ”µ Nodes</button>
-    <button class="library-tab" data-tab="containers">ðŸ“¦ Containers</button>
+    <button class="library-tab active" data-tab="nodes">🔵 Nodes</button>
+    <button class="library-tab" data-tab="containers">📦 Containers</button>
   </div>
   <div class="library-search">
     <input type="text" id="librarySearch" placeholder="Search shapes..." />
@@ -5534,23 +5534,23 @@
   </div>
   <div class="library-actions" id="libraryActionsNodes">
     <button class="library-action-btn primary" id="btnSaveNodeToLibrary">
-      <span>ðŸ’¾</span> Save Selected Node
+      <span>💾</span> Save Selected Node
     </button>
     <button class="library-action-btn" id="btnImportSVGToLibrary">
-      <span>ðŸ“</span> Import SVG File
+      <span>📁</span> Import SVG File
     </button>
     <div style="display:flex; gap:4px;">
       <button class="library-action-btn" id="btnImportLibraryFile" style="flex:1;">
-        <span>ðŸ“¥</span> Import Library
+        <span>📥</span> Import Library
       </button>
       <button class="library-action-btn" id="btnExportLibrary" style="flex:1;">
-        <span>ðŸ“¤</span> Export Library
+        <span>📤</span> Export Library
       </button>
     </div>
   </div>
   <div class="library-actions" id="libraryActionsContainers" style="display:none;">
     <button class="library-action-btn" id="btnImportContainerShape">
-      <span>ðŸ“</span> Import Shape SVG
+      <span>📁</span> Import Shape SVG
     </button>
     <div style="font-size:10px; color:#888; text-align:center; padding:4px 8px;">
       Drag shapes to canvas to create containers
@@ -5590,7 +5590,7 @@
       user-select: none;
     ">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <div style="font-size:12px; font-weight:600; color:#333;" id="heatMapLegendTitle">ðŸŒ¡ï¸ Heat Map</div>
+        <div style="font-size:12px; font-weight:600; color:#333;" id="heatMapLegendTitle">🌡ï¸ Heat Map</div>
         <button id="btnCloseHeatMapLegend" style="background:none; border:none; cursor:pointer; color:#999; font-size:14px; padding:0; line-height:1;" title="Hide legend">âœ•</button>
       </div>
       <div style="font-size:10px; color:#666; margin-bottom:8px;" id="heatMapLegendSubtitle">Capacity Available</div>
@@ -5626,7 +5626,7 @@
       align-items: center;
       gap: 8px;
     ">
-      <span>ðŸŒ¡ï¸</span>
+      <span>🌡ï¸</span>
       <span id="heatMapActiveLabel">Heat Map: Capacity</span>
       <button id="heatMapScaleToggle" style="
         background: rgba(255,255,255,0.25);
@@ -5667,7 +5667,7 @@
       border-bottom: 1px solid #e8e8e8;
       border-radius: 8px 8px 0 0;
     ">
-      <span style="font-weight: 600; color: #333;">ðŸŽ¯ Projection Adjustment</span>
+      <span style="font-weight: 600; color: #333;">🎯 Projection Adjustment</span>
       <button id="projPanelClose" style="
         background: none;
         border: none;
@@ -5699,11 +5699,11 @@
         <input type="number" id="projOffsetYVal2" value="-10" step="1" min="-200" max="200" style="width:50px; font-size:10px; text-align:center; padding:3px; border:1px solid #ccc; border-radius:3px;">
       </div>
       <div style="display:flex; gap:6px;">
-        <button id="projResetBtn2" class="btn mini-btn" style="flex:1; font-size:10px;">ðŸ”„ Reset</button>
-        <button id="projCopyBtn2" class="btn mini-btn" style="flex:1; font-size:10px;">ðŸ“‹ Copy</button>
+        <button id="projResetBtn2" class="btn mini-btn" style="flex:1; font-size:10px;">🔄 Reset</button>
+        <button id="projCopyBtn2" class="btn mini-btn" style="flex:1; font-size:10px;">📋 Copy</button>
       </div>
       <div style="font-size:9px; color:#888; margin-top:8px; line-height:1.4;">
-        ðŸ’¡ Scale &lt;1 shrinks nodes toward center.<br>
+        💡 Scale &lt;1 shrinks nodes toward center.<br>
         Adjust until nodes align with map features.
       </div>
     </div>
@@ -5737,7 +5737,7 @@
       </div>
       <div style="display:flex; gap:6px; margin-top:8px;">
         <button class="btn" id="btnAutoFitCanvas" style="flex:1; font-size:11px; padding:6px;" title="Automatically expand canvas to fit all elements">
-          ðŸ“ Auto-fit Canvas
+          📐 Auto-fit Canvas
         </button>
         <button class="btn" id="btnCenterElements" style="flex:1; font-size:11px; padding:6px;" title="Center all elements on canvas">
           âŠ› Center All
@@ -5859,7 +5859,7 @@
       <!-- GPS Coordinates -->
       <div style="margin-top:12px; padding-top:10px; border-top:1px solid #e0e0e0;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-          <label style="font-weight:600; font-size:11px; color:#1d4ed8;">ðŸŒ GPS Coordinates</label>
+          <label style="font-weight:600; font-size:11px; color:#1d4ed8;">🌍 GPS Coordinates</label>
           <select id="nodeGpsFormat" style="font-size:10px; padding:2px 6px; border-radius:3px;">
             <option value="DD">Decimal (DD)</option>
             <option value="DMS">Deg/Min/Sec (DMS)</option>
@@ -5869,10 +5869,10 @@
         <!-- Quick lookup buttons -->
         <div style="display:flex; gap:6px; margin-bottom:8px;">
           <button id="btnLookupCity" type="button" style="flex:1; font-size:10px; padding:5px 8px; background:#e0f2fe; border:1px solid #7dd3fc; border-radius:4px; cursor:pointer; color:#0369a1;" title="Lookup GPS by city or country name">
-            ðŸ™ï¸ Lookup City/Country
+            🏙ï¸ Lookup City/Country
           </button>
           <button id="btnUseAddress" type="button" style="flex:1; font-size:10px; padding:5px 8px; background:#fef3c7; border:1px solid #fcd34d; border-radius:4px; cursor:pointer; color:#92400e;" title="Try to get GPS from node's address">
-            ðŸ“ From Address
+            📍 From Address
           </button>
         </div>
 
@@ -5925,7 +5925,7 @@
         </div>
 
         <div style="margin-top:6px; font-size:9px; color:#666; background:#f0f9ff; padding:4px 6px; border-radius:3px;">
-          ðŸ’¡ Nodes with GPS data appear in Geographic View
+          💡 Nodes with GPS data appear in Geographic View
         </div>
       </div>
     </div>
@@ -6131,7 +6131,7 @@
       <!-- Physical Routing Diversity Section -->
       <div class="inspector-section collapsed" data-section="edge-routing-overlap">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ”€ Physical Routing Diversity</span>
+          <span>🔀 Physical Routing Diversity</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6155,7 +6155,7 @@
             </div>
             <div class="hint" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
               <button id="btnPickRoutingOverlap" class="btn" style="padding:4px 8px; font-size:11px; background:#f59e0b; color:white; border:none; border-radius:4px; cursor:pointer;">
-                ðŸ–±ï¸ Pick from canvas
+                🖱ï¸ Pick from canvas
               </button>
               <span style="color:#6b7280;">Click a link on the canvas, then set diversity %</span>
             </div>
@@ -6166,7 +6166,7 @@
       <!-- Capacity Inventory Section -->
       <div class="inspector-section collapsed" data-section="edge-capacity-inventory">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ“Š Capacity Inventory</span>
+          <span>📊 Capacity Inventory</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6214,7 +6214,7 @@
       <!-- Commercial Cost Section -->
       <div class="inspector-section collapsed" data-section="edge-commercial-cost">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ’° Commercial Cost</span>
+          <span>💰 Commercial Cost</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6224,11 +6224,11 @@
             <div class="cost-mode-selector">
               <label title="Use Annual Contract Value for pathfinding">
                 <input type="radio" name="edgeCostMode" id="edgeCostModeLease" value="lease" checked />
-                <span>ðŸ“„ Lease (ACV)</span>
+                <span>📄 Lease (ACV)</span>
               </label>
               <label title="Use IRU Net Present Value for pathfinding">
                 <input type="radio" name="edgeCostMode" id="edgeCostModeIRU" value="iru" />
-                <span>ðŸ“œ IRU (NPV)</span>
+                <span>📜 IRU (NPV)</span>
               </label>
             </div>
           </div>
@@ -6236,7 +6236,7 @@
           <!-- Lease Subsection - Tier-based -->
           <div class="cost-subsection lease">
             <div class="cost-subsection-title">
-              <span>ðŸ“„ Lease Terms (by Capacity Tier)</span>
+              <span>📄 Lease Terms (by Capacity Tier)</span>
               <span id="edgeLeaseCurrency" style="font-size:10px; color:#3b82f6; font-weight:600;">USD</span>
             </div>
             <table class="tier-pricing-grid">
@@ -6284,7 +6284,7 @@
           <!-- IRU Subsection - Tier-based -->
           <div class="cost-subsection iru">
             <div class="cost-subsection-title">
-              <span>ðŸ“œ IRU Terms (by Capacity Tier)</span>
+              <span>📜 IRU Terms (by Capacity Tier)</span>
               <span id="edgeIRUCurrency" style="font-size:10px; color:#8b5cf6; font-weight:600;">USD</span>
             </div>
             <table class="tier-pricing-grid">
@@ -6349,7 +6349,7 @@
 
           <!-- Settings Link -->
           <div class="settings-link">
-            <span>ðŸ’¡</span>
+            <span>💡</span>
             <span>Currency & NPV settings: <a id="edgeCostSettingsLink">Financial Settings</a></span>
           </div>
         </div>
@@ -6421,7 +6421,7 @@
       <!-- Path Geometry Section (for geographic cable routing) -->
       <div class="inspector-section collapsed" data-section="edge-path-geometry">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ“ Path Geometry</span>
+          <span>📍 Path Geometry</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6439,20 +6439,20 @@
               Only visible in Dynamic Map view.
             </p>
             <button id="btnEditPathGeometry" class="btn-tool" style="width:100%; padding:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color:white; border:none; border-radius:6px; cursor:pointer; font-weight:600;">
-              <span>ðŸ›¤ï¸</span> Edit Path Geometry
+              <span>🛤ï¸</span> Edit Path Geometry
             </button>
           </div>
 
           <div id="pathGeometryHasPath" style="display:none;">
             <div style="display:flex; gap:6px; margin-bottom:8px;">
               <button id="btnPreviewPath" class="btn-tool" style="flex:1; padding:8px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; font-size:11px;">
-                ðŸ‘ï¸ Preview
+                👁ï¸ Preview
               </button>
               <button id="btnEditExistingPath" class="btn-tool" style="flex:1; padding:8px; background:#dbeafe; border:1px solid #93c5fd; border-radius:4px; cursor:pointer; font-size:11px; color:#1d4ed8;">
                 âœï¸ Edit
               </button>
               <button id="btnRemovePath" class="btn-tool" style="flex:1; padding:8px; background:#fef2f2; border:1px solid #fecaca; border-radius:4px; cursor:pointer; font-size:11px; color:#dc2626;">
-                ðŸ—‘ï¸ Remove
+                🗑ï¸ Remove
               </button>
             </div>
           </div>
@@ -6572,7 +6572,7 @@
       <!-- Commercial Cost Section -->
       <div class="inspector-section collapsed" data-section="group-commercial-cost">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ’° Commercial Cost</span>
+          <span>💰 Commercial Cost</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6580,12 +6580,12 @@
           <div id="groupCostOverrideStatus" style="margin-bottom:12px; padding:8px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px; display:none;">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <span style="font-size:11px; color:#92400e;">âœï¸ <strong>User Override</strong> - values set manually</span>
-              <button class="mini-btn" id="btnGroupResetCost" style="font-size:10px; padding:2px 6px;">ðŸ”„ Reset to Calculated</button>
+              <button class="mini-btn" id="btnGroupResetCost" style="font-size:10px; padding:2px 6px;">🔄 Reset to Calculated</button>
             </div>
           </div>
 
           <div id="groupCostCalculatedStatus" style="margin-bottom:12px; padding:8px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px;">
-            <span style="font-size:11px; color:#065f46;">ðŸ“Š <strong>Auto-calculated</strong> from <span id="groupCostSourceDesc">internal links</span></span>
+            <span style="font-size:11px; color:#065f46;">📊 <strong>Auto-calculated</strong> from <span id="groupCostSourceDesc">internal links</span></span>
           </div>
 
           <!-- Cost Mode Selector -->
@@ -6594,11 +6594,11 @@
             <div class="cost-mode-selector">
               <label title="Use Annual Contract Value for pathfinding">
                 <input type="radio" name="groupCostMode" id="groupCostModeLease" value="lease" checked />
-                <span>ðŸ“„ Lease (ACV)</span>
+                <span>📄 Lease (ACV)</span>
               </label>
               <label title="Use IRU Net Present Value for pathfinding">
                 <input type="radio" name="groupCostMode" id="groupCostModeIRU" value="iru" />
-                <span>ðŸ“œ IRU (NPV)</span>
+                <span>📜 IRU (NPV)</span>
               </label>
             </div>
           </div>
@@ -6606,7 +6606,7 @@
           <!-- Lease Subsection - Tier-based -->
           <div class="cost-subsection lease">
             <div class="cost-subsection-title">
-              <span>ðŸ“„ Lease Terms (by Capacity Tier)</span>
+              <span>📄 Lease Terms (by Capacity Tier)</span>
               <span id="groupLeaseCurrency" style="font-size:10px; color:#3b82f6; font-weight:600;">USD</span>
             </div>
             <table class="tier-pricing-grid">
@@ -6654,7 +6654,7 @@
           <!-- IRU Subsection - Tier-based -->
           <div class="cost-subsection iru">
             <div class="cost-subsection-title">
-              <span>ðŸ“œ IRU Terms (by Capacity Tier)</span>
+              <span>📜 IRU Terms (by Capacity Tier)</span>
               <span id="groupIRUCurrency" style="font-size:10px; color:#8b5cf6; font-weight:600;">USD</span>
             </div>
             <table class="tier-pricing-grid">
@@ -6719,7 +6719,7 @@
 
           <!-- Settings Link -->
           <div class="settings-link">
-            <span>ðŸ’¡</span>
+            <span>💡</span>
             <span>Currency & NPV settings: <a id="groupCostSettingsLink" style="color:#059669; cursor:pointer;">Financial Settings</a></span>
           </div>
         </div>
@@ -6816,7 +6816,7 @@
       <!-- Container Shape Section -->
       <div class="inspector-section collapsed" data-section="group-decoration">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ—ºï¸ Container Shape</span>
+          <span>🗺ï¸ Container Shape</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -6825,10 +6825,10 @@
           </div>
           <div class="row" style="display:flex; gap:6px;">
             <button class="btn" id="btnOpenLibraryForShape" style="flex:1; font-size:11px;">
-              ðŸ“š Open Library
+              📚 Open Library
             </button>
             <button class="btn" id="btnRemoveGroupShape" style="flex:1; font-size:11px;" disabled>
-              ðŸ”„ Reset to Rect
+              🔄 Reset to Rect
             </button>
           </div>
           <div class="hint" style="margin-top:6px;">Drag shapes from Library â†’ Containers tab to create shaped containers</div>
@@ -6934,7 +6934,7 @@
 
           <div class="row">
             <label style="display:flex; align-items:center; gap:6px;">
-              ðŸ”— FiberAtlantic Link
+              🔗 FiberAtlantic Link
               <span class="fa-link-badge" id="csFaLinkStatus">Not linked</span>
             </label>
             <div style="display:flex; gap:6px; align-items:center;">
@@ -6944,7 +6944,7 @@
                 <div id="csFaDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:white; border:1px solid #d0d0d0; border-top:none; border-radius:0 0 6px 6px; box-shadow:0 4px 12px rgba(0,0,0,0.15); z-index:1000; font-size:11px;">
                 </div>
               </div>
-              <button class="mini-btn" id="btnAutoMatchFA" title="Auto-match with FiberAtlantic" style="padding:4px 8px; font-size:10px;">ðŸ” Auto</button>
+              <button class="mini-btn" id="btnAutoMatchFA" title="Auto-match with FiberAtlantic" style="padding:4px 8px; font-size:10px;">🔍 Auto</button>
             </div>
             <input type="hidden" id="csFiberAtlanticId" />
             <div id="csFaMatchInfo" style="font-size:10px; color:#64748b; margin-top:4px;"></div>
@@ -6965,7 +6965,7 @@
               <div class="muted">No links assigned</div>
             </div>
             <div style="margin-top:6px;">
-              <button class="mini-btn" id="btnApplyCSNameToLinks" style="font-size:10px; padding:3px 8px;" title="Add cable system name to link tags">ðŸ·ï¸ Apply Name to Link Tags</button>
+              <button class="mini-btn" id="btnApplyCSNameToLinks" style="font-size:10px; padding:3px 8px;" title="Add cable system name to link tags">🏷ï¸ Apply Name to Link Tags</button>
             </div>
           </div>
 
@@ -6998,7 +6998,7 @@
     <div id="cableNavigatorHeader">
       <h3>Cable System List</h3>
       <div id="cableNavigatorControls">
-        <button id="btnOpenCableVisor" title="Open Submarine Cable Visor">ðŸŒ</button>
+        <button id="btnOpenCableVisor" title="Open Submarine Cable Visor">🌐</button>
         <button id="btnMinimizeCableNav" title="Minimize/Maximize">âˆ’</button>
         <button id="btnCloseCableNav" title="Hide Navigator">âœ•</button>
       </div>
@@ -7034,7 +7034,7 @@
           <div style="flex:1;"></div>
           <button class="btn" id="btnCsSelectAll" style="padding:3px 8px; font-size:10px;">âœ“ All</button>
           <button class="btn" id="btnCsSelectNone" style="padding:3px 8px; font-size:10px;">âœ— None</button>
-          <button class="btn" id="btnCsDeleteSelected" style="padding:3px 8px; font-size:10px; background:#fee2e2; border-color:#fca5a5; color:#b91c1c;">ðŸ—‘ï¸ Delete</button>
+          <button class="btn" id="btnCsDeleteSelected" style="padding:3px 8px; font-size:10px; background:#fee2e2; border-color:#fca5a5; color:#b91c1c;">🗑ï¸ Delete</button>
         </div>
       </div>
       <div id="cableSystemList" style="flex:1; overflow-y:auto; padding:4px;">
@@ -7042,13 +7042,13 @@
       </div>
       <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn primary" id="btnNewCableSystem" style="flex:1; min-width:50px;">+ New</button>
-        <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:50px;" title="Import cable systems from database or API">ðŸ“¥ Import</button>
-        <button class="btn" id="btnExportCableSystems" style="flex:1; min-width:50px;" title="Export cable systems to JSON">ðŸ“¤ Export</button>
+        <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:50px;" title="Import cable systems from database or API">📥 Import</button>
+        <button class="btn" id="btnExportCableSystems" style="flex:1; min-width:50px;" title="Export cable systems to JSON">📤 Export</button>
         <button class="btn" id="btnDeleteCableSystem" style="flex:1; min-width:50px;">Delete</button>
       </div>
       <div style="padding:4px 12px 8px; display:flex; gap:8px;">
-        <button class="btn" id="btnBatchAutoMatchFA" style="flex:1; font-size:10px; padding:4px 8px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="Auto-match all cable systems with FiberAtlantic for live status">ðŸ”— Link All to FiberAtlantic</button>
-        <button class="btn" id="btnRefreshLiveStatus" style="flex:1; font-size:10px; padding:4px 8px; background:#eff6ff; border-color:#93c5fd; color:#1e40af;" title="Refresh live status from FiberAtlantic for all linked cables">ðŸ”„ Refresh Live</button>
+        <button class="btn" id="btnBatchAutoMatchFA" style="flex:1; font-size:10px; padding:4px 8px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="Auto-match all cable systems with FiberAtlantic for live status">🔗 Link All to FiberAtlantic</button>
+        <button class="btn" id="btnRefreshLiveStatus" style="flex:1; font-size:10px; padding:4px 8px; background:#eff6ff; border-color:#93c5fd; color:#1e40af;" title="Refresh live status from FiberAtlantic for all linked cables">🔄 Refresh Live</button>
       </div>
     </div>
   </aside>
@@ -7058,7 +7058,7 @@
     <div style="background:white; border-radius:12px; width:90%; max-width:800px; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
       <div style="padding:16px 20px; border-bottom:1px solid #e0e0e0; display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <h3 style="margin:0; font-size:18px;">ðŸ“¥ Import Cable Systems</h3>
+          <h3 style="margin:0; font-size:18px;">📥 Import Cable Systems</h3>
           <div style="font-size:12px; color:#666; margin-top:4px;">Select cables to import as Cable System objects</div>
         </div>
         <button id="btnCloseCsBulkImport" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666; padding:0 8px;">&times;</button>
@@ -7101,7 +7101,7 @@
         </div>
         <div style="display:flex; gap:8px;">
           <button id="btnCsBulkCancel" class="btn" style="padding:8px 20px;">Cancel</button>
-          <button id="btnCsBulkImport" class="btn primary" style="padding:8px 20px;" disabled>ðŸ“¥ Import Selected</button>
+          <button id="btnCsBulkImport" class="btn primary" style="padding:8px 20px;" disabled>📥 Import Selected</button>
         </div>
       </div>
     </div>
@@ -7110,7 +7110,7 @@
   <!-- Multilink Group Manager Panel -->
   <aside id="multilinkManager" style="display:none;">
     <div id="multilinkManagerHeader">
-      <h3>ðŸ”— Multilink Groups</h3>
+      <h3>🔗 Multilink Groups</h3>
       <div id="multilinkManagerControls">
         <button id="btnMinimizeMLManager" title="Minimize/Maximize">âˆ’</button>
         <button id="btnCloseMLManager" title="Hide Manager">âœ•</button>
@@ -7191,7 +7191,7 @@
       <!-- Commercial Cost Section -->
       <div id="mlgCostSection" style="display:none; margin-top:12px; padding:12px; background:#f8fafb; border:1px solid #e5e7eb; border-radius:8px;">
         <div style="font-size:11px; font-weight:700; color:#059669; text-transform:uppercase; letter-spacing:0.3px; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
-          ðŸ’° Commercial Cost
+          💰 Commercial Cost
           <span id="mlgCostCurrency" style="font-size:10px; color:#6b7280; font-weight:500; margin-left:auto;">USD</span>
         </div>
 
@@ -7224,18 +7224,18 @@
           <div style="display:flex; gap:6px;">
             <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500;">
               <input type="radio" name="mlgCostMode" id="mlgCostModeLease" value="lease" checked style="margin:0;" />
-              <span>ðŸ“„ Lease (ACV)</span>
+              <span>📄 Lease (ACV)</span>
             </label>
             <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500;">
               <input type="radio" name="mlgCostMode" id="mlgCostModeIRU" value="iru" style="margin:0;" />
-              <span>ðŸ“œ IRU (NPV)</span>
+              <span>📜 IRU (NPV)</span>
             </label>
           </div>
         </div>
 
         <!-- Lease Section -->
         <div style="padding:8px; background:#eff6ff; border:1px solid #bfdbfe; border-left:3px solid #3b82f6; border-radius:4px; margin-bottom:8px;">
-          <div style="font-size:10px; font-weight:600; color:#1e40af; margin-bottom:6px;">ðŸ“„ Lease Terms</div>
+          <div style="font-size:10px; font-weight:600; color:#1e40af; margin-bottom:6px;">📄 Lease Terms</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
             <div>
               <label style="font-size:9px; color:#6b7280;">NRC (Sum)</label>
@@ -7270,7 +7270,7 @@
 
         <!-- IRU Section -->
         <div style="padding:8px; background:#faf5ff; border:1px solid #e9d5ff; border-left:3px solid #8b5cf6; border-radius:4px;">
-          <div style="font-size:10px; font-weight:600; color:#6b21a8; margin-bottom:6px;">ðŸ“œ IRU Terms</div>
+          <div style="font-size:10px; font-weight:600; color:#6b21a8; margin-bottom:6px;">📜 IRU Terms</div>
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">
             <div>
               <label style="font-size:9px; color:#6b7280;">IRU Fee (Sum)</label>
@@ -7318,7 +7318,7 @@
 
         <!-- Settings Link -->
         <div style="margin-top:8px; font-size:9px; color:#6b7280; display:flex; align-items:center; gap:4px;">
-          <span>ðŸ’¡</span>
+          <span>💡</span>
           <span>Currency & NPV settings: <a id="mlgCostSettingsLink" style="color:#059669; cursor:pointer;">Financial Settings</a></span>
         </div>
       </div>
@@ -7340,7 +7340,7 @@
   <!-- Route Finder Panel (Inspector Style) -->
   <aside id="routeFinderPanel">
     <div id="routeFinderHeader">
-      <h3>ðŸ›¤ï¸ Route Finder</h3>
+      <h3>🛤ï¸ Route Finder</h3>
       <div id="routeFinderControls">
         <button id="btnCloseRouteFinder" title="Exit Route Finder">âœ•</button>
       </div>
@@ -7349,7 +7349,7 @@
       <!-- Mode Indicator -->
       <div style="padding:10px 12px; background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); border-bottom:1px solid #93c5fd;">
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:16px;">ðŸ§­</span>
+          <span style="font-size:16px;">🧭</span>
           <div>
             <div style="font-weight:600; font-size:12px; color:#1e40af;">Calculation Mode Active</div>
             <div style="font-size:11px; color:#3b82f6;">Click nodes or use dropdowns to select endpoints</div>
@@ -7375,7 +7375,7 @@
       <!-- Cost Optimization Section -->
       <div class="inspector-section" data-section="route-cost-optimization">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ’° Cost Optimization</span>
+          <span>💰 Cost Optimization</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7385,7 +7385,7 @@
               <span style="font-size:10px; color:#3b82f6; font-weight:500; min-width:50px;">âš¡ Latency</span>
               <input type="range" id="routeOptimizationBalance" min="0" max="100" value="0"
                 style="flex:1; height:8px; accent-color:#059669;" />
-              <span style="font-size:10px; color:#059669; font-weight:500; min-width:40px; text-align:right;">ðŸ’° Cost</span>
+              <span style="font-size:10px; color:#059669; font-weight:500; min-width:40px; text-align:right;">💰 Cost</span>
             </div>
             <div style="display:flex; justify-content:space-between; margin-top:4px;">
               <span id="routeBalanceLatencyPct" style="font-size:10px; color:#3b82f6;">100%</span>
@@ -7399,11 +7399,11 @@
             <div style="display:flex; gap:6px; margin-top:4px;">
               <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500; background:white;" id="routeCostMetricLeaseLabel">
                 <input type="radio" name="routeCostMetric" id="routeCostMetricLease" value="lease" checked style="margin:0;" />
-                <span>ðŸ“„ Lease (ACV)</span>
+                <span>📄 Lease (ACV)</span>
               </label>
               <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500; background:white;" id="routeCostMetricIRULabel">
                 <input type="radio" name="routeCostMetric" id="routeCostMetricIRU" value="iru" style="margin:0;" />
-                <span>ðŸ“œ IRU (NPV)</span>
+                <span>📜 IRU (NPV)</span>
               </label>
             </div>
           </div>
@@ -7437,11 +7437,11 @@
             <div style="display:flex; gap:6px; margin-top:4px;">
               <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500; background:white;">
                 <input type="radio" name="routeCostScale" id="routeCostScaleLog" value="logarithmic" checked style="margin:0;" />
-                <span>ðŸ“Š Logarithmic</span>
+                <span>📊 Logarithmic</span>
               </label>
               <label style="flex:1; display:flex; align-items:center; gap:4px; padding:6px 8px; border:2px solid #e5e7eb; border-radius:4px; cursor:pointer; font-size:10px; font-weight:500; background:white;">
                 <input type="radio" name="routeCostScale" id="routeCostScaleLinear" value="linear" style="margin:0;" />
-                <span>ðŸ“ Linear</span>
+                <span>📏 Linear</span>
               </label>
             </div>
             <div style="font-size:9px; color:#94a3b8; margin-top:4px;">Logarithmic scale recommended when costs vary significantly between links</div>
@@ -7449,7 +7449,7 @@
 
           <div style="margin-top:10px; padding:8px; background:#f0fdf4; border:1px solid #86efac; border-radius:6px;">
             <div style="font-size:10px; color:#166534;">
-              <strong>ðŸ’¡ Tip:</strong> Slide towards Cost to find cheaper routes. Route results will show both latency and cost totals.
+              <strong>💡 Tip:</strong> Slide towards Cost to find cheaper routes. Route results will show both latency and cost totals.
             </div>
           </div>
         </div>
@@ -7463,20 +7463,20 @@
         </div>
         <div class="inspector-section-content">
           <div class="row">
-            <label style="color:#166534; font-weight:600;">ðŸŸ¢ Origin (A-Node)</label>
+            <label style="color:#166534; font-weight:600;">🟢 Origin (A-Node)</label>
             <select id="routeOriginSelect" style="width:100%; padding:8px; border:2px solid #86efac; border-radius:4px; background:#f0fff4; font-size:12px;">
               <option value="">-- Click a node or select from list --</option>
             </select>
           </div>
           <div class="row">
-            <label style="color:#991b1b; font-weight:600;">ðŸ”´ Destination (B-Node)</label>
+            <label style="color:#991b1b; font-weight:600;">🔴 Destination (B-Node)</label>
             <select id="routeDestSelect" style="width:100%; padding:8px; border:2px solid #fca5a5; border-radius:4px; background:#fef2f2; font-size:12px;">
               <option value="">-- Click a node or select from list --</option>
             </select>
           </div>
           <div class="row" style="display:flex; gap:8px; margin-top:12px;">
             <button class="btn" id="btnSwapEndpoints" style="flex:1;">â‡„ Swap</button>
-            <button class="btn primary" id="btnCalculateRoutes" style="flex:1;" disabled>ðŸ” Calculate</button>
+            <button class="btn primary" id="btnCalculateRoutes" style="flex:1;" disabled>🔍 Calculate</button>
           </div>
           <!-- Active Filters Indicator -->
           <div id="activeFiltersIndicator" style="display:none; margin-top:10px; padding:8px; background:#fef3c7; border:1px solid #fcd34d; border-radius:6px;">
@@ -7489,7 +7489,7 @@
           </div>
           <div class="row" style="margin-top:8px;">
             <button class="btn" id="btnResetAllFilters" style="width:100%; font-size:11px; padding:6px; background:#fee2e2; border-color:#fca5a5; color:#991b1b;">
-              ðŸ§¹ Reset All Filters
+              🧹 Reset All Filters
             </button>
           </div>
         </div>
@@ -7498,7 +7498,7 @@
       <!-- Restrictions Section -->
       <div class="inspector-section collapsed" data-section="route-restrictions">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸš« Restrictions</span>
+          <span>🚫 Restrictions</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7535,7 +7535,7 @@
           <!-- Clear All Exclusions -->
           <div class="row" style="margin-top:12px;">
             <button class="btn" id="btnClearAllRestrictions" style="width:100%; font-size:11px; padding:6px; background:#fef2f2; border-color:#fecaca; color:#991b1b;">
-              ðŸ—‘ï¸ Clear All Exclusions
+              🗑ï¸ Clear All Exclusions
             </button>
           </div>
         </div>
@@ -7585,7 +7585,7 @@
           <!-- Clear All Must-Use -->
           <div class="row" style="margin-top:12px;">
             <button class="btn" id="btnClearAllMustUse" style="width:100%; font-size:11px; padding:6px; background:#f0fdf4; border-color:#86efac; color:#166534;">
-              ðŸ—‘ï¸ Clear All Must-Use Constraints
+              🗑ï¸ Clear All Must-Use Constraints
             </button>
           </div>
         </div>
@@ -7594,7 +7594,7 @@
       <!-- Physical Routing Diversity Section -->
       <div class="inspector-section collapsed" data-section="route-physical-diversity">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ”€ Physical Routing Diversity</span>
+          <span>🔀 Physical Routing Diversity</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7649,7 +7649,7 @@
           <!-- Clear All Diversity Constraints -->
           <div class="row" style="margin-top:12px;">
             <button class="btn" id="btnClearDiversityConstraints" style="width:100%; font-size:11px; padding:6px; background:#f0fdf4; border-color:#86efac; color:#166534;">
-              ðŸ—‘ï¸ Clear Diversity Constraints
+              🗑ï¸ Clear Diversity Constraints
             </button>
           </div>
         </div>
@@ -7658,7 +7658,7 @@
       <!-- Tag Filters Section -->
       <div class="inspector-section collapsed" data-section="route-tag-filters">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ·ï¸ Tag Filters</span>
+          <span>🏷ï¸ Tag Filters</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7707,7 +7707,7 @@
           <!-- Clear Tag Filters -->
           <div class="row" style="margin-top:12px;">
             <button class="btn" id="btnClearRouteTagFilters" style="width:100%; font-size:11px; padding:6px; background:#fefce8; border-color:#fde047; color:#854d0e;">
-              ðŸ—‘ï¸ Clear Tag Filters
+              🗑ï¸ Clear Tag Filters
             </button>
           </div>
         </div>
@@ -7716,7 +7716,7 @@
       <!-- Multilink Groups Preference Section (Phase 1) -->
       <div class="inspector-section collapsed" data-section="route-mlg-preference">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ”— Multilink Groups</span>
+          <span>🔗 Multilink Groups</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7745,11 +7745,11 @@
               </label>
               <label style="display:flex; align-items:center; gap:4px; cursor:pointer; padding:4px 8px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:4px; font-size:11px;">
                 <input type="checkbox" id="mlgFilterRing" checked style="accent-color:#a855f7;" />
-                <span>ðŸ›¡ï¸ Ring</span>
+                <span>🛡ï¸ Ring</span>
               </label>
               <label style="display:flex; align-items:center; gap:4px; cursor:pointer; padding:4px 8px; background:#f5f3ff; border:1px solid #ddd6fe; border-radius:4px; font-size:11px;">
                 <input type="checkbox" id="mlgFilterRingLinear" checked style="accent-color:#a855f7;" />
-                <span>ðŸ”€ Ring+Linear</span>
+                <span>🔀 Ring+Linear</span>
               </label>
             </div>
           </div>
@@ -7786,7 +7786,7 @@
           <div id="mlgCapacitySection" style="margin-top:12px; display:none;">
             <div style="border:1px solid #e9d5ff; border-radius:6px; overflow:hidden;">
               <div style="padding:8px 10px; background:#faf5ff; cursor:pointer; display:flex; justify-content:space-between; align-items:center;" onclick="document.getElementById('mlgCapacityContent').style.display = document.getElementById('mlgCapacityContent').style.display === 'none' ? 'block' : 'none'; this.querySelector('.mlg-cap-icon').textContent = document.getElementById('mlgCapacityContent').style.display === 'none' ? 'â–¶' : 'â–¼';">
-                <span style="font-size:11px; font-weight:600; color:#7c3aed;">ðŸ“Š MLG Capacity Filter</span>
+                <span style="font-size:11px; font-weight:600; color:#7c3aed;">📊 MLG Capacity Filter</span>
                 <span class="mlg-cap-icon" style="font-size:10px; color:#a855f7;">â–¶</span>
               </div>
               <div id="mlgCapacityContent" style="display:none; padding:10px; background:#fefbff;">
@@ -7844,7 +7844,7 @@
           <!-- Clear MLG Settings -->
           <div class="row" id="mlgClearRow" style="margin-top:12px; display:none;">
             <button class="btn" id="btnClearMLGSettings" style="width:100%; font-size:11px; padding:6px; background:#fdf4ff; border-color:#e9d5ff; color:#86198f;">
-              ðŸ—‘ï¸ Clear MLG Settings
+              🗑ï¸ Clear MLG Settings
             </button>
           </div>
 
@@ -7858,7 +7858,7 @@
       <!-- Capacity Requirements Section -->
       <div class="inspector-section collapsed" data-section="route-capacity-filter">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ“Š Capacity Requirements</span>
+          <span>📊 Capacity Requirements</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -7930,7 +7930,7 @@
           <!-- Clear Capacity Filter -->
           <div class="row" style="margin-top:10px;">
             <button class="btn" id="btnClearRouteCapacityFilter" style="width:100%; font-size:11px; padding:6px; background:#eff6ff; border-color:#93c5fd; color:#1e40af;">
-              ðŸ—‘ï¸ Clear Capacity Filter
+              🗑ï¸ Clear Capacity Filter
             </button>
           </div>
         </div>
@@ -7968,7 +7968,7 @@
               </label>
               <label style="flex:1; display:flex; align-items:center; gap:4px; padding:8px; border:2px solid #e5e7eb; border-radius:6px; cursor:pointer; font-size:11px; font-weight:500; background:white;" id="mlgSaveModeExistingLabel">
                 <input type="radio" name="mlgSaveMode" id="mlgSaveModeExisting" value="existing" style="margin:0; accent-color:#a855f7;" />
-                <span>ðŸ“Ž Existing MLG</span>
+                <span>📎 Existing MLG</span>
               </label>
             </div>
           </div>
@@ -7984,7 +7984,7 @@
 
           <!-- Save as New MLG Button -->
           <button class="btn primary" id="btnSaveRouteAsMLG" style="width:100%; padding:10px; font-size:12px; background:linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); border-color:#7c3aed;">
-            ðŸ’¾ Save Route as Multilink Group
+            💾 Save Route as Multilink Group
           </button>
 
           <!-- Add to Existing MLG Button (hidden by default) -->
@@ -8001,7 +8001,7 @@
       <!-- Protection Path Section (Ring Protection) -->
       <div class="inspector-section" data-section="route-protection" id="routeProtectionSection" style="display:none;">
         <div class="inspector-section-header" style="background:linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ›¡ï¸ Protection Path</span>
+          <span>🛡ï¸ Protection Path</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -8014,7 +8014,7 @@
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
               <input type="checkbox" id="chkPhysicalDiversity" checked style="width:16px; height:16px; cursor:pointer;" />
               <label for="chkPhysicalDiversity" style="font-weight:600; color:#166534; font-size:11px; cursor:pointer;">
-                ðŸ”€ Physical Routing Diversity
+                🔀 Physical Routing Diversity
               </label>
             </div>
             <div style="display:flex; align-items:center; gap:8px; margin-left:24px;">
@@ -8042,7 +8042,7 @@
           <!-- Calculate Protection Button -->
           <div class="row" style="margin-top:12px;">
             <button class="btn" id="btnCalculateProtection" style="width:100%; padding:10px; font-size:12px; background:linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border:none; color:white; font-weight:600;">
-              ðŸ” Calculate Protection Path
+              🔍 Calculate Protection Path
             </button>
           </div>
 
@@ -8050,7 +8050,7 @@
           <div id="protectionPathResult" style="display:none; margin-top:12px;">
             <div style="padding:10px; background:#fef3c7; border:2px solid #f59e0b; border-radius:8px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-weight:600; color:#92400e; font-size:12px;">ðŸ›¡ï¸ Protection Path</span>
+                <span style="font-weight:600; color:#92400e; font-size:12px;">🛡ï¸ Protection Path</span>
                 <div style="display:flex; gap:8px; font-size:11px; color:#92400e;">
                   <span id="protectionLatency">-</span>
                   <span id="protectionHops">-</span>
@@ -8071,7 +8071,7 @@
           <!-- Save as Protected MLG -->
           <div id="saveProtectedMLGContainer" style="display:none; margin-top:12px; padding-top:12px; border-top:1px solid #fcd34d;">
             <button class="btn" id="btnSaveProtectedMLG" style="width:100%; padding:10px; font-size:12px; background:linear-gradient(135deg, #10b981 0%, #059669 100%); border:none; color:white; font-weight:600;">
-              ðŸ’¾ Save as Protected MLG (Ring)
+              💾 Save as Protected MLG (Ring)
             </button>
             <div style="font-size:10px; color:#6b7280; margin-top:6px; text-align:center;">
               Creates an MLG with primary + protection paths between closure nodes
@@ -8112,7 +8112,7 @@
             <div class="hint">Default for regions without custom values. Per-region settings in Inspector â†’ Routing prevail.</div>
           </div>
           <div style="margin-top:8px; padding:8px; background:#f0f9ff; border:1px solid #bae6fd; border-radius:6px;">
-            <div style="font-size:10px; color:#0369a1;">ðŸ’¡ <strong>Note:</strong> When cost optimization is enabled (balance > 0%), container transit also considers commercial cost. Configure per-container costs in Inspector â†’ Commercial Cost section.</div>
+            <div style="font-size:10px; color:#0369a1;">💡 <strong>Note:</strong> When cost optimization is enabled (balance > 0%), container transit also considers commercial cost. Configure per-container costs in Inspector â†’ Commercial Cost section.</div>
           </div>
         </div>
       </div>
@@ -8129,7 +8129,7 @@
   <!-- Label Manager Panel -->
   <aside id="labelManagerPanel">
     <div id="labelManagerHeader">
-      <h3>ðŸ·ï¸ Label Manager</h3>
+      <h3>🏷ï¸ Label Manager</h3>
       <div id="labelManagerControls">
         <button id="btnCloseLabelManager" title="Close Label Manager">âœ•</button>
       </div>
@@ -8137,7 +8137,7 @@
     <div id="labelManagerContent">
       <!-- Selection Status -->
       <div id="lmSelectionStatus" class="lm-selection-status">
-        <span style="font-size:14px;">ðŸ“Œ</span>
+        <span style="font-size:14px;">📌</span>
         <div style="flex:1;">
           <div style="font-weight:600; font-size:12px; color:#5b21b6;">Selection</div>
           <div id="lmSelectionSummary" style="font-size:11px; color:#7c3aed;">Nothing selected</div>
@@ -8147,7 +8147,7 @@
       <!-- Project Tags Section -->
       <div class="inspector-section" data-section="lm-project-tags">
         <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
-          <span>ðŸ“‹ Project Tags</span>
+          <span>📋 Project Tags</span>
           <span class="section-icon">â–¼</span>
         </div>
         <div class="inspector-section-content">
@@ -8156,16 +8156,16 @@
           </div>
           <div style="display:flex; gap:4px; margin-bottom:8px;">
             <button class="btn" id="lmFilterAll" style="flex:1; font-size:10px; padding:4px 6px;" title="Show all tags">All</button>
-            <button class="btn" id="lmFilterNodes" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on nodes">ðŸ”µ Nodes</button>
-            <button class="btn" id="lmFilterLinks" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on links">ðŸ”¶ Links</button>
-            <button class="btn" id="lmFilterContainers" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on containers">ðŸŸ© Boxes</button>
+            <button class="btn" id="lmFilterNodes" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on nodes">🔵 Nodes</button>
+            <button class="btn" id="lmFilterLinks" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on links">🔶 Links</button>
+            <button class="btn" id="lmFilterContainers" style="flex:1; font-size:10px; padding:4px 6px;" title="Show tags used on containers">🟩 Boxes</button>
           </div>
           <div id="lmProjectTagsList" style="max-height:200px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:4px;">
             <!-- Tags will be rendered here -->
           </div>
           <div style="display:flex; gap:6px; margin-top:8px;">
             <button class="btn" id="lmSelectAllWithTag" style="flex:1; font-size:11px; padding:6px;" disabled>
-              ðŸŽ¯ Select All with Checked Tags
+              🎯 Select All with Checked Tags
             </button>
           </div>
           <div style="display:flex; gap:6px; margin-top:6px;">
@@ -8173,7 +8173,7 @@
               + New Tag
             </button>
             <button class="btn" id="lmDeleteUnused" style="flex:1; font-size:11px; padding:6px;" title="Remove tags not used anywhere">
-              ðŸ—‘ï¸ Delete Unused
+              🗑ï¸ Delete Unused
             </button>
           </div>
         </div>
@@ -8187,7 +8187,7 @@
         </div>
         <div class="inspector-section-content">
           <div id="lmNoSelection" style="padding:12px; text-align:center; color:#9ca3af; font-size:12px;">
-            <div style="font-size:24px; margin-bottom:6px;">ðŸ‘†</div>
+            <div style="font-size:24px; margin-bottom:6px;">👆</div>
             Select nodes, links, or containers<br>to manage their tags
           </div>
           <div id="lmSelectionTags" style="display:none;">
@@ -8254,7 +8254,7 @@
               </label>
               <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
                 <input type="radio" name="lmBulkAction" value="set" style="accent-color:#8b5cf6;" />
-                <span style="color:#1d4ed8;">ðŸ”„ Set tags exactly (replace all)</span>
+                <span style="color:#1d4ed8;">🔄 Set tags exactly (replace all)</span>
               </label>
             </div>
           </div>
@@ -8271,7 +8271,7 @@
               <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px;">
                 <input type="radio" name="lmBulkTarget" value="pick" style="accent-color:#8b5cf6;" />
                 <span>Pick elements on canvas</span>
-                <button class="btn" id="lmBulkPickMode" style="padding:2px 8px; font-size:10px; margin-left:auto;">ðŸŽ¯ Start Pick</button>
+                <button class="btn" id="lmBulkPickMode" style="padding:2px 8px; font-size:10px; margin-left:auto;">🎯 Start Pick</button>
               </label>
             </div>
             <div id="lmBulkPickList" style="display:none; margin-top:8px; padding:6px; background:#fef3c7; border-radius:4px;">
@@ -8548,13 +8548,13 @@
     const indicator = document.getElementById('floatingLabelsViewIndicator');
     if (indicator) {
       if (window.mapLibreState && window.mapLibreState.active) {
-        indicator.textContent = 'ðŸ—ºï¸ Geo Dynamic';
+        indicator.textContent = '🗺ï¸ Geo Dynamic';
         indicator.style.color = '#10b981';
       } else if (window.geoViewState && window.geoViewState.active) {
-        indicator.textContent = 'ðŸŒ Geo Static';
+        indicator.textContent = '🌐 Geo Static';
         indicator.style.color = '#0096D6';
       } else {
-        indicator.textContent = 'ðŸ“‹ Canvas';
+        indicator.textContent = '📋 Canvas';
         indicator.style.color = '#666';
       }
     }
@@ -9263,13 +9263,13 @@
     render();
 
     if (wasShifted && wasExpanded) {
-      showToast(`ðŸ“ Canvas expanded to ${state.canvasWidth} Ã— ${state.canvasHeight} and elements repositioned`);
+      showToast(`📐 Canvas expanded to ${state.canvasWidth} Ã— ${state.canvasHeight} and elements repositioned`);
     } else if (wasShifted) {
-      showToast(`ðŸ“ Elements repositioned to fit within canvas`);
+      showToast(`📐 Elements repositioned to fit within canvas`);
     } else if (wasExpanded) {
-      showToast(`ðŸ“ Canvas expanded to ${state.canvasWidth} Ã— ${state.canvasHeight}`);
+      showToast(`📐 Canvas expanded to ${state.canvasWidth} Ã— ${state.canvasHeight}`);
     } else {
-      showToast(`ðŸ“ All elements already fit within canvas`);
+      showToast(`📐 All elements already fit within canvas`);
     }
   }
 
@@ -15069,7 +15069,7 @@ const groupTitle = document.getElementById('groupTitle');
           groupShapeInfo.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
               <div style="width:32px; height:32px; background:#e8f4ff; border:1px solid #2563eb; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                ${g.decorativeShape.svgData || 'ðŸ—ºï¸'}
+                ${g.decorativeShape.svgData || '🗺ï¸'}
               </div>
               <div>
                 <div style="font-weight:600; font-size:11px; color:#2563eb;">${g.decorativeShape.name}</div>
@@ -15083,7 +15083,7 @@ const groupTitle = document.getElementById('groupTitle');
           groupShapeInfo.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
               <div style="width:32px; height:32px; background:#f0f0ff; border-radius:4px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
-                ${g.decorativeShape.svgData || 'ðŸ—ºï¸'}
+                ${g.decorativeShape.svgData || '🗺ï¸'}
               </div>
               <div>
                 <div style="font-weight:600; font-size:11px;">${g.decorativeShape.name}</div>
@@ -17031,7 +17031,7 @@ function showCSVExportDialog(type) {
     display: flex; justify-content: space-between; align-items: center;
   `;
   header.innerHTML = `
-    <span>ðŸ“Š Export ${type === 'links' ? 'Links' : 'Nodes'} CSV</span>
+    <span>📊 Export ${type === 'links' ? 'Links' : 'Nodes'} CSV</span>
     <button id="closeCSVExport" style="background:none; border:none; font-size:20px; cursor:pointer; color:#666;">Ã—</button>
   `;
   dialog.appendChild(header);
@@ -17337,13 +17337,13 @@ function showTemplateDownloadDialog() {
 
   dialog.innerHTML = `
     <div style="padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-size: 16px; font-weight: 600; color: #333;">ðŸ“‹ Download Import Template</span>
+      <span style="font-size: 16px; font-weight: 600; color: #333;">📋 Download Import Template</span>
       <button id="closeTemplateModal" style="background:none; border:none; font-size:20px; cursor:pointer; color:#666;">Ã—</button>
     </div>
 
     <div style="padding: 20px; overflow-y: auto; flex: 1;">
       <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
-        <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">ðŸ“Œ Template Instructions</div>
+        <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">📌 Template Instructions</div>
         <div style="font-size: 12px; color: #1e40af;">
           Download a spreadsheet template with 5 tabs: Instructions, Nodes, Links, Containers, and MLGs.
           Fill in your data and import it back to create your network diagram.
@@ -17809,7 +17809,7 @@ function showImportDialog() {
 
   dialog.innerHTML = `
     <div style="padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
-      <span style="font-size: 16px; font-weight: 600; color: #333;">ðŸ“¥ Import from Spreadsheet</span>
+      <span style="font-size: 16px; font-weight: 600; color: #333;">📥 Import from Spreadsheet</span>
       <button id="closeImportModal" style="background:none; border:none; font-size:20px; cursor:pointer; color:#666;">Ã—</button>
     </div>
 
@@ -17847,10 +17847,10 @@ function showImportDialog() {
         <!-- Tabs for file type selection -->
         <div style="display: flex; border-bottom: 1px solid #e0e0e0; margin-bottom: 12px;">
           <button class="import-tab active" data-tab="workbook" style="padding: 8px 16px; border: none; background: none; font-size: 12px; cursor: pointer; border-bottom: 2px solid #0096D6; color: #0096D6; font-weight: 600;">
-            ðŸ“Š Workbook (XLSX/ODS)
+            📊 Workbook (XLSX/ODS)
           </button>
           <button class="import-tab" data-tab="csv" style="padding: 8px 16px; border: none; background: none; font-size: 12px; cursor: pointer; border-bottom: 2px solid transparent; color: #666;">
-            ðŸ“„ CSV Files
+            📄 CSV Files
           </button>
         </div>
 
@@ -17978,9 +17978,9 @@ function showImportDialog() {
         const content = modal.querySelector('#importPreviewContent');
 
         content.innerHTML = `
-          <div>ðŸ“¦ <strong>${workbookData.nodes?.rows?.length || 0}</strong> nodes found</div>
-          <div>ðŸ”— <strong>${workbookData.links?.rows?.length || 0}</strong> links found</div>
-          <div>ðŸ“ <strong>${workbookData.containers?.rows?.length || 0}</strong> containers found</div>
+          <div>📦 <strong>${workbookData.nodes?.rows?.length || 0}</strong> nodes found</div>
+          <div>🔗 <strong>${workbookData.links?.rows?.length || 0}</strong> links found</div>
+          <div>📁 <strong>${workbookData.containers?.rows?.length || 0}</strong> containers found</div>
           <div style="margin-top: 8px; font-size: 10px; color: #888;">
             Sheets found: ${workbookData.sheetNames.join(', ')}
           </div>
@@ -18016,8 +18016,8 @@ function showImportDialog() {
         const content = modal.querySelector('#importPreviewContent');
 
         content.innerHTML = `
-          <div>ðŸ“¦ <strong>${nodesData.rows.length}</strong> nodes found</div>
-          <div>ðŸ”— <strong>${linksData.rows.length}</strong> links found</div>
+          <div>📦 <strong>${nodesData.rows.length}</strong> nodes found</div>
+          <div>🔗 <strong>${linksData.rows.length}</strong> links found</div>
           <div style="margin-top: 8px; font-size: 10px; color: #888;">
             Node columns: ${nodesData.headers.slice(0, 5).join(', ')}${nodesData.headers.length > 5 ? '...' : ''}
           </div>
@@ -19586,7 +19586,7 @@ function loadProjectObject(obj) {
         liveAreaHtml = renderLiveStatusBadge(cs);
       } else {
         // Small inline link icon to trigger manual FA matching
-        liveAreaHtml = `<button class="btn-fa-inline-link" data-cs-id="${cs.id}" title="Link to FiberAtlantic for live status" style="padding:1px 4px; font-size:9px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; cursor:pointer; color:#9ca3af; line-height:1.2; display:flex; align-items:center; gap:2px;">ðŸ”—<span style="font-size:8px;">link</span></button>`;
+        liveAreaHtml = `<button class="btn-fa-inline-link" data-cs-id="${cs.id}" title="Link to FiberAtlantic for live status" style="padding:1px 4px; font-size:9px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:3px; cursor:pointer; color:#9ca3af; line-height:1.2; display:flex; align-items:center; gap:2px;">🔗<span style="font-size:8px;">link</span></button>`;
       }
 
       return `
@@ -19601,7 +19601,7 @@ function loadProjectObject(obj) {
           </div>
           <div style="display:flex; align-items:center; gap:4px;">
             ${liveAreaHtml}
-            <button class="btn-show-visor" data-cs-id="${cs.id}" title="Show in Cable Visor" style="padding:2px 6px; font-size:10px; background:#e0f2fe; border:1px solid #7dd3fc; border-radius:3px; cursor:pointer;">ðŸŒ</button>
+            <button class="btn-show-visor" data-cs-id="${cs.id}" title="Show in Cable Visor" style="padding:2px 6px; font-size:10px; background:#e0f2fe; border:1px solid #7dd3fc; border-radius:3px; cursor:pointer;">🌐</button>
             <div class="cs-count">${linkCount}L / ${nodeCount}N</div>
           </div>
         </div>
@@ -19828,7 +19828,7 @@ function loadProjectObject(obj) {
       showToast('Auto-match failed: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = 'ðŸ”— Link All to FiberAtlantic';
+      btn.textContent = '🔗 Link All to FiberAtlantic';
     }
   });
 
@@ -19876,7 +19876,7 @@ function loadProjectObject(obj) {
       showToast('Refresh failed: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = 'ðŸ”„ Refresh Live';
+      btn.textContent = '🔄 Refresh Live';
     }
   });
 
@@ -19909,7 +19909,7 @@ function loadProjectObject(obj) {
 
     popover.innerHTML = `
       <div class="fa-inline-popover-header">
-        <span>ðŸ”— Link "${escapeHtml(cs.shortName || cs.name)}" to FA</span>
+        <span>🔗 Link "${escapeHtml(cs.shortName || cs.name)}" to FA</span>
         <button class="fa-popover-close" style="background:none; border:none; cursor:pointer; font-size:14px; color:#6b7280; padding:0 2px;">âœ•</button>
       </div>
       <input class="fa-inline-popover-search" placeholder="Search FiberAtlantic cables..." autofocus />
@@ -20649,7 +20649,7 @@ function loadProjectObject(obj) {
   // Cross-checks with FiberAtlantic ONLY for cables where rfs_year == current year
   async function loadFromTeleGeographyAPI() {
     const listEl = document.getElementById('cableVisorCableList');
-    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">ðŸŒ Loading from TeleGeography geodata API...</div>';
+    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading from TeleGeography geodata API...</div>';
 
     try {
       // Step 1: Fetch cable GeoJSON via TeleGeography real geodata API
@@ -20662,7 +20662,7 @@ function loadProjectObject(obj) {
 
       // Step 2: Fetch per-cable metadata from tg-cablesystem-rfs-metadata
       // The /cable/{slug} endpoint returns: { id, name, rfs, rfs_year, is_planned, owners, suppliers, length, landing_points, url }
-      if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">ðŸŒ Loading metadata for ${totalCables} cables... <span id="metaProgress">0</span>/${totalCables}</div>`;
+      if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading metadata for ${totalCables} cables... <span id="metaProgress">0</span>/${totalCables}</div>`;
 
       let metaData = {};
       let metaFetched = 0;
@@ -20705,7 +20705,7 @@ function loadProjectObject(obj) {
 
       let faCables = null;
       if (currentYearCables.length > 0) {
-        if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">ðŸŒ Cross-checking ${currentYearCables.length} cables with RFS ${currentYear} against FiberAtlantic...</div>`;
+        if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Cross-checking ${currentYearCables.length} cables with RFS ${currentYear} against FiberAtlantic...</div>`;
         try {
           faCables = await fetchFiberAtlanticCables(true);
           console.log(`[CableVisor] FiberAtlantic cable list: ${faCables ? faCables.length : 0} cables (for ${currentYearCables.length} current-year RFS cross-checks)`);
@@ -20895,7 +20895,7 @@ function loadProjectObject(obj) {
 
       // Log debug summary for current-year cables
       if (statusDebugLog.length > 0) {
-        console.group(`[CableVisor] ðŸ” RFS ${currentYear} Cross-Check Debug (${statusDebugLog.length} cables)`);
+        console.group(`[CableVisor] 🔍 RFS ${currentYear} Cross-Check Debug (${statusDebugLog.length} cables)`);
         console.table(statusDebugLog);
         console.groupEnd();
       }
@@ -21631,7 +21631,7 @@ function loadProjectObject(obj) {
       cableList.innerHTML = '<div style="color:#ef4444; padding:20px; text-align:center;">' +
         'âš ï¸ Failed to load: ' + error.message +
         '<br><br>' +
-        '<button onclick="loadBulkImportCables()" class="btn">ðŸ”„ Retry</button>' +
+        '<button onclick="loadBulkImportCables()" class="btn">🔄 Retry</button>' +
         '</div>';
     }
   }
@@ -21756,17 +21756,17 @@ function loadProjectObject(obj) {
   function getStatusIcon(rfs, status) {
     // Use direct status if available from enriched database
     if (status) {
-      if (status === 'Active') return 'ðŸŸ¢';           // In service
-      if (status === 'Under Construction') return 'ðŸŸ¡'; // Being built
-      if (status === 'Planned') return 'ðŸ”µ';          // Future
+      if (status === 'Active') return '🟢';           // In service
+      if (status === 'Under Construction') return '🟡'; // Being built
+      if (status === 'Planned') return '🔵';          // Future
     }
     // Fallback to RFS-based inference
     if (!rfs || rfs === 'Unknown') return 'âšª';  // Unknown status - neutral circle
     const year = parseInt(rfs);
     const currentYear = new Date().getFullYear();
-    if (year > currentYear) return 'ðŸ”µ'; // Planned
-    if (year === currentYear) return 'ðŸŸ¡'; // Under construction
-    return 'ðŸŸ¢'; // In service
+    if (year > currentYear) return '🔵'; // Planned
+    if (year === currentYear) return '🟡'; // Under construction
+    return '🟢'; // In service
   }
 
   function updateCsBulkImportCount() {
@@ -22269,7 +22269,7 @@ function loadProjectObject(obj) {
 
     modal.innerHTML = `
       <div style="background:white; border-radius:12px; padding:20px; max-width:400px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-        <h3 style="margin:0 0 12px 0; font-size:16px;">ðŸ·ï¸ Apply Cable System Name to Links?</h3>
+        <h3 style="margin:0 0 12px 0; font-size:16px;">🏷ï¸ Apply Cable System Name to Links?</h3>
         <div style="font-size:13px; color:#666; margin-bottom:16px;">
           ${emptyTagLinks.length} of ${links.length} link${links.length > 1 ? 's' : ''} ha${emptyTagLinks.length === 1 ? 's' : 've'} empty tag${emptyTagLinks.length > 1 ? 's' : ''}.<br>
           Would you like to set the tag to "<strong>${cs.shortName}</strong>"?
@@ -22422,7 +22422,7 @@ function loadProjectObject(obj) {
       if (info) info.textContent = `âš ï¸ Error: ${err.message}`;
     } finally {
       btn.disabled = false;
-      btn.textContent = 'ðŸ” Auto';
+      btn.textContent = '🔍 Auto';
     }
   });
 
@@ -22603,7 +22603,7 @@ function loadProjectObject(obj) {
 
     modal.innerHTML = `
       <div style="background:white; border-radius:12px; padding:20px; max-width:450px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.3);">
-        <h3 style="margin:0 0 12px 0; font-size:16px;">ðŸ·ï¸ Apply Cable System Name to Link Tags</h3>
+        <h3 style="margin:0 0 12px 0; font-size:16px;">🏷ï¸ Apply Cable System Name to Link Tags</h3>
         <div style="font-size:13px; color:#666; margin-bottom:16px;">
           Cable System: <strong>${cs.shortName}</strong> (${cs.name})<br>
           ${links.length} link${links.length > 1 ? 's' : ''} assigned
@@ -23004,7 +23004,7 @@ function loadProjectObject(obj) {
     const pickBtn = document.getElementById('btnPickRoutingOverlap');
     if (pickBtn) {
       pickBtn.style.background = '#f59e0b';
-      pickBtn.textContent = 'ðŸ–±ï¸ Pick from canvas';
+      pickBtn.textContent = '🖱ï¸ Pick from canvas';
     }
 
     return true;
@@ -23045,7 +23045,7 @@ function loadProjectObject(obj) {
         showToast('Click a link on the canvas to add diversity constraint');
       } else {
         btnPickRoutingOverlap.style.background = '#f59e0b';
-        btnPickRoutingOverlap.textContent = 'ðŸ–±ï¸ Pick from canvas';
+        btnPickRoutingOverlap.textContent = '🖱ï¸ Pick from canvas';
       }
     });
   }
@@ -23111,7 +23111,7 @@ function loadProjectObject(obj) {
 
     // Show auto-detected cable systems from edges
     if (edgeCableSystemIds.size > 0) {
-      html += '<div style="font-size:10px; color:#666; margin-bottom:4px; font-weight:600;">ðŸ“¡ Connected Cable Systems:</div>';
+      html += '<div style="font-size:10px; color:#666; margin-bottom:4px; font-weight:600;">📡 Connected Cable Systems:</div>';
       edgeCableSystemIds.forEach(csId => {
         const cs = findCableSystem(csId);
         if (cs) {
@@ -23130,7 +23130,7 @@ function loadProjectObject(obj) {
     // Show manually assigned cable systems (if any that aren't from edges)
     const manualOnlyCSIds = nodeCSIds.filter(id => !edgeCableSystemIds.has(id));
     if (manualOnlyCSIds.length > 0) {
-      html += '<div style="font-size:10px; color:#666; margin-top:6px; margin-bottom:4px; font-weight:600;">ðŸ“Œ Additional:</div>';
+      html += '<div style="font-size:10px; color:#666; margin-top:6px; margin-bottom:4px; font-weight:600;">📌 Additional:</div>';
       manualOnlyCSIds.forEach(csId => {
         const cs = findCableSystem(csId);
         if (cs) {
@@ -24366,7 +24366,7 @@ function loadProjectObject(obj) {
                 ${seg.latency > 0 ? `<span class="segment-latency">${seg.latency} ms</span>` : ''}
               </div>
               <div class="segment-actions">
-                <button onclick="removeSegment(${seg.id})" title="Remove segment">ðŸ—‘ï¸</button>
+                <button onclick="removeSegment(${seg.id})" title="Remove segment">🗑ï¸</button>
               </div>
             </div>
             <div class="segment-content">
@@ -24430,7 +24430,7 @@ function loadProjectObject(obj) {
       computedEl.style.display = 'block';
 
       const type = classifyMLGType(temp.segments);
-      const typeLabel = type === 'ring' ? 'ðŸ›¡ï¸ Ring' : type === 'ring_linear' ? 'ðŸ”€ Ring+Linear' : 'âž¡ï¸ Linear';
+      const typeLabel = type === 'ring' ? '🛡ï¸ Ring' : type === 'ring_linear' ? '🔀 Ring+Linear' : 'âž¡ï¸ Linear';
       if (typeEl) typeEl.textContent = typeLabel;
 
       const origin = temp.segments[0].fromNode ? getNodeDisplayName(temp.segments[0].fromNode) : 'â€”';
@@ -25192,7 +25192,7 @@ function loadProjectObject(obj) {
 
     const items = [
       { label: 'âœï¸ Rename', action: () => renameContainerShape(shapeId) },
-      { label: 'ðŸ—‘ï¸ Delete', action: () => deleteContainerShape(shapeId) }
+      { label: '🗑ï¸ Delete', action: () => deleteContainerShape(shapeId) }
     ];
 
     items.forEach(item => {
@@ -25357,10 +25357,10 @@ function loadProjectObject(obj) {
     menu.className = 'context-menu';
     menu.innerHTML = `
       <div class="context-menu-item" data-action="rename">âœï¸ Rename</div>
-      <div class="context-menu-item" data-action="duplicate">ðŸ“‹ Duplicate</div>
-      <div class="context-menu-item" data-action="category">ðŸ“ Change Category</div>
+      <div class="context-menu-item" data-action="duplicate">📋 Duplicate</div>
+      <div class="context-menu-item" data-action="category">📁 Change Category</div>
       <div class="context-menu-sep"></div>
-      <div class="context-menu-item danger" data-action="delete">ðŸ—‘ï¸ Delete</div>
+      <div class="context-menu-item danger" data-action="delete">🗑ï¸ Delete</div>
     `;
 
     menu.style.left = event.clientX + 'px';
@@ -25687,14 +25687,14 @@ function loadProjectObject(obj) {
         // Position below header when docking
         shapeLibraryPanel.style.left = '0px';
         applyDockedPosition();
-        showToast('ðŸ“Œ Library docked to left side');
+        showToast('📌 Library docked to left side');
       } else {
         // Restore floating position
         shapeLibraryPanel.style.left = '0px';
         shapeLibraryPanel.style.top = '120px';
         shapeLibraryPanel.style.height = '';
         shapeLibraryPanel.style.maxHeight = 'calc(100vh - 140px)';
-        showToast('ðŸ“Œ Library undocked');
+        showToast('📌 Library undocked');
       }
     });
   }
@@ -25717,12 +25717,12 @@ function loadProjectObject(obj) {
       const menu = document.createElement('div');
       menu.className = 'context-menu';
       menu.innerHTML = `
-        <div class="context-menu-item" data-action="import-lib">ðŸ“¥ Import Library File</div>
-        <div class="context-menu-item" data-action="export-lib">ðŸ“¤ Export Library</div>
+        <div class="context-menu-item" data-action="import-lib">📥 Import Library File</div>
+        <div class="context-menu-item" data-action="export-lib">📤 Export Library</div>
         <div class="context-menu-sep"></div>
-        <div class="context-menu-item" data-action="add-category">ðŸ“ Add Category</div>
+        <div class="context-menu-item" data-action="add-category">📁 Add Category</div>
         <div class="context-menu-sep"></div>
-        <div class="context-menu-item danger" data-action="clear-lib">ðŸ—‘ï¸ Clear Library</div>
+        <div class="context-menu-item danger" data-action="clear-lib">🗑ï¸ Clear Library</div>
       `;
 
       const rect = btnLibraryMenu.getBoundingClientRect();
@@ -25905,10 +25905,10 @@ function loadProjectObject(obj) {
     const menu = document.createElement('div');
     menu.className = 'context-menu';
     menu.innerHTML = `
-      <div class="context-menu-item" data-action="add-to-library">ðŸ“š Add to Library</div>
+      <div class="context-menu-item" data-action="add-to-library">📚 Add to Library</div>
       <div class="context-menu-sep"></div>
-      <div class="context-menu-item" data-action="duplicate">ðŸ“‹ Duplicate</div>
-      <div class="context-menu-item danger" data-action="delete">ðŸ—‘ï¸ Delete</div>
+      <div class="context-menu-item" data-action="duplicate">📋 Duplicate</div>
+      <div class="context-menu-item danger" data-action="delete">🗑ï¸ Delete</div>
     `;
 
     menu.style.left = e.clientX + 'px';
@@ -27445,7 +27445,7 @@ function loadProjectObject(obj) {
     updateRouteFinderUI();
 
     console.log('[ROUTE FINDER] Calculation mode active, showing toast');
-    showToast('ðŸ§­ CALCULATION MODE - Select Origin and Destination nodes');
+    showToast('🧭 CALCULATION MODE - Select Origin and Destination nodes');
   }
 
   // Exit calculation mode
@@ -27552,7 +27552,7 @@ function loadProjectObject(obj) {
     // If no origin set, set this as origin
     if (!routeFinderState.originNodeId) {
       routeFinderState.originNodeId = nodeId;
-      showToast(`ðŸŸ¢ Origin: ${node.name || 'Node ' + nodeId}`);
+      showToast(`🟢 Origin: ${node.name || 'Node ' + nodeId}`);
     }
     // If origin set but no destination, set this as destination
     else if (!routeFinderState.destNodeId) {
@@ -27561,7 +27561,7 @@ function loadProjectObject(obj) {
         return true;
       }
       routeFinderState.destNodeId = nodeId;
-      showToast(`ðŸ”´ Destination: ${node.name || 'Node ' + nodeId}`);
+      showToast(`🔴 Destination: ${node.name || 'Node ' + nodeId}`);
     }
     // If both set, replace destination
     else {
@@ -27570,7 +27570,7 @@ function loadProjectObject(obj) {
         return true;
       }
       routeFinderState.destNodeId = nodeId;
-      showToast(`ðŸ”´ New Destination: ${node.name || 'Node ' + nodeId}`);
+      showToast(`🔴 New Destination: ${node.name || 'Node ' + nodeId}`);
     }
 
     // Clear previous routes
@@ -28046,8 +28046,8 @@ function loadProjectObject(obj) {
     // Use totalLatency if available, otherwise totalCost
     const latency = protection.totalLatency || protection.totalCost || 0;
 
-    if (latencySpan) latencySpan.textContent = `ðŸ• ${latency.toFixed(3)} ms`;
-    if (hopsSpan) hopsSpan.textContent = `ðŸ“ ${protection.segments?.length || 0} links`;
+    if (latencySpan) latencySpan.textContent = `🕐 ${latency.toFixed(3)} ms`;
+    if (hopsSpan) hopsSpan.textContent = `📏 ${protection.segments?.length || 0} links`;
 
     // Show path with links: Node1 â†’ [L-24] â†’ Node2 â†’ [L-23] â†’ Node13
     if (nodesDiv && protection.path && protection.segments) {
@@ -28390,7 +28390,7 @@ function loadProjectObject(obj) {
 
     routeFinderState.excludedNodes.add(nodeId);
     const node = findNode(nodeId);
-    showToast(`ðŸš« Excluded node: ${node?.name || node?.code || 'Node ' + nodeId}`);
+    showToast(`🚫 Excluded node: ${node?.name || node?.code || 'Node ' + nodeId}`);
     renderExcludedNodesList();
     routeFinderState.routes = []; // Clear routes
     updateRouteFinderUI();
@@ -28415,7 +28415,7 @@ function loadProjectObject(obj) {
       const nodeB = findNode(edge.b);
       const nameA = nodeA?.name || nodeA?.code || `N${edge.a}`;
       const nameB = nodeB?.name || nodeB?.code || `N${edge.b}`;
-      showToast(`ðŸš« Excluded link: ${nameA} â†” ${nameB}`);
+      showToast(`🚫 Excluded link: ${nameA} â†” ${nameB}`);
     }
     renderExcludedLinksList();
     routeFinderState.routes = []; // Clear routes
@@ -28443,7 +28443,7 @@ function loadProjectObject(obj) {
     renderExcludedLinksList();
     routeFinderState.routes = [];
     updateRouteFinderUI();
-    showToast('ðŸ—‘ï¸ All exclusions cleared');
+    showToast('🗑ï¸ All exclusions cleared');
   }
 
   // ========== MUST-USE FUNCTIONS ==========
@@ -28582,7 +28582,7 @@ function loadProjectObject(obj) {
     renderMustUseLinksList();
     routeFinderState.routes = [];
     updateRouteFinderUI();
-    showToast('ðŸ—‘ï¸ All must-use constraints cleared');
+    showToast('🗑ï¸ All must-use constraints cleared');
   }
 
   // Update transit latency row visibility
@@ -28815,7 +28815,7 @@ function loadProjectObject(obj) {
 
       routeResultsContent.innerHTML = `
         <div style="padding:20px; text-align:center; color:#666;">
-          <div style="font-size:32px; margin-bottom:8px;">ðŸš«</div>
+          <div style="font-size:32px; margin-bottom:8px;">🚫</div>
           <div><strong>No path found</strong></div>
           <div style="font-size:11px; margin-top:4px;">${hint}</div>
         </div>
@@ -28824,7 +28824,7 @@ function loadProjectObject(obj) {
     }
 
     const routeLabels = ['Best Route', 'Alternative 1', 'Alternative 2'];
-    const routeIcons = ['ðŸ¥‡', 'ðŸ¥ˆ', 'ðŸ¥‰'];
+    const routeIcons = ['🥇', '🥈', '🥉'];
     const routeColors = ['#22c55e', '#f59e0b', '#f97316'];
 
     // Get cost display settings
@@ -28858,8 +28858,8 @@ function loadProjectObject(obj) {
 
       // Build stats line with both latency and cost
       let statsHtml = `<span>âš¡ ${route.totalCost.toFixed(2)} ms</span>`;
-      statsHtml += `<span>ðŸ’° ${formattedCost}</span>`;
-      statsHtml += `<span>ðŸ“ ${hops} hop${hops !== 1 ? 's' : ''}</span>`;
+      statsHtml += `<span>💰 ${formattedCost}</span>`;
+      statsHtml += `<span>📍 ${hops} hop${hops !== 1 ? 's' : ''}</span>`;
       if (implicitCount > 0) {
         statsHtml += `<span>â‹¯ ${implicitCount} implicit</span>`;
       }
@@ -28927,11 +28927,11 @@ function loadProjectObject(obj) {
     // Add route type indicator if MLG-related
     if (route.isPureMLG) {
       html += `<div style="padding:6px 8px; margin-bottom:8px; background:linear-gradient(135deg, #fdf4ff 0%, #f5f3ff 100%); border:1px solid #e9d5ff; border-radius:6px; font-size:10px; color:#7c3aed;">
-        <span style="font-weight:600;">ðŸ”— Pure MLG Route</span> â€” Uses only Multilink Groups
+        <span style="font-weight:600;">🔗 Pure MLG Route</span> â€” Uses only Multilink Groups
       </div>`;
     } else if (route.hasMLGs) {
       html += `<div style="padding:6px 8px; margin-bottom:8px; background:linear-gradient(135deg, #fef3c7 0%, #fdf4ff 100%); border:1px solid #fcd34d; border-radius:6px; font-size:10px; color:#92400e;">
-        <span style="font-weight:600;">ðŸ”€ Hybrid Route</span> â€” Combines MLGs and individual links
+        <span style="font-weight:600;">🔀 Hybrid Route</span> â€” Combines MLGs and individual links
       </div>`;
     }
 
@@ -28965,8 +28965,8 @@ function loadProjectObject(obj) {
         // MLG hop - purple/violet styling
         hopStyle = 'background:linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border-left:3px solid #a855f7;';
         const mlg = findMultilinkGroup(seg.mlgId);
-        hopLabel = `<span style="color:#7c3aed; font-size:10px; font-weight:600;">ðŸ”— MLG: ${mlg?.name || 'Unknown'}</span>`;
-        hopIcon = 'ðŸ”—';
+        hopLabel = `<span style="color:#7c3aed; font-size:10px; font-weight:600;">🔗 MLG: ${mlg?.name || 'Unknown'}</span>`;
+        hopIcon = '🔗';
         // Get MLG cost
         if (mlg) {
           const mlgCosts = calculateMLGCosts(mlg);
@@ -29042,11 +29042,11 @@ function loadProjectObject(obj) {
           <span>${route.totalCost.toFixed(3)} ms</span>
         </div>
         <div style="display:flex; justify-content:space-between; font-weight:600; margin-bottom:6px; color:#059669;">
-          <span>ðŸ’° Total ${costLabel}:</span>
+          <span>💰 Total ${costLabel}:</span>
           <span>${formattedCost}</span>
         </div>
         <div style="display:flex; gap:12px; font-size:10px; color:#6b7280;">
-          ${mlgHops > 0 ? `<span style="color:#7c3aed;">ðŸ”— ${mlgHops} MLG</span>` : ''}
+          ${mlgHops > 0 ? `<span style="color:#7c3aed;">🔗 ${mlgHops} MLG</span>` : ''}
           ${linkHops > 0 ? `<span>â”€ ${linkHops} link${linkHops !== 1 ? 's' : ''}</span>` : ''}
           ${implicitHops > 0 ? `<span style="color:#f59e0b;">â‹¯ ${implicitHops} implicit</span>` : ''}
         </div>
@@ -29576,9 +29576,9 @@ function loadProjectObject(obj) {
         updateActiveFiltersIndicator();
       }
       if (routeFinderState.visibleOnly) {
-        showToast('ðŸ‘ï¸ Calculating using visible elements only');
+        showToast('👁ï¸ Calculating using visible elements only');
       } else {
-        showToast('ðŸ“Š Calculating using all elements');
+        showToast('📊 Calculating using all elements');
       }
     });
   }
@@ -29600,7 +29600,7 @@ function loadProjectObject(obj) {
         showToast('Node pick mode cancelled');
       } else {
         routeFinderState.pickMode = 'excludeNode';
-        showToast('ðŸŽ¯ Click on a node to exclude it from calculations');
+        showToast('🎯 Click on a node to exclude it from calculations');
       }
       updatePickModeButtons();
     });
@@ -29623,7 +29623,7 @@ function loadProjectObject(obj) {
         showToast('Link pick mode cancelled');
       } else {
         routeFinderState.pickMode = 'excludeLink';
-        showToast('ðŸŽ¯ Click on a link to exclude it from calculations');
+        showToast('🎯 Click on a link to exclude it from calculations');
       }
       updatePickModeButtons();
     });
@@ -30017,7 +30017,7 @@ function loadProjectObject(obj) {
 
       routeFinderState.routes = [];
       updateRouteFinderUI();
-      showToast('ðŸ—‘ï¸ Tag filters cleared');
+      showToast('🗑ï¸ Tag filters cleared');
     });
   }
 
@@ -30129,7 +30129,7 @@ function loadProjectObject(obj) {
         updateActiveFiltersIndicator();
       }
       if (routeFinderState.skipImplicitTransit) {
-        showToast('ðŸš« Implicit container transit disabled');
+        showToast('🚫 Implicit container transit disabled');
       } else {
         showToast('âœ… Implicit container transit enabled');
       }
@@ -30307,7 +30307,7 @@ function loadProjectObject(obj) {
       routeFinderState.routes = [];
       updateRouteFinderUI();
       updateActiveFiltersIndicator();
-      showToast('ðŸ—‘ï¸ Capacity filter cleared');
+      showToast('🗑ï¸ Capacity filter cleared');
     });
   }
 
@@ -30389,7 +30389,7 @@ function loadProjectObject(obj) {
     list.innerHTML = [...routeFinderState.mustUseMLGs].map(mlgId => {
       const mlg = findMultilinkGroup(mlgId);
       return `<span class="constraint-tag must-use" style="background:#dcfce7; color:#166534; padding:2px 6px; border-radius:4px; font-size:10px; display:inline-flex; align-items:center; gap:4px;">
-        ðŸ”— ${mlg?.name || 'MLG-' + mlgId}
+        🔗 ${mlg?.name || 'MLG-' + mlgId}
         <span style="cursor:pointer; color:#dc2626;" onclick="removeMustUseMLG(${mlgId})">Ã—</span>
       </span>`;
     }).join('');
@@ -30408,7 +30408,7 @@ function loadProjectObject(obj) {
     list.innerHTML = [...routeFinderState.excludedMLGs].map(mlgId => {
       const mlg = findMultilinkGroup(mlgId);
       return `<span class="constraint-tag excluded" style="background:#fee2e2; color:#991b1b; padding:2px 6px; border-radius:4px; font-size:10px; display:inline-flex; align-items:center; gap:4px;">
-        ðŸ”— ${mlg?.name || 'MLG-' + mlgId}
+        🔗 ${mlg?.name || 'MLG-' + mlgId}
         <span style="cursor:pointer; color:#dc2626;" onclick="removeExcludedMLG(${mlgId})">Ã—</span>
       </span>`;
     }).join('');
@@ -30448,7 +30448,7 @@ function loadProjectObject(obj) {
     routeFinderState.routes = [];
     updateRouteFinderUI();
     const mlg = findMultilinkGroup(mlgId);
-    showToast(`ðŸš« Excluded MLG: ${mlg?.name || 'MLG-' + mlgId}`);
+    showToast(`🚫 Excluded MLG: ${mlg?.name || 'MLG-' + mlgId}`);
   }
 
   // Remove MLG from excluded list
@@ -30480,9 +30480,9 @@ function loadProjectObject(obj) {
       updateActiveFiltersIndicator();
 
       if (routeFinderState.preferMLGs) {
-        showToast('ðŸ”— MLG Preference enabled â€” routes will prefer Multilink Groups');
+        showToast('🔗 MLG Preference enabled â€” routes will prefer Multilink Groups');
       } else {
-        showToast('ðŸ”— MLG Preference disabled â€” using standard pathfinding');
+        showToast('🔗 MLG Preference disabled â€” using standard pathfinding');
       }
     });
   }
@@ -30616,7 +30616,7 @@ function loadProjectObject(obj) {
       updateActiveFiltersIndicator();
       routeFinderState.routes = [];
       updateRouteFinderUI();
-      showToast('ðŸ—‘ï¸ MLG settings cleared');
+      showToast('🗑ï¸ MLG settings cleared');
     });
   }
 
@@ -30762,7 +30762,7 @@ function loadProjectObject(obj) {
         renderMultilinkEditor();
       }
 
-      showToast('ðŸ“ Route loaded into MLG Editor â€” review and save');
+      showToast('📝 Route loaded into MLG Editor â€” review and save');
     });
   }
 
@@ -30900,7 +30900,7 @@ function loadProjectObject(obj) {
         if (mlg) {
           const pathCount = mlg.segments?.reduce((count, seg) => count + (seg.paths?.length || 0), 0) || 0;
           const segCount = mlg.segments?.length || 0;
-          infoDiv.innerHTML = `<span style="color:#059669;">ðŸ“Š ${segCount} segment${segCount !== 1 ? 's' : ''}, ${pathCount} existing path${pathCount !== 1 ? 's' : ''}</span>`;
+          infoDiv.innerHTML = `<span style="color:#059669;">📊 ${segCount} segment${segCount !== 1 ? 's' : ''}, ${pathCount} existing path${pathCount !== 1 ? 's' : ''}</span>`;
         }
       }
     });
@@ -31254,7 +31254,7 @@ function loadProjectObject(obj) {
     updateRouteFinderUI();
     updateActiveFiltersIndicator();
 
-    showToast('ðŸ§¹ All filters have been reset');
+    showToast('🧹 All filters have been reset');
   }
 
   const btnResetAllFilters = document.getElementById('btnResetAllFilters');
@@ -31289,7 +31289,7 @@ function loadProjectObject(obj) {
       updateTransitLatencyVisibility();
       routeFinderState.routes = [];
       updateRouteFinderUI();
-      showToast(routeFinderState.enableContainerTransit ? 'âœ… Container transit enabled' : 'ðŸš« Container transit disabled');
+      showToast(routeFinderState.enableContainerTransit ? 'âœ… Container transit enabled' : '🚫 Container transit disabled');
     });
   }
 
@@ -31299,7 +31299,7 @@ function loadProjectObject(obj) {
       updateTransitLatencyVisibility();
       routeFinderState.routes = [];
       updateRouteFinderUI();
-      showToast(routeFinderState.enableRegionTransit ? 'âœ… Region transit enabled' : 'ðŸš« Region transit disabled');
+      showToast(routeFinderState.enableRegionTransit ? 'âœ… Region transit enabled' : '🚫 Region transit disabled');
     });
   }
 
@@ -31730,7 +31730,7 @@ function loadProjectObject(obj) {
 
     render();
     refreshLabelManager();
-    showToast(`ðŸŽ¯ Selected ${count} element${count !== 1 ? 's' : ''} with checked tags`);
+    showToast(`🎯 Selected ${count} element${count !== 1 ? 's' : ''} with checked tags`);
   }
 
   // Render selection tags section
@@ -32194,7 +32194,7 @@ function loadProjectObject(obj) {
     unusedTags.forEach(tag => labelManagerState.bulkTags.delete(tag));
 
     refreshLabelManager();
-    showToast(`ðŸ—‘ï¸ Removed ${unusedTags.length} unused tag(s)`);
+    showToast(`🗑ï¸ Removed ${unusedTags.length} unused tag(s)`);
   }
 
   // Show tag context menu
@@ -32220,11 +32220,11 @@ function loadProjectObject(obj) {
     `;
 
     menu.innerHTML = `
-      <div class="lm-menu-item" onclick="selectAllWithTag('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px;">ðŸŽ¯ Select all with "${escapeHtml(tag)}"</div>
+      <div class="lm-menu-item" onclick="selectAllWithTag('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px;">🎯 Select all with "${escapeHtml(tag)}"</div>
       <div class="lm-menu-item" onclick="addBulkTag('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px;">âš¡ Add to bulk operation</div>
       <div style="border-top:1px solid #e5e7eb; margin:4px 0;"></div>
       <div class="lm-menu-item" onclick="renameTagPrompt('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px;">âœï¸ Rename...</div>
-      <div class="lm-menu-item" onclick="deleteTagGlobally('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px; color:#dc2626;">ðŸ—‘ï¸ Delete from all elements</div>
+      <div class="lm-menu-item" onclick="deleteTagGlobally('${escapeHtml(tag)}')" style="padding:8px 12px; cursor:pointer; font-size:12px; color:#dc2626;">🗑ï¸ Delete from all elements</div>
     `;
 
     // Add hover styles
@@ -32276,7 +32276,7 @@ function loadProjectObject(obj) {
 
     render();
     refreshLabelManager();
-    showToast(`ðŸŽ¯ Selected ${count} element(s) with tag "${tag}"`);
+    showToast(`🎯 Selected ${count} element(s) with tag "${tag}"`);
   };
 
   // Rename tag with prompt
@@ -32325,7 +32325,7 @@ function loadProjectObject(obj) {
     commit();
     render();
     refreshLabelManager();
-    showToast(`ðŸ—‘ï¸ Deleted tag "${tag}" from ${changed} element(s)`);
+    showToast(`🗑ï¸ Deleted tag "${tag}" from ${changed} element(s)`);
   };
 
   // Handle Label Manager pick mode for canvas clicks
@@ -32354,7 +32354,7 @@ function loadProjectObject(obj) {
 
     renderPickedItems();
     const total = labelManagerState.pickedElements.nodes.size + labelManagerState.pickedElements.links.size + labelManagerState.pickedElements.containers.size;
-    showToast(`ðŸŽ¯ Picked ${total} element(s)`);
+    showToast(`🎯 Picked ${total} element(s)`);
 
     return true;
   }
@@ -32462,11 +32462,11 @@ function loadProjectObject(obj) {
   if (lmBulkPickMode) {
     lmBulkPickMode.addEventListener('click', () => {
       labelManagerState.pickMode = !labelManagerState.pickMode;
-      lmBulkPickMode.textContent = labelManagerState.pickMode ? 'ðŸŽ¯ Stop Pick' : 'ðŸŽ¯ Start Pick';
+      lmBulkPickMode.textContent = labelManagerState.pickMode ? '🎯 Stop Pick' : '🎯 Start Pick';
       lmBulkPickMode.style.background = labelManagerState.pickMode ? '#8b5cf6' : '';
       lmBulkPickMode.style.color = labelManagerState.pickMode ? 'white' : '';
       if (labelManagerState.pickMode) {
-        showToast('ðŸŽ¯ Click on nodes, links, or containers to pick them');
+        showToast('🎯 Click on nodes, links, or containers to pick them');
       }
     });
   }
@@ -33380,7 +33380,7 @@ function loadProjectObject(obj) {
           if (state.styleBrush && state.styleBrush.type === 'edge') {
             applyStyle('edge', e, state.styleBrush.style);
             commit();
-            showToast(`ðŸŽ¨ Format applied to link: ${nodeA?.name || e.a} â†” ${nodeB?.name || e.b}`);
+            showToast(`🎨 Format applied to link: ${nodeA?.name || e.a} â†” ${nodeB?.name || e.b}`);
           } else {
             state.selected = { type: 'edge', id: e.id };
             state.selection.nodes.clear();
@@ -33521,7 +33521,7 @@ function loadProjectObject(obj) {
           state.selected = { type: 'node', id: n.id };
           renderGeoView();
           updateInspector();
-          showToast(`ðŸŽ¨ Format applied to: ${n.name || n.code || n.id}`);
+          showToast(`🎨 Format applied to: ${n.name || n.code || n.id}`);
           return;
         }
 
@@ -33567,7 +33567,7 @@ function loadProjectObject(obj) {
     info.setAttribute('font-size', '11');
     info.setAttribute('fill', '#666');
     info.style.pointerEvents = 'none'; // Allow clicks to pass through to canvas
-    info.textContent = `ðŸŒ Geographic View â€” ${geoNodes.length} node(s) with GPS | Drag to pan â€¢ Space+drag anywhere â€¢ Scroll to zoom`;
+    info.textContent = `🌍 Geographic View â€” ${geoNodes.length} node(s) with GPS | Drag to pan â€¢ Space+drag anywhere â€¢ Scroll to zoom`;
     svg.appendChild(info);
 
     updateInspector();
@@ -33628,7 +33628,7 @@ function loadProjectObject(obj) {
       updateViewBox();
 
       renderGeoView();
-      showToast('ðŸŒ Geo Static Background â€” showing nodes with GPS coordinates');
+      showToast('🌐 Geo Static Background â€” showing nodes with GPS coordinates');
     } else {
       // Switch label settings back to canvas
       if (typeof switchViewLabelSettings === 'function') {
@@ -33643,7 +33643,7 @@ function loadProjectObject(obj) {
       }
       updateViewBox();
       render();
-      showToast('ðŸ“‹ Standard Canvas View');
+      showToast('📋 Standard Canvas View');
     }
 
     // Re-render route finder highlights after view switch
@@ -33989,7 +33989,7 @@ function loadProjectObject(obj) {
 
     modal.innerHTML = `
       <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <h3 style="margin: 0 0 16px; color:#0369a1;">ðŸ™ï¸ Lookup GPS by Location</h3>
+        <h3 style="margin: 0 0 16px; color:#0369a1;">🏙ï¸ Lookup GPS by Location</h3>
         <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
           Enter a city name, region, or country to get approximate GPS coordinates.
         </p>
@@ -34010,7 +34010,7 @@ function loadProjectObject(obj) {
         </div>
 
         <div style="font-size: 11px; color: #888; margin-bottom: 16px; background: #fef3c7; padding: 8px; border-radius: 4px;">
-          ðŸ’¡ <strong>Tip:</strong> Start typing and matching locations will appear. Click to select, then click "Apply".
+          💡 <strong>Tip:</strong> Start typing and matching locations will appear. Click to select, then click "Apply".
         </div>
 
         <div style="display: flex; gap: 12px; justify-content: flex-end;">
@@ -34114,7 +34114,7 @@ function loadProjectObject(obj) {
       commit();
       render();
       modal.remove();
-      showToast(`ðŸ“ GPS set to ${selectedLocation.name}`);
+      showToast(`📍 GPS set to ${selectedLocation.name}`);
     };
 
     // Close on background click
@@ -34160,7 +34160,7 @@ function loadProjectObject(obj) {
       updateGpsFields(node);
       commit();
       render();
-      showToast(`ðŸ“ GPS approximated from address: ${bestMatch.name}`);
+      showToast(`📍 GPS approximated from address: ${bestMatch.name}`);
     } else {
       showToast('âš ï¸ Could not find a known location in the address. Try the City/Country lookup instead.');
     }
@@ -34438,7 +34438,7 @@ function loadProjectObject(obj) {
         localStorage.removeItem('neximap-geo-projection-adjust');
       } catch(e) {}
       if (geoViewState.active) render();
-      showToast('ðŸ”„ Projection reset to defaults');
+      showToast('🔄 Projection reset to defaults');
     });
   }
 
@@ -34448,9 +34448,9 @@ function loadProjectObject(obj) {
       const adj = geoViewState.projectionAdjust;
       const values = `scaleX: ${adj.scaleX}, scaleY: ${adj.scaleY}, offsetX: ${adj.offsetX}, offsetY: ${adj.offsetY}`;
       navigator.clipboard.writeText(values).then(() => {
-        showToast('ðŸ“‹ Values copied: ' + values);
+        showToast('📋 Values copied: ' + values);
       }).catch(() => {
-        showToast('ðŸ“‹ ' + values);
+        showToast('📋 ' + values);
       });
     });
   }
@@ -34562,7 +34562,7 @@ function loadProjectObject(obj) {
         localStorage.removeItem('neximap-geo-projection-adjust');
       } catch(e) {}
       if (geoViewState.active) render();
-      showToast('ðŸ”„ Projection reset to defaults');
+      showToast('🔄 Projection reset to defaults');
     });
   }
 
@@ -34572,9 +34572,9 @@ function loadProjectObject(obj) {
       const adj = geoViewState.projectionAdjust;
       const values = `scaleX: ${adj.scaleX}, scaleY: ${adj.scaleY}, offsetX: ${adj.offsetX}, offsetY: ${adj.offsetY}`;
       navigator.clipboard.writeText(values).then(() => {
-        showToast('ðŸ“‹ Values copied: ' + values);
+        showToast('📋 Values copied: ' + values);
       }).catch(() => {
-        showToast('ðŸ“‹ ' + values);
+        showToast('📋 ' + values);
       });
     });
   }
@@ -34679,7 +34679,7 @@ function loadProjectObject(obj) {
 
     modal.innerHTML = `
       <div style="background: white; border-radius: 12px; padding: 24px; max-width: 550px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <h3 style="margin: 0 0 16px; color: #1d4ed8;">ðŸ”— Load Map from URL</h3>
+        <h3 style="margin: 0 0 16px; color: #1d4ed8;">🔗 Load Map from URL</h3>
         <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
           Enter the URL of an <strong>Equirectangular projection</strong> map image (PNG, JPG, or SVG).
         </p>
@@ -34692,14 +34692,14 @@ function loadProjectObject(obj) {
         </div>
 
         <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; margin-bottom: 16px;">
-          <div style="font-size: 11px; font-weight: 600; color: #1e40af; margin-bottom: 8px;">ðŸ“‹ Preset Maps</div>
+          <div style="font-size: 11px; font-weight: 600; color: #1e40af; margin-bottom: 8px;">📋 Preset Maps</div>
           <button class="preset-btn" data-url="https://upload.wikimedia.org/wikipedia/commons/9/9f/BlankMap-World-Equirectangular.svg"
                   style="display: block; width: 100%; text-align: left; padding: 8px; margin-bottom: 4px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            ðŸŒ Wikimedia Blank World Map (SVG)
+            🌍 Wikimedia Blank World Map (SVG)
           </button>
           <button class="preset-btn" data-url="https://upload.wikimedia.org/wikipedia/commons/e/e8/Equirectangular_projection_SW.jpg"
                   style="display: block; width: 100%; text-align: left; padding: 8px; margin-bottom: 4px; background: white; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; font-size: 11px;">
-            ðŸ—ºï¸ Wikimedia Physical Map (JPG)
+            🗺ï¸ Wikimedia Physical Map (JPG)
           </button>
         </div>
 
@@ -34781,7 +34781,7 @@ function loadProjectObject(obj) {
         if (viewModeGeo) viewModeGeo.checked = true;
       }
 
-      showToast('ðŸ—ºï¸ Map loaded from URL!');
+      showToast('🗺ï¸ Map loaded from URL!');
     };
 
     // Close on background click
@@ -34803,7 +34803,7 @@ function loadProjectObject(obj) {
 
     modal.innerHTML = `
       <div style="background: white; border-radius: 12px; padding: 24px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3);">
-        <h3 style="margin: 0 0 16px; color: #1d4ed8;">ðŸ—ºï¸ Configure Map Bounds</h3>
+        <h3 style="margin: 0 0 16px; color: #1d4ed8;">🗺ï¸ Configure Map Bounds</h3>
         <p style="color: #666; font-size: 13px; margin-bottom: 16px;">
           Specify the geographic bounds of your map image. For a standard world map (Equirectangular/EPSG:4326), use the default values.
         </p>
@@ -34832,7 +34832,7 @@ function loadProjectObject(obj) {
         </div>
 
         <div style="background: #f0f9ff; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 11px; color: #1e40af;">
-          <strong>ðŸ’¡ Common projections:</strong><br>
+          <strong>💡 Common projections:</strong><br>
           â€¢ <strong>Equirectangular (EPSG:4326)</strong>: Use -85 to 85 lat, -180 to 180 lon<br>
           â€¢ <strong>Web Mercator</strong>: Use -85.05 to 85.05 lat, -180 to 180 lon
         </div>
@@ -34874,7 +34874,7 @@ function loadProjectObject(obj) {
         if (viewModeGeo) viewModeGeo.checked = true;
       }
 
-      showToast('ðŸ—ºï¸ Uploaded map applied!');
+      showToast('🗺ï¸ Uploaded map applied!');
     };
 
     // Close on background click
@@ -34975,7 +34975,7 @@ function loadProjectObject(obj) {
 
     if (edge.pathGeometry && edge.pathGeometry.length > 0) {
       // Has path
-      statusIcon.textContent = 'ðŸ›¤ï¸';
+      statusIcon.textContent = '🛤ï¸';
       statusText.textContent = `Path defined (${edge.pathGeometry.length} waypoints)`;
       statusText.style.color = '#059669';
 
@@ -35955,7 +35955,7 @@ function loadProjectObject(obj) {
     // Show loading state
     instructions.innerHTML = `
       <div style="text-align: center; padding: 20px;">
-        <div style="font-size: 24px; margin-bottom: 10px;">ðŸŒ</div>
+        <div style="font-size: 24px; margin-bottom: 10px;">🌐</div>
         <div style="color: #666;">Loading submarine cable database...</div>
       </div>
     `;
@@ -35987,13 +35987,13 @@ function loadProjectObject(obj) {
 
       // Build cable list HTML (alphabetically sorted)
       const cableOptions = sortedCables.map(([key, cable]) => {
-        const multiIcon = cable.isMultiSegment ? ' ðŸ”€' : '';
+        const multiIcon = cable.isMultiSegment ? ' 🔀' : '';
         return `<option value="${key}" data-region="${cable.region}">${cable.name}${multiIcon}</option>`;
       }).join('');
 
       instructions.innerHTML = `
         <div style="margin-bottom: 10px;">
-          <strong>ðŸŒ Submarine Cable Database</strong>
+          <strong>🌐 Submarine Cable Database</strong>
           <span style="font-size: 10px; color: #888; margin-left: 8px;">${cableCount} cables</span>
         </div>
 
@@ -36017,7 +36017,7 @@ function loadProjectObject(obj) {
 
         <div id="cableDbInfo" style="font-size: 11px; color: #666; margin-bottom: 10px; min-height: 60px; max-height: 100px; overflow-y: auto; background: #f8f9fa; padding: 8px; border-radius: 4px;">
           Select a cable to see details.<br>
-          <span style="font-size: 10px; color: #888;">ðŸ”€ = Multiple segments (you can select which ones to import)</span>
+          <span style="font-size: 10px; color: #888;">🔀 = Multiple segments (you can select which ones to import)</span>
         </div>
 
         <div id="segmentSelectorContainer" style="display: none; margin-bottom: 10px;">
@@ -36025,7 +36025,7 @@ function loadProjectObject(obj) {
         </div>
 
         <button id="btnCableDbImport" style="padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: 500;" disabled>
-          ðŸ“¥ Import Selected Cable
+          📥 Import Selected Cable
         </button>
 
         <div style="margin-top: 10px; font-size: 10px; color: #888;">
@@ -36044,7 +36044,7 @@ function loadProjectObject(obj) {
           <span style="font-size: 11px;">${error.message}</span>
           <div style="margin-top: 10px;">
             <button onclick="window.showCableDbSearch()" style="padding: 6px 12px; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">
-              ðŸ”„ Retry
+              🔄 Retry
             </button>
           </div>
         </div>
@@ -36104,7 +36104,7 @@ function loadProjectObject(obj) {
         infoDiv.innerHTML = `
           <div style="margin-bottom: 6px;">
             <strong style="font-size: 13px; color: #111;">${cable.name}</strong>
-            ${cable.isMultiSegment ? '<span style="font-size: 10px; background: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 3px; margin-left: 6px;">ðŸ”€ Multi-segment</span>' : ''}
+            ${cable.isMultiSegment ? '<span style="font-size: 10px; background: #dbeafe; color: #1d4ed8; padding: 1px 4px; border-radius: 3px; margin-left: 6px;">🔀 Multi-segment</span>' : ''}
             <span style="font-size: 10px; color: #888; margin-left: 6px;">${cable.region}</span>
           </div>
           <div style="margin-bottom: 4px; font-size: 10px;">
@@ -36132,7 +36132,7 @@ function loadProjectObject(obj) {
           // Build segment checkboxes
           let segmentHtml = `
             <div style="font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #374151;">
-              ðŸ“ Select Segments to Import:
+              📐 Select Segments to Import:
               <button id="btnSelectAllSegments" style="margin-left: 8px; font-size: 10px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">All</button>
               <button id="btnSelectNoneSegments" style="margin-left: 4px; font-size: 10px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">None</button>
             </div>
@@ -36181,7 +36181,7 @@ function loadProjectObject(obj) {
 
         importBtn.disabled = false;
       } else {
-        infoDiv.innerHTML = 'Select a cable to see details.<br><span style="font-size: 10px; color: #888;">ðŸ”€ = Multiple segments (you can select which ones to import)</span>';
+        infoDiv.innerHTML = 'Select a cable to see details.<br><span style="font-size: 10px; color: #888;">🔀 = Multiple segments (you can select which ones to import)</span>';
         importBtn.disabled = true;
         if (segmentContainer) segmentContainer.style.display = 'none';
       }
@@ -36341,7 +36341,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div style="font-size: 11px; font-weight: 600; margin-bottom: 6px; color: #374151; display: flex; align-items: center; justify-content: space-between;">
-        <span>ðŸ“ Toggle Segments (live preview):</span>
+        <span>📐 Toggle Segments (live preview):</span>
         <div>
           <button id="btnLiveSelectAll" style="font-size: 9px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer; margin-right: 4px;">All</button>
           <button id="btnLiveSelectNone" style="font-size: 9px; padding: 2px 6px; border: 1px solid #ccc; border-radius: 3px; background: #fff; cursor: pointer;">None</button>
@@ -36679,7 +36679,7 @@ function loadProjectObject(obj) {
       localStorage.setItem('neximap-maplibre-style', styleName);
     } catch(e) {}
 
-    showToast(`ðŸ—ºï¸ Map style: ${styleName.charAt(0).toUpperCase() + styleName.slice(1)}`);
+    showToast(`🗺ï¸ Map style: ${styleName.charAt(0).toUpperCase() + styleName.slice(1)}`);
   }
 
   // Clear all markers and lines from the map
@@ -37208,7 +37208,7 @@ function loadProjectObject(obj) {
           <div style="font-weight: 600; margin-bottom: 4px;">${n.name || n.id}</div>
           ${n.code ? `<div style="color: #666; font-size: 11px;">Code: ${n.code}</div>` : ''}
           <div style="color: #888; font-size: 10px; margin-top: 4px;">
-            ðŸ“ ${n.gpsLat.toFixed(4)}Â°, ${n.gpsLon.toFixed(4)}Â°
+            📍 ${n.gpsLat.toFixed(4)}Â°, ${n.gpsLon.toFixed(4)}Â°
           </div>
           ${mapLibreState.pathFinderActive ? `<button class="ml-pathfinder-btn" data-node-id="${n.id}" style="margin-top:6px; padding:4px 8px; font-size:10px; cursor:pointer; background:#10b981; color:white; border:none; border-radius:3px;">Select for Path</button>` : ''}
         </div>
@@ -37391,9 +37391,9 @@ function loadProjectObject(obj) {
       if (state.styleBrush && state.styleBrush.type === 'node') {
         applyStyle('node', node, state.styleBrush.style);
         commit();
-        showToast(`ðŸŽ¨ Format applied to: ${node.name || node.code || nodeId}`);
+        showToast(`🎨 Format applied to: ${node.name || node.code || nodeId}`);
       } else {
-        showToast(`ðŸ”µ Selected: ${node.name || node.code || nodeId}`);
+        showToast(`🔵 Selected: ${node.name || node.code || nodeId}`);
       }
 
       // Update Inspector
@@ -37424,12 +37424,12 @@ function loadProjectObject(obj) {
         commit();
         const nodeA = findNode(edge.a);
         const nodeB = findNode(edge.b);
-        showToast(`ðŸŽ¨ Format applied to link: ${nodeA?.name || edge.a} â†” ${nodeB?.name || edge.b}`);
+        showToast(`🎨 Format applied to link: ${nodeA?.name || edge.a} â†” ${nodeB?.name || edge.b}`);
       } else {
         const nodeA = findNode(edge.a);
         const nodeB = findNode(edge.b);
         const label = edge.label || edge.tag || '';
-        showToast(`ðŸ”— Selected link: ${nodeA?.name || edge.a} â†” ${nodeB?.name || edge.b}${label ? ' (' + label + ')' : ''}`);
+        showToast(`🔗 Selected link: ${nodeA?.name || edge.a} â†” ${nodeB?.name || edge.b}${label ? ' (' + label + ')' : ''}`);
       }
 
       // Update Inspector
@@ -37522,7 +37522,7 @@ function loadProjectObject(obj) {
     if (!mapLibreState.pathFinderSource) {
       mapLibreState.pathFinderSource = nodeId;
       const node = findNode(nodeId);
-      showToast(`ðŸŸ¢ Source: ${node?.name || node?.code || nodeId} â€” Now select destination`);
+      showToast(`🟢 Source: ${node?.name || node?.code || nodeId} â€” Now select destination`);
       highlightMapLibreNode(nodeId, '#22c55e'); // Green for source
     } else if (!mapLibreState.pathFinderTarget) {
       if (nodeId === mapLibreState.pathFinderSource) {
@@ -37531,7 +37531,7 @@ function loadProjectObject(obj) {
       }
       mapLibreState.pathFinderTarget = nodeId;
       const node = findNode(nodeId);
-      showToast(`ðŸ”´ Destination: ${node?.name || node?.code || nodeId} â€” Calculating path...`);
+      showToast(`🔴 Destination: ${node?.name || node?.code || nodeId} â€” Calculating path...`);
       highlightMapLibreNode(nodeId, '#ef4444'); // Red for target
 
       // Calculate and display path
@@ -37543,7 +37543,7 @@ function loadProjectObject(obj) {
       mapLibreState.currentPath = null;
       renderMapLibreContent();
       const node = findNode(nodeId);
-      showToast(`ðŸŸ¢ New Source: ${node?.name || node?.code || nodeId} â€” Select destination`);
+      showToast(`🟢 New Source: ${node?.name || node?.code || nodeId} â€” Select destination`);
       highlightMapLibreNode(nodeId, '#22c55e');
     }
   }
@@ -37700,11 +37700,11 @@ function loadProjectObject(obj) {
       btn.style.background = active ? '#10b981' : '';
       btn.style.color = active ? 'white' : '#10b981';
       btn.style.borderRadius = active ? '4px' : '';
-      btn.textContent = active ? 'âœ“ Path Finder Active' : 'ðŸ” Path Finder on Map';
+      btn.textContent = active ? 'âœ“ Path Finder Active' : '🔍 Path Finder on Map';
     }
 
     if (active) {
-      showToast('ðŸ” Path Finder: Click on a node to set as source');
+      showToast('🔍 Path Finder: Click on a node to set as source');
     } else {
       // Remove path layer
       try {
@@ -38205,7 +38205,7 @@ function loadProjectObject(obj) {
         }
       }
 
-      showToast('ðŸ—ºï¸ Geo Dynamic Map â€” click to select, Inspector shows details');
+      showToast('🗺ï¸ Geo Dynamic Map â€” click to select, Inspector shows details');
     } else {
 
       // If path edit mode was active, exit it first (without saving)
@@ -38797,7 +38797,7 @@ function loadProjectObject(obj) {
       showToast('Failed to fetch exchange rates. Check your internet connection.');
     } finally {
       if (btn) btn.disabled = false;
-      if (icon) icon.textContent = 'ðŸ”„';
+      if (icon) icon.textContent = '🔄';
     }
   }
 
@@ -39157,12 +39157,12 @@ function loadProjectObject(obj) {
 
     // Update title and subtitle
     if (heatMapState.mode === 'capacity') {
-      title.textContent = 'ðŸŒ¡ï¸ Capacity Heat Map';
+      title.textContent = '🌡ï¸ Capacity Heat Map';
       subtitle.textContent = `Total Available Capacity (Gbps)${scaleLabel}`;
       minLabel.textContent = heatMapState.minValue.toFixed(0) + ' Gbps';
       maxLabel.textContent = heatMapState.maxValue.toFixed(0) + ' Gbps';
     } else if (heatMapState.mode === 'price') {
-      title.textContent = 'ðŸŒ¡ï¸ Price Heat Map';
+      title.textContent = '🌡ï¸ Price Heat Map';
       subtitle.textContent = `MRC @ ${heatMapState.priceTier}${scaleLabel}`;
       const currency = state.financialSettings?.baseCurrency || 'USD';
       const symbol = getCurrencySymbol(currency);
@@ -39255,9 +39255,9 @@ function loadProjectObject(obj) {
     if (mode === 'off') {
       showToast('Heat map disabled');
     } else if (mode === 'capacity') {
-      showToast('ðŸŒ¡ï¸ Heat map: Capacity (red=low, green=high)');
+      showToast('🌡ï¸ Heat map: Capacity (red=low, green=high)');
     } else if (mode === 'price') {
-      showToast(`ðŸŒ¡ï¸ Heat map: Price @ ${heatMapState.priceTier} (green=low, red=high)`);
+      showToast(`🌡ï¸ Heat map: Price @ ${heatMapState.priceTier} (green=low, red=high)`);
     }
   }
 
@@ -39317,7 +39317,7 @@ function loadProjectObject(obj) {
           calculateHeatMapRange();
           updateHeatMapLegend();
           renderCurrentView();
-          showToast(`ðŸŒ¡ï¸ Heat map: Price (${e.target.value})`);
+          showToast(`🌡ï¸ Heat map: Price (${e.target.value})`);
         }
       }
 
@@ -39337,7 +39337,7 @@ function loadProjectObject(obj) {
         const indicator = document.getElementById('heatMapActiveIndicator');
         console.log('[HeatMap] Indicator element:', indicator, 'display:', indicator?.style.display);
         if (heatMapState.active) renderCurrentView();
-        showToast(e.target.checked ? 'ðŸ“ˆ Logarithmic scale enabled' : 'ðŸ“Š Linear scale enabled');
+        showToast(e.target.checked ? '📈 Logarithmic scale enabled' : '📊 Linear scale enabled');
       }
     });
 
@@ -39386,7 +39386,7 @@ function loadProjectObject(obj) {
         e.target.textContent = heatMapState.useLogarithmic ? 'Log' : 'Lin';
         updateHeatMapLegend();
         if (heatMapState.active) renderCurrentView();
-        showToast(heatMapState.useLogarithmic ? 'ðŸ“ˆ Logarithmic scale' : 'ðŸ“Š Linear scale');
+        showToast(heatMapState.useLogarithmic ? '📈 Logarithmic scale' : '📊 Linear scale');
         return; // Don't process further
       }
 
@@ -39942,7 +39942,7 @@ function loadProjectObject(obj) {
     a.download = 'capacity_data.csv';
     a.click();
     URL.revokeObjectURL(url);
-    showToast('ðŸ“¤ Capacity data exported');
+    showToast('📤 Capacity data exported');
   }
 
   function initCapacityEditor() {
@@ -40758,10 +40758,10 @@ function loadProjectObject(obj) {
     filteredGroups.forEach(g => {
       const parent = g.parentId ? findGroup(g.parentId) : null;
       const nodeCount = state.nodes.filter(n => n.groupId === g.id).length;
-      const typeLabel = g.type === 'region' ? 'ðŸ“ Region' : 'ðŸ“¦ Container';
+      const typeLabel = g.type === 'region' ? '📁 Region' : '📦 Container';
       const parentLabel = parent ? parent.title : 'â€”';
       const latencyLabel = g.transitLatency !== undefined && g.transitLatency !== null ? g.transitLatency.toFixed(2) : '(default)';
-      const costSource = g.commercialCostOverride ? 'âœï¸ Manual' : 'ðŸ“Š Calculated';
+      const costSource = g.commercialCostOverride ? 'âœï¸ Manual' : '📊 Calculated';
 
       const nrc = getValueForTier(g.leaseNRC, tier, 0);
       const mrc = getValueForTier(g.leaseMRC, tier, 1);
@@ -41097,11 +41097,11 @@ function loadProjectObject(obj) {
 
     // Update title and show appropriate fields
     if (type === 'links') {
-      title.textContent = 'ðŸ“ Bulk Edit Links';
+      title.textContent = '📝 Bulk Edit Links';
       linksFields.style.display = 'block';
       nodesFields.style.display = 'none';
     } else {
-      title.textContent = 'ðŸ“ Bulk Edit Nodes';
+      title.textContent = '📝 Bulk Edit Nodes';
       linksFields.style.display = 'none';
       nodesFields.style.display = 'block';
     }
@@ -42613,13 +42613,13 @@ function loadProjectObject(obj) {
 <div id="financialSettingsModal">
   <div id="financialSettingsContent">
     <div id="financialSettingsHeader">
-      <h3>ðŸ’° Financial Settings</h3>
+      <h3>💰 Financial Settings</h3>
       <button class="close-btn" id="btnCloseFinancialSettings">âœ•</button>
     </div>
     <div id="financialSettingsBody">
       <!-- Currency Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ’± Base Currency</div>
+        <div class="fin-section-title">💱 Base Currency</div>
         <div class="fin-row">
           <label>Currency</label>
           <select id="finBaseCurrency">
@@ -42647,7 +42647,7 @@ function loadProjectObject(obj) {
           <div class="currency-rates-header">
             <span>Exchange Rates (vs USD)</span>
             <button id="btnFetchRates" title="Fetch latest rates from ECB">
-              <span id="fetchRatesIcon">ðŸ”„</span> Update
+              <span id="fetchRatesIcon">🔄</span> Update
             </button>
           </div>
           <div class="currency-rates-grid" id="currencyRatesGrid">
@@ -42666,7 +42666,7 @@ function loadProjectObject(obj) {
 
       <!-- NPV Calculation Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ“ˆ NPV Calculation</div>
+        <div class="fin-section-title">📈 NPV Calculation</div>
         <div class="fin-row">
           <label>Discount Rate</label>
           <input type="number" id="finDiscountRate" value="12.5" min="0" max="100" step="0.1" />
@@ -42677,13 +42677,13 @@ function loadProjectObject(obj) {
 
       <!-- Default Values Section - Tier Based -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ“‹ Default Values for New Links (1G Base Tier)</div>
+        <div class="fin-section-title">📋 Default Values for New Links (1G Base Tier)</div>
         <div class="fin-hint" style="margin-bottom:10px;">These are the base values at 1G tier. Higher tiers are calculated using the multipliers below.</div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <!-- Lease Defaults -->
           <div style="padding:10px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px;">
-            <div style="font-size:10px; font-weight:600; color:#1e40af; margin-bottom:8px;">ðŸ“„ Lease Defaults (1G)</div>
+            <div style="font-size:10px; font-weight:600; color:#1e40af; margin-bottom:8px;">📄 Lease Defaults (1G)</div>
             <div class="fin-row" style="margin-bottom:6px;">
               <label style="width:80px;">NRC</label>
               <input type="number" id="finDefaultNRC" value="0" min="0" step="0.01" style="width:80px;" />
@@ -42698,7 +42698,7 @@ function loadProjectObject(obj) {
 
           <!-- IRU Defaults -->
           <div style="padding:10px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:6px;">
-            <div style="font-size:10px; font-weight:600; color:#6b21a8; margin-bottom:8px;">ðŸ“œ IRU Defaults (1G)</div>
+            <div style="font-size:10px; font-weight:600; color:#6b21a8; margin-bottom:8px;">📜 IRU Defaults (1G)</div>
             <div class="fin-row" style="margin-bottom:6px;">
               <label style="width:80px;">IRU Fee</label>
               <input type="number" id="finDefaultIRU" value="1" min="0" step="0.01" style="width:80px;" />
@@ -42720,7 +42720,7 @@ function loadProjectObject(obj) {
 
       <!-- Tier Multipliers Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ“Š Capacity Tier Multipliers</div>
+        <div class="fin-section-title">📊 Capacity Tier Multipliers</div>
         <div class="fin-hint" style="margin-bottom:10px;">Set the multiplier for each tier relative to 1G base pricing. Used by "Auto-fill from 1G" button.</div>
 
         <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px;">
@@ -42752,7 +42752,7 @@ function loadProjectObject(obj) {
 
         <div style="margin-top:10px; padding:8px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <button id="btnResetMultipliers" style="padding:4px 10px; font-size:10px; background:#f0fdf4; border:1px solid #86efac; border-radius:4px; cursor:pointer;">ðŸ”„ Reset to 2.5Ã— progression</button>
+            <button id="btnResetMultipliers" style="padding:4px 10px; font-size:10px; background:#f0fdf4; border:1px solid #86efac; border-radius:4px; cursor:pointer;">🔄 Reset to 2.5Ã— progression</button>
             <span style="font-size:10px; color:#059669;">Sets: 10G=2.5Ã—, 100G=6.25Ã—, 400G=15.625Ã—</span>
           </div>
         </div>
@@ -42760,7 +42760,7 @@ function loadProjectObject(obj) {
 
       <!-- IRU from MRC Multiplier Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ“œ IRU Fee Calculation from MRC</div>
+        <div class="fin-section-title">📜 IRU Fee Calculation from MRC</div>
         <div class="fin-hint" style="margin-bottom:10px;">When resetting prices, the IRU fee for each tier is calculated as: MRC Ã— IRU Multiplier. This provides a standard conversion from monthly lease pricing to one-time IRU fees.</div>
 
         <div style="display:flex; align-items:center; gap:12px; padding:12px; background:#faf5ff; border:1px solid #e9d5ff; border-radius:6px;">
@@ -42782,13 +42782,13 @@ function loadProjectObject(obj) {
 
       <!-- Container Defaults Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ“¦ Container Transit Defaults (1G Base Tier)</div>
+        <div class="fin-section-title">📦 Container Transit Defaults (1G Base Tier)</div>
         <div class="fin-hint" style="margin-bottom:10px;">Default commercial cost values for container transit when no internal links exist. Values are calculated automatically from average of internal links when available.</div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
           <!-- Container Lease Defaults -->
           <div style="padding:10px; background:#ecfdf5; border:1px solid #a7f3d0; border-radius:6px;">
-            <div style="font-size:10px; font-weight:600; color:#065f46; margin-bottom:8px;">ðŸ“„ Lease Defaults (1G)</div>
+            <div style="font-size:10px; font-weight:600; color:#065f46; margin-bottom:8px;">📄 Lease Defaults (1G)</div>
             <div class="fin-row" style="margin-bottom:6px;">
               <label style="width:80px;">NRC</label>
               <input type="number" id="finContainerDefaultNRC" value="0" min="0" step="0.01" style="width:80px;" />
@@ -42803,7 +42803,7 @@ function loadProjectObject(obj) {
 
           <!-- Container IRU Defaults -->
           <div style="padding:10px; background:#fdf4ff; border:1px solid #f0abfc; border-radius:6px;">
-            <div style="font-size:10px; font-weight:600; color:#86198f; margin-bottom:8px;">ðŸ“œ IRU Defaults (1G)</div>
+            <div style="font-size:10px; font-weight:600; color:#86198f; margin-bottom:8px;">📜 IRU Defaults (1G)</div>
             <div class="fin-row" style="margin-bottom:6px;">
               <label style="width:80px;">IRU Fee</label>
               <input type="number" id="finContainerDefaultIRU" value="1" min="0" step="0.01" style="width:80px;" />
@@ -42825,7 +42825,7 @@ function loadProjectObject(obj) {
 
       <!-- Pathfinder Cost Settings Section -->
       <div class="fin-section">
-        <div class="fin-section-title">ðŸ§­ Pathfinder Cost Settings</div>
+        <div class="fin-section-title">🧭 Pathfinder Cost Settings</div>
         <div class="fin-row">
           <label>Default Cost Metric</label>
           <select id="finDefaultCostMetric">
@@ -42854,7 +42854,7 @@ function loadProjectObject(obj) {
 <div id="dataTableModal">
   <div id="dataTableContent">
     <div id="dataTableHeader">
-      <h3>ðŸ“Š Data Table</h3>
+      <h3>📊 Data Table</h3>
       <div id="dataTableControls">
         <select id="dataTableType">
           <option value="links">Links</option>
@@ -42866,11 +42866,11 @@ function loadProjectObject(obj) {
       </div>
     </div>
     <div id="dataTableToolbar">
-      <input type="text" id="dataTableSearch" placeholder="ðŸ” Search..." />
+      <input type="text" id="dataTableSearch" placeholder="🔍 Search..." />
       <div style="display:flex; gap:8px; align-items:center;">
         <label id="dataTableSelectionFilterLabel" style="font-size:11px; color:#6366f1; display:flex; align-items:center; gap:4px; padding:4px 8px; background:#eef2ff; border:1px solid #c7d2fe; border-radius:4px; cursor:pointer;">
           <input type="checkbox" id="dataTableSelectionFilter" style="width:14px; height:14px; accent-color:#6366f1;" />
-          <span>ðŸ“ Selection only</span>
+          <span>📍 Selection only</span>
           <span id="dataTableSelectionCount" style="font-weight:600; color:#4f46e5;">(0)</span>
         </label>
         <label style="font-size:11px; color:#64748b; display:flex; align-items:center; gap:4px;">
@@ -42897,11 +42897,11 @@ function loadProjectObject(obj) {
           <option value="400G">400G</option>
         </select>
         <button class="toolbar-btn" id="btnDataTableResetPrices" style="background:#f59e0b; color:white; border-color:#d97706; font-weight:600;" title="Recalculate all tier prices and IRU fees based on the selected source tier using the configured multipliers">
-          ðŸ”„ Apply to All
+          🔄 Apply to All
         </button>
       </div>
-      <button class="toolbar-btn" id="btnDataTableExport">ðŸ“¤ Export CSV</button>
-      <button class="toolbar-btn" id="btnDataTableRecalc">ðŸ”„ Recalculate</button>
+      <button class="toolbar-btn" id="btnDataTableExport">📤 Export CSV</button>
+      <button class="toolbar-btn" id="btnDataTableRecalc">🔄 Recalculate</button>
     </div>
     <div id="dataTableBody">
       <table id="dataTableContainer">
@@ -42972,7 +42972,7 @@ function loadProjectObject(obj) {
       user-select: none;
     ">
       <h3 style="margin:0; font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
-        <span>ðŸ“Š</span> Capacity Editor
+        <span>📊</span> Capacity Editor
       </h3>
       <div style="display:flex; align-items:center; gap:12px;">
         <span id="capacityEditorCount" style="font-size:12px; opacity:0.9;">0 links</span>
@@ -43001,7 +43001,7 @@ function loadProjectObject(obj) {
       align-items: center;
       flex-wrap: wrap;
     ">
-      <input type="text" id="capacityEditorSearch" placeholder="ðŸ” Search links..." style="
+      <input type="text" id="capacityEditorSearch" placeholder="🔍 Search links..." style="
         padding: 8px 12px;
         border: 1px solid #d1d5db;
         border-radius: 6px;
@@ -43022,7 +43022,7 @@ function loadProjectObject(obj) {
         cursor: pointer;
       ">
         <input type="checkbox" id="capacityEditorSelectionFilter" style="width:14px; height:14px; accent-color:#059669;" />
-        <span>ðŸ“ Selection only</span>
+        <span>📍 Selection only</span>
         <span id="capacityEditorSelectionCount" style="font-weight:600; color:#047857;">(0)</span>
       </label>
 
@@ -43043,7 +43043,7 @@ function loadProjectObject(obj) {
         display: flex;
         align-items: center;
         gap: 4px;
-      ">ðŸ“¤ Export CSV</button>
+      ">📤 Export CSV</button>
     </div>
 
     <div id="capacityEditorBody" style="
@@ -43097,7 +43097,7 @@ function loadProjectObject(obj) {
         <span style="margin-left:12px; color:#059669;" id="capacityEditorFilteredInfo"></span>
       </div>
       <div style="display:flex; gap:16px;">
-        <span>ðŸ’¡ Click cells to edit â€¢ Tab to navigate â€¢ Enter to save</span>
+        <span>💡 Click cells to edit â€¢ Tab to navigate â€¢ Enter to save</span>
       </div>
     </div>
   </div>
@@ -43107,13 +43107,13 @@ function loadProjectObject(obj) {
 <div id="bulkEditModal">
   <div id="bulkEditContent">
     <div id="bulkEditHeader">
-      <h3 id="bulkEditTitle">ðŸ“ Bulk Edit</h3>
+      <h3 id="bulkEditTitle">📝 Bulk Edit</h3>
       <button class="close-btn" id="btnCloseBulkEdit">âœ•</button>
     </div>
     <div id="bulkEditBody">
       <!-- Target Selection -->
       <div class="bulk-edit-section">
-        <h4>ðŸŽ¯ Target Selection</h4>
+        <h4>🎯 Target Selection</h4>
         <div class="bulk-edit-row">
           <label>Apply to:</label>
           <select id="bulkEditTarget">
@@ -43135,7 +43135,7 @@ function loadProjectObject(obj) {
       <!-- Links-specific fields -->
       <div id="bulkEditLinksFields">
         <div class="bulk-edit-section">
-          <h4>ðŸ’° Commercial Settings</h4>
+          <h4>💰 Commercial Settings</h4>
           <div class="bulk-edit-row bulk-edit-checkbox">
             <input type="checkbox" id="bulkEditApplyNRC" />
             <label style="width:auto;">Set NRC (all tiers)</label>
@@ -43174,7 +43174,7 @@ function loadProjectObject(obj) {
         </div>
 
         <div class="bulk-edit-section">
-          <h4>ðŸ·ï¸ Tags</h4>
+          <h4>🏷ï¸ Tags</h4>
           <div class="bulk-edit-row bulk-edit-checkbox">
             <input type="checkbox" id="bulkEditApplyAddTags" />
             <label style="width:auto;">Add tags:</label>
@@ -43196,7 +43196,7 @@ function loadProjectObject(obj) {
       <!-- Nodes-specific fields -->
       <div id="bulkEditNodesFields" style="display:none;">
         <div class="bulk-edit-section">
-          <h4>ðŸ·ï¸ Tags</h4>
+          <h4>🏷ï¸ Tags</h4>
           <div class="bulk-edit-row bulk-edit-checkbox">
             <input type="checkbox" id="bulkEditNodeAddTags" />
             <label style="width:auto;">Add tags:</label>
@@ -43215,7 +43215,7 @@ function loadProjectObject(obj) {
         </div>
 
         <div class="bulk-edit-section">
-          <h4>ðŸŒ Location</h4>
+          <h4>🌍 Location</h4>
           <div class="bulk-edit-row bulk-edit-checkbox">
             <input type="checkbox" id="bulkEditApplyCountry" />
             <label style="width:auto;">Set Country:</label>
@@ -43243,12 +43243,12 @@ function loadProjectObject(obj) {
 <div id="displayPrefsModal" class="settings-modal">
   <div class="settings-modal-content">
     <div class="settings-modal-header display-prefs">
-      <h3>ðŸŽ¨ Display Preferences</h3>
+      <h3>🎨 Display Preferences</h3>
       <button class="close-btn" id="btnCloseDisplayPrefs">âœ•</button>
     </div>
     <div class="settings-modal-body">
       <div class="settings-section">
-        <h4>ðŸ“ Node Labels</h4>
+        <h4>📍 Node Labels</h4>
         <div class="settings-row">
           <label>Show Node Name</label>
           <input type="checkbox" id="dpShowNodeName" checked />
@@ -43268,7 +43268,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸ”— Link Labels</h4>
+        <h4>🔗 Link Labels</h4>
         <div class="settings-row">
           <label>Show Link Tag</label>
           <input type="checkbox" id="dpShowLinkTag" checked />
@@ -43284,7 +43284,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸ“¦ Containers</h4>
+        <h4>📦 Containers</h4>
         <div class="settings-row">
           <label>Show Container Titles</label>
           <input type="checkbox" id="dpShowContainerTitle" checked />
@@ -43292,7 +43292,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸ–¼ï¸ Canvas</h4>
+        <h4>🖼ï¸ Canvas</h4>
         <div class="settings-row">
           <label>Canvas Width</label>
           <input type="number" id="dpCanvasWidth" value="1600" min="800" max="10000" step="100" style="width:100px;" />
@@ -43334,12 +43334,12 @@ function loadProjectObject(obj) {
 <div id="nodeDefaultsModal" class="settings-modal">
   <div class="settings-modal-content">
     <div class="settings-modal-header node-defaults">
-      <h3>ðŸ“ Default Node Style</h3>
+      <h3>📍 Default Node Style</h3>
       <button class="close-btn" id="btnCloseNodeDefaults">âœ•</button>
     </div>
     <div class="settings-modal-body">
       <div class="settings-section">
-        <h4>ðŸ”· Shape & Size</h4>
+        <h4>🔷 Shape & Size</h4>
         <div class="settings-row">
           <label>Default Shape</label>
           <select id="ndShape">
@@ -43366,7 +43366,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸŽ¨ Colors</h4>
+        <h4>🎨 Colors</h4>
         <div class="settings-row">
           <label>Fill Color</label>
           <input type="color" id="ndFillColor" value="#dae8fc" />
@@ -43385,7 +43385,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸ·ï¸ Label Style</h4>
+        <h4>🏷ï¸ Label Style</h4>
         <div class="settings-row">
           <label>Label Font Size</label>
           <input type="number" id="ndLabelFontSize" value="12" min="8" max="24" step="1" style="width:80px;" />
@@ -43409,12 +43409,12 @@ function loadProjectObject(obj) {
 <div id="linkDefaultsModal" class="settings-modal">
   <div class="settings-modal-content">
     <div class="settings-modal-header link-defaults">
-      <h3>ðŸ”— Default Link Style</h3>
+      <h3>🔗 Default Link Style</h3>
       <button class="close-btn" id="btnCloseLinkDefaults">âœ•</button>
     </div>
     <div class="settings-modal-body">
       <div class="settings-section">
-        <h4>ðŸ“ Line Style</h4>
+        <h4>📏 Line Style</h4>
         <div class="settings-row">
           <label>Line Type</label>
           <select id="ldLineType">
@@ -43444,7 +43444,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸŽ¨ Colors</h4>
+        <h4>🎨 Colors</h4>
         <div class="settings-row">
           <label>Stroke Color</label>
           <input type="color" id="ldStrokeColor" value="#666666" />
@@ -43462,7 +43462,7 @@ function loadProjectObject(obj) {
       </div>
 
       <div class="settings-section">
-        <h4>ðŸ·ï¸ Label Style</h4>
+        <h4>🏷ï¸ Label Style</h4>
         <div class="settings-row">
           <label>Label Font Size</label>
           <input type="number" id="ldLabelFontSize" value="10" min="8" max="24" step="1" style="width:80px;" />
@@ -43687,7 +43687,7 @@ function loadProjectObject(obj) {
 <!-- Cable Visor Panel (Submarine Cable Map Viewer) -->
 <aside id="cableVisorPanel">
   <div id="cableVisorHeader">
-    <h3>ðŸŒ Submarine Cable Visor</h3>
+    <h3>🌐 Submarine Cable Visor</h3>
     <div id="cableVisorControls">
       <button id="btnCableVisorMaximize" title="Maximize/Restore">â¬œ</button>
       <button id="btnCableVisorClose" title="Close Visor">âœ•</button>
@@ -43698,15 +43698,15 @@ function loadProjectObject(obj) {
       <span style="font-size:11px; font-weight:600; color:#495057;">Source:</span>
       <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
         <input type="radio" name="visorSource" id="visorSrcList" value="list" checked style="margin:0;" />
-        ðŸ“‹ Cable List
+        📋 Cable List
       </label>
       <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
         <input type="radio" name="visorSource" id="visorSrcDb" value="db" style="margin:0;" />
-        ðŸ“ Public DB
+        📁 Public DB
       </label>
       <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
         <input type="radio" name="visorSource" id="visorSrcAPI" value="api" style="margin:0;" />
-        ðŸŒ TeleGeo
+        🌐 TeleGeo
       </label>
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
@@ -43721,7 +43721,7 @@ function loadProjectObject(obj) {
   <div id="cableVisorMap">
     <div id="cableVisorMapContainer" style="width:100%; height:100%;"></div>
     <div id="cableVisorMapLoading" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; color:#666;">
-      <div style="font-size:24px; margin-bottom:8px;">ðŸŒ</div>
+      <div style="font-size:24px; margin-bottom:8px;">🌐</div>
       <div>Loading map...</div>
     </div>
   </div>
@@ -43735,7 +43735,7 @@ function loadProjectObject(obj) {
     </div>
     <div class="visor-detail-grid" id="visorDetailGrid"></div>
     <div class="visor-landing-points" id="visorLandingPoints" style="display:none;">
-      <h5>ðŸ“ Landing Stations (CLS)</h5>
+      <h5>📍 Landing Stations (CLS)</h5>
       <div class="visor-lp-list" id="visorLpList"></div>
     </div>
   </div>
@@ -43764,7 +43764,7 @@ function loadProjectObject(obj) {
       </h2>
       <div style="display:flex; align-items:center; gap:12px;">
         <button id="btnOpenOnlineDocs" style="padding:8px 16px; background:linear-gradient(135deg, #10b981, #059669); color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;" title="Open full documentation in new tab">
-          ðŸŒ Full Guide
+          🌐 Full Guide
         </button>
         <button class="close-btn" id="btnCloseHelpCenter" title="Close (Esc)">Ã—</button>
       </div>
@@ -43777,7 +43777,7 @@ function loadProjectObject(obj) {
     <div id="helpCenterBody">
       <nav id="helpCenterNav">
         <div class="help-nav-item active" data-section="getting-started">
-          <span class="nav-icon">ðŸš€</span>
+          <span class="nav-icon">🚀</span>
           <span>Getting Started</span>
         </div>
         <div class="help-nav-item" data-section="shortcuts">
@@ -43785,11 +43785,11 @@ function loadProjectObject(obj) {
           <span>Keyboard Shortcuts</span>
         </div>
         <div class="help-nav-item" data-section="features">
-          <span class="nav-icon">ðŸŽ¯</span>
+          <span class="nav-icon">🎯</span>
           <span>Features Guide</span>
         </div>
         <div class="help-nav-item" data-section="tips">
-          <span class="nav-icon">ðŸ’¡</span>
+          <span class="nav-icon">💡</span>
           <span>Tips & Tricks</span>
         </div>
         <div class="help-nav-item" data-section="faq">
@@ -43797,7 +43797,7 @@ function loadProjectObject(obj) {
           <span>FAQ</span>
         </div>
         <div class="help-nav-item" data-section="changelog">
-          <span class="nav-icon">ðŸ“‹</span>
+          <span class="nav-icon">📋</span>
           <span>What's New</span>
           <span class="nav-badge">v60</span>
         </div>
@@ -43806,61 +43806,61 @@ function loadProjectObject(obj) {
       <div id="helpCenterPanel">
         <!-- Getting Started Section -->
         <div class="help-section active" id="help-getting-started">
-          <h3><span class="section-icon">ðŸš€</span> Getting Started</h3>
+          <h3><span class="section-icon">🚀</span> Getting Started</h3>
           <p>Welcome to NexiMap Studio! Click any card below to learn more in the full documentation.</p>
 
           <div class="quick-start-grid">
             <div class="quick-start-card" data-guide-section="nodes" title="Click to learn more about nodes">
-              <div class="qs-icon">ðŸ“</div>
+              <div class="qs-icon">📍</div>
               <div class="qs-title">Create Nodes</div>
               <div class="qs-desc">Double-click on canvas</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
             <div class="quick-start-card" data-guide-section="links" title="Click to learn more about links">
-              <div class="qs-icon">ðŸ”—</div>
+              <div class="qs-icon">🔗</div>
               <div class="qs-title">Connect Nodes</div>
               <div class="qs-desc">Drag from node to node</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
             <div class="quick-start-card" data-guide-section="quick-start" title="Click to learn more about selection">
-              <div class="qs-icon">ðŸŽ¯</div>
+              <div class="qs-icon">🎯</div>
               <div class="qs-title">Select Items</div>
               <div class="qs-desc">Click or Alt+drag</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
             <div class="quick-start-card" data-guide-section="containers" title="Click to learn more about containers">
-              <div class="qs-icon">ðŸ“¦</div>
+              <div class="qs-icon">📦</div>
               <div class="qs-title">Containers</div>
               <div class="qs-desc">Group and organize</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
             <div class="quick-start-card" data-guide-section="tags" title="Click to learn more about tags">
-              <div class="qs-icon">ðŸ·ï¸</div>
+              <div class="qs-icon">🏷ï¸</div>
               <div class="qs-title">Tags & Labels</div>
               <div class="qs-desc">Categorize elements</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
             <div class="quick-start-card" data-guide-section="route-finder" title="Click to learn more about route finding">
-              <div class="qs-icon">ðŸ›¤ï¸</div>
+              <div class="qs-icon">🛤ï¸</div>
               <div class="qs-title">Find Routes</div>
               <div class="qs-desc">Optimal path calculation</div>
               <div class="qs-link">Learn more â†’</div>
             </div>
           </div>
 
-          <h4 style="margin: 24px 0 12px; font-size: 15px; color: #333;">ðŸ“– Quick Actions</h4>
+          <h4 style="margin: 24px 0 12px; font-size: 15px; color: #333;">📖 Quick Actions</h4>
           <div class="help-action-buttons">
             <button class="help-action-btn" data-guide-section="canvas-view">
-              <span>ðŸŽ¨</span> Canvas View Guide
+              <span>🎨</span> Canvas View Guide
             </button>
             <button class="help-action-btn" data-guide-section="dynamic-map">
-              <span>ðŸŒ</span> Map View Guide
+              <span>🌍</span> Map View Guide
             </button>
             <button class="help-action-btn" data-guide-section="data-table">
-              <span>ðŸ“Š</span> Data Table Guide
+              <span>📊</span> Data Table Guide
             </button>
             <button class="help-action-btn" data-guide-section="cost-model">
-              <span>ðŸ’°</span> Cost Model Guide
+              <span>💰</span> Cost Model Guide
             </button>
           </div>
 
@@ -43889,7 +43889,7 @@ function loadProjectObject(obj) {
           <!-- Canvas Navigation -->
           <div class="help-accordion expanded">
             <div class="help-accordion-header">
-              <span>ðŸ§­ Canvas Navigation</span>
+              <span>🧭 Canvas Navigation</span>
               <span class="accordion-icon">â–¼</span>
             </div>
             <div class="help-accordion-content">
@@ -43917,7 +43917,7 @@ function loadProjectObject(obj) {
           <!-- Selection & Editing -->
           <div class="help-accordion">
             <div class="help-accordion-header">
-              <span>ðŸŽ¯ Selection & Editing</span>
+              <span>🎯 Selection & Editing</span>
               <span class="accordion-icon">â–¼</span>
             </div>
             <div class="help-accordion-content">
@@ -43985,7 +43985,7 @@ function loadProjectObject(obj) {
           <!-- File Operations -->
           <div class="help-accordion">
             <div class="help-accordion-header">
-              <span>ðŸ“ File Operations</span>
+              <span>📁 File Operations</span>
               <span class="accordion-icon">â–¼</span>
             </div>
             <div class="help-accordion-content">
@@ -44013,7 +44013,7 @@ function loadProjectObject(obj) {
           <!-- View Controls -->
           <div class="help-accordion">
             <div class="help-accordion-header">
-              <span>ðŸ‘ï¸ View Controls</span>
+              <span>👁ï¸ View Controls</span>
               <span class="accordion-icon">â–¼</span>
             </div>
             <div class="help-accordion-content">
@@ -44045,7 +44045,7 @@ function loadProjectObject(obj) {
           <!-- Data & Filters -->
           <div class="help-accordion">
             <div class="help-accordion-header">
-              <span>ðŸ“Š Data & Filters</span>
+              <span>📊 Data & Filters</span>
               <span class="accordion-icon">â–¼</span>
             </div>
             <div class="help-accordion-content">
@@ -44065,67 +44065,67 @@ function loadProjectObject(obj) {
 
         <!-- Features Guide Section -->
         <div class="help-section" id="help-features">
-          <h3><span class="section-icon">ðŸŽ¯</span> Features Guide</h3>
+          <h3><span class="section-icon">🎯</span> Features Guide</h3>
           <p>Explore the powerful features of NexiMap Studio. Click any card to open the detailed guide.</p>
 
           <div class="feature-grid">
             <div class="feature-card" data-guide-section="nodes">
-              <h4><span class="feature-icon">ðŸ“</span> Nodes</h4>
+              <h4><span class="feature-icon">📍</span> Nodes</h4>
               <p>Create network nodes with customizable shapes, colors, sizes, and labels. Nodes support GPS coordinates for geo-mapping.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="links">
-              <h4><span class="feature-icon">ðŸ”—</span> Links</h4>
+              <h4><span class="feature-icon">🔗</span> Links</h4>
               <p>Connect nodes with links that can display labels, costs, capacity, and latency. Support for curved and straight lines.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="containers">
-              <h4><span class="feature-icon">ðŸ“¦</span> Containers</h4>
+              <h4><span class="feature-icon">📦</span> Containers</h4>
               <p>Group related nodes into containers. Containers can represent locations, regions, or logical groupings.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="tags">
-              <h4><span class="feature-icon">ðŸ·ï¸</span> Tags & Labels</h4>
+              <h4><span class="feature-icon">🏷ï¸</span> Tags & Labels</h4>
               <p>Add tags to nodes, links, and containers for easy filtering and organization. Use the Label Manager for bulk operations.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="static-geo">
-              <h4><span class="feature-icon">ðŸ—ºï¸</span> Static Geo View</h4>
+              <h4><span class="feature-icon">🗺ï¸</span> Static Geo View</h4>
               <p>Visualize your network on a static geographic map using GPS coordinates. Works offline with custom backgrounds.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="dynamic-map">
-              <h4><span class="feature-icon">ðŸŒ</span> Interactive Map</h4>
+              <h4><span class="feature-icon">🌍</span> Interactive Map</h4>
               <p>Use the dynamic MapLibre-powered map for zoomable, pannable geographic visualization with OpenStreetMap tiles.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="data-table">
-              <h4><span class="feature-icon">ðŸ“Š</span> Data Table</h4>
+              <h4><span class="feature-icon">📊</span> Data Table</h4>
               <p>View and edit all your data in a spreadsheet-like interface. Sort, filter, and bulk edit nodes and links.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="route-finder">
-              <h4><span class="feature-icon">ðŸ›¤ï¸</span> Route Finder</h4>
+              <h4><span class="feature-icon">🛤ï¸</span> Route Finder</h4>
               <p>Find optimal paths between nodes based on cost, latency, or other metrics. Highlight and compare routes.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="cable-systems">
-              <h4><span class="feature-icon">ðŸ“</span> Cable Systems</h4>
+              <h4><span class="feature-icon">📐</span> Cable Systems</h4>
               <p>Define cable systems to group related links. Filter views by cable system and track system-wide metrics.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="cost-model">
-              <h4><span class="feature-icon">ðŸ’°</span> Cost Analysis</h4>
+              <h4><span class="feature-icon">💰</span> Cost Analysis</h4>
               <p>Calculate costs based on distance, capacity tiers, and commercial models (Lease/IRU). Configure in Financial Settings.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="library">
-              <h4><span class="feature-icon">ðŸŽ¨</span> Style Library</h4>
+              <h4><span class="feature-icon">🎨</span> Style Library</h4>
               <p>Save and reuse node styles. Import custom SVG shapes. Format painter for quick style application.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
             <div class="feature-card" data-guide-section="import-export">
-              <h4><span class="feature-icon">ðŸ“¤</span> Export Options</h4>
+              <h4><span class="feature-icon">📤</span> Export Options</h4>
               <p>Export to SVG, PNG, JPG images or CSV data. Print directly or use Print Preview for fine-tuning.</p>
               <span class="feature-link">View full guide â†’</span>
             </div>
@@ -44134,7 +44134,7 @@ function loadProjectObject(obj) {
 
         <!-- Tips & Tricks Section -->
         <div class="help-section" id="help-tips">
-          <h3><span class="section-icon">ðŸ’¡</span> Tips & Tricks</h3>
+          <h3><span class="section-icon">💡</span> Tips & Tricks</h3>
           <p>Pro tips to boost your productivity with NexiMap Studio.</p>
 
           <ul class="tips-list">
@@ -44146,49 +44146,49 @@ function loadProjectObject(obj) {
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸŽ¨</span>
+              <span class="tip-icon">🎨</span>
               <div class="tip-content">
                 <div class="tip-title">Format Painter</div>
                 <div class="tip-desc">Use the brush tool to copy formatting from one node and apply it to others. Great for consistent styling.</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ“</span>
+              <span class="tip-icon">📐</span>
               <div class="tip-content">
                 <div class="tip-title">Snap to Grid</div>
                 <div class="tip-desc">Enable the grid for precise alignment. The grid size can be customized from Fine (10px) to Extra Large (100px).</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ”</span>
+              <span class="tip-icon">🔍</span>
               <div class="tip-content">
                 <div class="tip-title">Multi-Select with Alt+Drag</div>
                 <div class="tip-desc">Hold Alt and drag to create a selection box. All items within the box will be selected for bulk operations.</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ·ï¸</span>
+              <span class="tip-icon">🏷ï¸</span>
               <div class="tip-content">
                 <div class="tip-title">Power of Tags</div>
                 <div class="tip-desc">Tag items consistently to enable powerful filtering. Use the Label Manager to batch-add or remove tags across multiple items.</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ’¾</span>
+              <span class="tip-icon">💾</span>
               <div class="tip-content">
                 <div class="tip-title">Auto-Save Recovery</div>
                 <div class="tip-desc">NexiMap Studio automatically saves your work. If something goes wrong, use File â†’ Recovery â†’ Recover Autosave.</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ—ºï¸</span>
+              <span class="tip-icon">🗺ï¸</span>
               <div class="tip-content">
                 <div class="tip-title">GPS Coordinates</div>
-                <div class="tip-desc">Add latitude and longitude to nodes to enable geographic visualization. Click the ðŸŒ button on the map to sync schematic positions from GPS.</div>
+                <div class="tip-desc">Add latitude and longitude to nodes to enable geographic visualization. Click the 🌐 button on the map to sync schematic positions from GPS.</div>
               </div>
             </li>
             <li>
-              <span class="tip-icon">ðŸ“Š</span>
+              <span class="tip-icon">📊</span>
               <div class="tip-content">
                 <div class="tip-title">Data Table Power</div>
                 <div class="tip-desc">Open the Data Table (Ctrl+T) for spreadsheet-like editing. Click column headers to sort, use the search to filter, and double-click cells to edit.</div>
@@ -44288,7 +44288,7 @@ function loadProjectObject(obj) {
 
         <!-- What's New / Changelog Section -->
         <div class="help-section" id="help-changelog">
-          <h3><span class="section-icon">ðŸ“‹</span> What's New</h3>
+          <h3><span class="section-icon">📋</span> What's New</h3>
 
           <div class="changelog-version">
             <div class="changelog-header">
@@ -44346,7 +44346,7 @@ function loadProjectObject(obj) {
 
         <!-- Search Results Section (hidden by default) -->
         <div class="help-section" id="help-search-results">
-          <h3><span class="section-icon">ðŸ”</span> Search Results</h3>
+          <h3><span class="section-icon">🔍</span> Search Results</h3>
           <div id="searchResultsContent"></div>
         </div>
       </div>
@@ -44376,7 +44376,7 @@ function loadProjectObject(obj) {
 <div id="pathEditModeBanner">
   <div class="banner-content">
     <div class="banner-info">
-      <span class="banner-icon">ðŸ›¤ï¸</span>
+      <span class="banner-icon">🛤ï¸</span>
       <div>
         <div class="banner-title">PATH EDITING MODE</div>
         <div class="banner-subtitle" id="pathEditLinkName">Editing: Link L-15 (Node A â†’ Node B)</div>
@@ -44387,7 +44387,7 @@ function loadProjectObject(obj) {
       <span id="pathEditStatusText">No changes</span>
     </div>
     <div class="banner-actions">
-      <button class="banner-btn save" id="btnPathSaveExit" title="Save path and exit edit mode">ðŸ’¾ Save & Exit</button>
+      <button class="banner-btn save" id="btnPathSaveExit" title="Save path and exit edit mode">💾 Save & Exit</button>
       <button class="banner-btn exit" id="btnPathCancelExit" title="Discard changes and exit">âœ• Cancel</button>
     </div>
   </div>
@@ -44399,7 +44399,7 @@ function loadProjectObject(obj) {
 <!-- Path Edit Control Panel -->
 <div id="pathEditControlPanel">
   <div class="control-header" id="pathEditPanelHeader">
-    <span class="control-title">ðŸ›¤ï¸ Path Editor</span>
+    <span class="control-title">🛤ï¸ Path Editor</span>
     <div style="display:flex; align-items:center; gap:8px;">
       <span class="waypoint-count" id="pathWaypointCount">0 waypoints</span>
       <div class="control-header-btns">
@@ -44415,23 +44415,23 @@ function loadProjectObject(obj) {
         <span class="method-label">Manual</span>
       </button>
       <button class="method-btn" id="btnMethodCableDb" data-method="telegeography" title="Import from Cable Database">
-        <span class="method-icon">ðŸŒ</span>
+        <span class="method-icon">🌐</span>
         <span class="method-label">Cable Database</span>
       </button>
       <button class="method-btn" id="btnMethodKML" data-method="kml-import" title="Import KML/GeoJSON">
-        <span class="method-icon">ðŸ“¥</span>
+        <span class="method-icon">📥</span>
         <span class="method-label">Import</span>
       </button>
     </div>
 
     <div id="pathEditInstructions" style="padding: 10px; background: #f0f9ff; border-radius: 6px; font-size: 11px; color: #0369a1; border: 1px solid #bae6fd;">
-      ðŸ‘† Select a method above, then click on the map to add waypoints.
+      👆 Select a method above, then click on the map to add waypoints.
     </div>
 
     <div class="control-actions" style="flex-wrap: wrap; gap: 6px;">
-      <button class="control-btn danger" id="btnPathClear" title="Clear all waypoints">ðŸ—‘ï¸ Clear</button>
+      <button class="control-btn danger" id="btnPathClear" title="Clear all waypoints">🗑ï¸ Clear</button>
       <button class="control-btn secondary" id="btnPathUndo" title="Remove last waypoint">â†©ï¸ Undo</button>
-      <button class="control-btn primary" id="btnPathSavePanel" title="Save path and exit" style="margin-left:auto;">ðŸ’¾ Save</button>
+      <button class="control-btn primary" id="btnPathSavePanel" title="Save path and exit" style="margin-left:auto;">💾 Save</button>
     </div>
 
     <div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid #e5e7eb; font-size: 10px; color: #6b7280; line-height: 1.5;">
@@ -44543,54 +44543,54 @@ function loadProjectObject(obj) {
   // Search functionality - comprehensive searchable index
   const searchableContent = [
     // Nodes
-    { title: 'Creating Nodes', desc: 'Double-click on canvas to create nodes with customizable shapes, colors, and labels', section: 'nodes', keywords: ['node', 'create', 'double-click', 'shape', 'circle', 'square', 'point', 'location'], icon: 'ðŸ“', category: 'Elements' },
-    { title: 'Node Properties', desc: 'Edit node name, code, tags, GPS coordinates, and appearance in the Inspector', section: 'nodes', keywords: ['node', 'property', 'inspector', 'name', 'code', 'gps', 'coordinate', 'latitude', 'longitude'], icon: 'ðŸ“', category: 'Elements' },
+    { title: 'Creating Nodes', desc: 'Double-click on canvas to create nodes with customizable shapes, colors, and labels', section: 'nodes', keywords: ['node', 'create', 'double-click', 'shape', 'circle', 'square', 'point', 'location'], icon: '📍', category: 'Elements' },
+    { title: 'Node Properties', desc: 'Edit node name, code, tags, GPS coordinates, and appearance in the Inspector', section: 'nodes', keywords: ['node', 'property', 'inspector', 'name', 'code', 'gps', 'coordinate', 'latitude', 'longitude'], icon: '📍', category: 'Elements' },
 
     // Links
-    { title: 'Creating Links', desc: 'Click and drag from one node to another to create connections', section: 'links', keywords: ['link', 'connect', 'drag', 'connection', 'edge', 'line', 'cable'], icon: 'ðŸ”—', category: 'Elements' },
-    { title: 'Link Properties', desc: 'Set latency, capacity, costs (NRC/MRC/IRU), and appearance for links', section: 'links', keywords: ['link', 'property', 'latency', 'capacity', 'cost', 'nrc', 'mrc', 'iru', 'price'], icon: 'ðŸ”—', category: 'Elements' },
+    { title: 'Creating Links', desc: 'Click and drag from one node to another to create connections', section: 'links', keywords: ['link', 'connect', 'drag', 'connection', 'edge', 'line', 'cable'], icon: '🔗', category: 'Elements' },
+    { title: 'Link Properties', desc: 'Set latency, capacity, costs (NRC/MRC/IRU), and appearance for links', section: 'links', keywords: ['link', 'property', 'latency', 'capacity', 'cost', 'nrc', 'mrc', 'iru', 'price'], icon: '🔗', category: 'Elements' },
 
     // Containers
-    { title: 'Containers', desc: 'Group nodes together with containers for organization and transit costs', section: 'containers', keywords: ['container', 'group', 'box', 'region', 'area', 'transit'], icon: 'ðŸ“¦', category: 'Elements' },
+    { title: 'Containers', desc: 'Group nodes together with containers for organization and transit costs', section: 'containers', keywords: ['container', 'group', 'box', 'region', 'area', 'transit'], icon: '📦', category: 'Elements' },
 
     // Tags
-    { title: 'Tags & Labels', desc: 'Add tags to elements for filtering and organization', section: 'tags', keywords: ['tag', 'label', 'filter', 'organize', 'category', 'group'], icon: 'ðŸ·ï¸', category: 'Elements' },
+    { title: 'Tags & Labels', desc: 'Add tags to elements for filtering and organization', section: 'tags', keywords: ['tag', 'label', 'filter', 'organize', 'category', 'group'], icon: '🏷ï¸', category: 'Elements' },
 
     // Views
-    { title: 'Canvas View', desc: 'Schematic/diagrammatic view with free positioning and custom backgrounds', section: 'canvas-view', keywords: ['canvas', 'schematic', 'diagram', 'view', 'background', 'image'], icon: 'ðŸŽ¨', category: 'Views' },
-    { title: 'Static Geo View', desc: 'Geographic view with GPS positioning on static map background', section: 'static-geo', keywords: ['geo', 'geographic', 'static', 'gps', 'map', 'position', 'coordinate'], icon: 'ðŸ—ºï¸', category: 'Views' },
-    { title: 'Dynamic Map', desc: 'Interactive OpenStreetMap with zoom, pan, and real-time navigation', section: 'dynamic-map', keywords: ['map', 'dynamic', 'interactive', 'openstreetmap', 'maplibre', 'zoom', 'pan'], icon: 'ðŸŒ', category: 'Views' },
+    { title: 'Canvas View', desc: 'Schematic/diagrammatic view with free positioning and custom backgrounds', section: 'canvas-view', keywords: ['canvas', 'schematic', 'diagram', 'view', 'background', 'image'], icon: '🎨', category: 'Views' },
+    { title: 'Static Geo View', desc: 'Geographic view with GPS positioning on static map background', section: 'static-geo', keywords: ['geo', 'geographic', 'static', 'gps', 'map', 'position', 'coordinate'], icon: '🗺ï¸', category: 'Views' },
+    { title: 'Dynamic Map', desc: 'Interactive OpenStreetMap with zoom, pan, and real-time navigation', section: 'dynamic-map', keywords: ['map', 'dynamic', 'interactive', 'openstreetmap', 'maplibre', 'zoom', 'pan'], icon: '🌍', category: 'Views' },
 
     // Data
-    { title: 'Data Table', desc: 'Spreadsheet view for bulk editing nodes, links, and costs', section: 'data-table', keywords: ['data', 'table', 'spreadsheet', 'bulk', 'edit', 'csv', 'export'], icon: 'ðŸ“Š', category: 'Data' },
-    { title: 'Selection Filter', desc: 'Filter Data Table to show only selected items from canvas', section: 'data-table', keywords: ['selection', 'filter', 'selected', 'table'], icon: 'ðŸ“Š', category: 'Data' },
-    { title: 'Heat Map', desc: 'Visualize capacity or price with color-coded links', section: 'heat-map', keywords: ['heat', 'heatmap', 'capacity', 'price', 'color', 'visualize'], icon: 'ðŸŒ¡ï¸', category: 'Data' },
+    { title: 'Data Table', desc: 'Spreadsheet view for bulk editing nodes, links, and costs', section: 'data-table', keywords: ['data', 'table', 'spreadsheet', 'bulk', 'edit', 'csv', 'export'], icon: '📊', category: 'Data' },
+    { title: 'Selection Filter', desc: 'Filter Data Table to show only selected items from canvas', section: 'data-table', keywords: ['selection', 'filter', 'selected', 'table'], icon: '📊', category: 'Data' },
+    { title: 'Heat Map', desc: 'Visualize capacity or price with color-coded links', section: 'heat-map', keywords: ['heat', 'heatmap', 'capacity', 'price', 'color', 'visualize'], icon: '🌡ï¸', category: 'Data' },
 
     // Cable Systems & MLG
-    { title: 'Cable Systems', desc: 'Group links by physical infrastructure for diversity checking', section: 'cable-systems', keywords: ['cable', 'system', 'infrastructure', 'submarine', 'fiber', 'physical'], icon: 'ðŸ“', category: 'Network' },
-    { title: 'Multilink Groups', desc: 'Create protected paths with working and protection routes', section: 'multilink', keywords: ['multilink', 'mlg', 'group', 'protected', 'path', 'working', 'protection'], icon: 'ðŸ”€', category: 'Network' },
+    { title: 'Cable Systems', desc: 'Group links by physical infrastructure for diversity checking', section: 'cable-systems', keywords: ['cable', 'system', 'infrastructure', 'submarine', 'fiber', 'physical'], icon: '📐', category: 'Network' },
+    { title: 'Multilink Groups', desc: 'Create protected paths with working and protection routes', section: 'multilink', keywords: ['multilink', 'mlg', 'group', 'protected', 'path', 'working', 'protection'], icon: '🔀', category: 'Network' },
 
     // Routing
-    { title: 'Route Finder', desc: 'Find optimal paths by latency, cost, or balanced optimization', section: 'route-finder', keywords: ['route', 'path', 'find', 'optimal', 'latency', 'cost', 'dijkstra'], icon: 'ðŸ›¤ï¸', category: 'Routing' },
-    { title: 'Path Diversity', desc: 'Ensure routes dont share physical infrastructure for resilience', section: 'diversity', keywords: ['diversity', 'diverse', 'separate', 'resilience', 'protection', 'redundant'], icon: 'ðŸ›¡ï¸', category: 'Routing' },
+    { title: 'Route Finder', desc: 'Find optimal paths by latency, cost, or balanced optimization', section: 'route-finder', keywords: ['route', 'path', 'find', 'optimal', 'latency', 'cost', 'dijkstra'], icon: '🛤ï¸', category: 'Routing' },
+    { title: 'Path Diversity', desc: 'Ensure routes dont share physical infrastructure for resilience', section: 'diversity', keywords: ['diversity', 'diverse', 'separate', 'resilience', 'protection', 'redundant'], icon: '🛡ï¸', category: 'Routing' },
 
     // Costs
-    { title: 'Cost Model', desc: 'Lease (NRC/MRC/ACV) and IRU pricing with NPV calculations', section: 'cost-model', keywords: ['cost', 'price', 'lease', 'nrc', 'mrc', 'acv', 'iru', 'npv', 'commercial'], icon: 'ðŸ’°', category: 'Commercial' },
+    { title: 'Cost Model', desc: 'Lease (NRC/MRC/ACV) and IRU pricing with NPV calculations', section: 'cost-model', keywords: ['cost', 'price', 'lease', 'nrc', 'mrc', 'acv', 'iru', 'npv', 'commercial'], icon: '💰', category: 'Commercial' },
     { title: 'Financial Settings', desc: 'Configure currency, discount rate, and tier multipliers', section: 'financial-settings', keywords: ['financial', 'setting', 'currency', 'discount', 'rate', 'multiplier', 'tier'], icon: 'âš™ï¸', category: 'Commercial' },
-    { title: 'Bulk Price Reset', desc: 'Calculate all tier prices from a single source tier', section: 'price-reset', keywords: ['bulk', 'price', 'reset', 'tier', 'multiplier', 'calculate'], icon: 'ðŸ”„', category: 'Commercial' },
+    { title: 'Bulk Price Reset', desc: 'Calculate all tier prices from a single source tier', section: 'price-reset', keywords: ['bulk', 'price', 'reset', 'tier', 'multiplier', 'calculate'], icon: '🔄', category: 'Commercial' },
 
     // Library
-    { title: 'Style Library', desc: 'Save and reuse node styles, import custom SVG icons', section: 'library', keywords: ['library', 'style', 'save', 'reuse', 'svg', 'icon', 'custom', 'format'], icon: 'ðŸ“š', category: 'Styling' },
+    { title: 'Style Library', desc: 'Save and reuse node styles, import custom SVG icons', section: 'library', keywords: ['library', 'style', 'save', 'reuse', 'svg', 'icon', 'custom', 'format'], icon: '📚', category: 'Styling' },
 
     // Import/Export
-    { title: 'Import & Export', desc: 'Save projects, export images (PNG/SVG/JPG), and CSV data', section: 'import-export', keywords: ['import', 'export', 'save', 'png', 'svg', 'jpg', 'csv', 'print'], icon: 'ðŸ“¤', category: 'Files' },
+    { title: 'Import & Export', desc: 'Save projects, export images (PNG/SVG/JPG), and CSV data', section: 'import-export', keywords: ['import', 'export', 'save', 'png', 'svg', 'jpg', 'csv', 'print'], icon: '📤', category: 'Files' },
 
     // Shortcuts
     { title: 'Keyboard Shortcuts', desc: 'Master shortcuts for faster workflow', section: 'shortcuts', keywords: ['keyboard', 'shortcut', 'key', 'ctrl', 'hotkey', 'accelerator'], icon: 'âŒ¨ï¸', category: 'Reference' },
 
     // Interface
-    { title: 'Toolbar Buttons', desc: 'Overview of all toolbar buttons and panel toggles', section: 'toolbar', keywords: ['toolbar', 'button', 'panel', 'toggle', 'interface'], icon: 'ðŸ”§', category: 'Interface' },
-    { title: 'Inspector Panel', desc: 'Edit properties of selected elements', section: 'interface', keywords: ['inspector', 'panel', 'property', 'edit', 'right'], icon: 'ðŸ“', category: 'Interface' }
+    { title: 'Toolbar Buttons', desc: 'Overview of all toolbar buttons and panel toggles', section: 'toolbar', keywords: ['toolbar', 'button', 'panel', 'toggle', 'interface'], icon: '🔧', category: 'Interface' },
+    { title: 'Inspector Panel', desc: 'Edit properties of selected elements', section: 'interface', keywords: ['inspector', 'panel', 'property', 'edit', 'right'], icon: '📝', category: 'Interface' }
   ];
 
   helpSearchInput.addEventListener('input', () => {
@@ -44653,7 +44653,7 @@ function loadProjectObject(obj) {
         </div>
         <div class="search-results-footer">
           <button onclick="window.open('${ONLINE_DOCS_URL}', '_blank')" class="search-full-guide-btn">
-            ðŸŒ Browse Full Documentation
+            🌐 Browse Full Documentation
           </button>
         </div>
       `;
@@ -44663,11 +44663,11 @@ function loadProjectObject(obj) {
       // No results found
       resultsContent.innerHTML = `
         <div class="help-no-results">
-          <div class="no-results-icon">ðŸ”</div>
+          <div class="no-results-icon">🔍</div>
           <p>No results found for "<strong>${query}</strong>"</p>
           <p style="color:#888; font-size:12px; margin-top:8px;">Try different keywords or search the full documentation.</p>
           <button onclick="window.open('${ONLINE_DOCS_URL}', '_blank')" class="search-full-guide-btn" style="margin-top:16px;">
-            ðŸŒ Search Online Documentation
+            🌐 Search Online Documentation
           </button>
         </div>
       `;
