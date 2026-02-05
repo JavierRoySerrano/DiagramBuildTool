@@ -18849,9 +18849,18 @@ function loadProjectObject(obj) {
   // If a cable has faLiveStatus='online'/'outage' or status looks operational but rfsYear is wrong, fix it
   const migrationYear = new Date().getFullYear();
   state.cableSystems.forEach(csItem => {
-    // If FA says it's online or has an outage, it's clearly operational
+    // Ensure rfsYear is populated from rfs string if missing
+    if (!csItem.rfsYear && csItem.rfs && typeof csItem.rfs === 'string') {
+      const parsed = parseInt(csItem.rfs);
+      if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) {
+        csItem.rfsYear = parsed;
+      }
+    }
+
+    // If FA says it's online, has an outage, or is active — it's clearly operational
+    // (an outage means it WAS in service, so status should be operational)
     const faStatus = (csItem.faLiveStatus || '').toLowerCase();
-    if (faStatus === 'online' || faStatus === 'outage' || faStatus === 'active') {
+    if (faStatus === 'online' || faStatus === 'outage' || faStatus === 'active' || faStatus === 'out' || faStatus === 'up') {
       if (csItem.status !== 'operational') {
         csItem.status = 'operational';
       }
@@ -19524,9 +19533,14 @@ function loadProjectObject(obj) {
       if (cs.status === 'decommissioned') return 'decommissioned';
       if (cs.status === 'operational' || cs.status === 'Active') return 'operational';
       if (cs.status === 'under-construction' || cs.status === 'Under Construction') return 'under-construction';
-      // For 'planned' or unknown status, ALWAYS cross-check against rfsYear
+      // For 'planned' or unknown status, ALWAYS cross-check against rfsYear / rfs string
       // A cable with rfsYear <= currentYear should be operational regardless of stored status
-      const rfsYear = cs.rfsYear;
+      let rfsYear = cs.rfsYear;
+      // Fallback: try parsing the rfs string if rfsYear is not set
+      if ((rfsYear === null || rfsYear === undefined) && cs.rfs && typeof cs.rfs === 'string') {
+        const parsed = parseInt(cs.rfs);
+        if (!isNaN(parsed) && parsed > 1990 && parsed < 2100) rfsYear = parsed;
+      }
       if (rfsYear !== null && rfsYear !== undefined && !isNaN(rfsYear)) {
         if (rfsYear <= currentYear) return 'operational';
         if (rfsYear <= currentYear + 2) return 'under-construction';
@@ -44778,4 +44792,3 @@ function loadProjectObject(obj) {
 </script>
 </body>
 </html>
-
