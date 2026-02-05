@@ -20734,10 +20734,29 @@ function loadProjectObject(obj) {
             }
           }
         } else if (!rfsYear) {
-          // No RFS year — use is_planned flag
+          // No RFS year — use is_planned flag + FiberAtlantic cross-check
           if (meta.is_planned === false) {
-            status = 'operational';
-            statusSource = 'is_planned=false (no rfs_year)';
+            // Cable was built (not planned) but has no RFS year
+            // Cross-check with FiberAtlantic to see if it's still active
+            let faStillActive = false;
+            if (faCables) {
+              const faMatch = autoMatchFiberAtlantic(props.name, faCables);
+              if (faMatch && faMatch.match) {
+                const faS = (faMatch.match.status || '').toLowerCase().trim();
+                faMatchName = faMatch.match.name;
+                faStatus = faS;
+                if (faS === 'online' || faS === 'active' || faS === 'outage') {
+                  faStillActive = true;
+                }
+              }
+            }
+            if (faStillActive) {
+              status = 'operational';
+              statusSource = `is_planned=false, FA confirms active (${faStatus})`;
+            } else {
+              status = 'decommissioned';
+              statusSource = 'is_planned=false, no rfs_year, no FA match → decommissioned';
+            }
           } else if (meta.is_planned === true) {
             status = 'planned';
             statusSource = 'is_planned=true (no rfs_year)';
@@ -20970,7 +20989,21 @@ function loadProjectObject(obj) {
       const color = getCableColor(cable.id);
       const statusClass = getStatusClass(cable);
       const statusTooltip = getStatusTooltip(cable);
-      const rfsYear = cable.rfs || '';
+      // Show RFS year if numeric, otherwise show status label
+      let rfsDisplay = '';
+      if (cable.rfsYear) {
+        rfsDisplay = `RFS ${cable.rfsYear}`;
+      } else if (cable.status === 'decommissioned') {
+        rfsDisplay = 'Decommissioned';
+      } else if (cable.status === 'operational') {
+        rfsDisplay = 'Active';
+      } else if (cable.status === 'under-construction') {
+        rfsDisplay = 'Under Construction';
+      } else if (cable.status === 'planned') {
+        rfsDisplay = 'Planned';
+      } else {
+        rfsDisplay = cable.status || '';
+      }
       const length = cable.length_km ? `${Math.round(cable.length_km).toLocaleString()} km` : '';
       const hasGeometry = cable.geometry && cable.geometry.coordinates;
 
@@ -20994,7 +21027,7 @@ function loadProjectObject(obj) {
           <div class="cable-color" style="background:${color};"></div>
           <div class="visor-cable-info">
             <div class="visor-cable-name">${escapeHtml(cable.shortName || cable.name)}${faIndicator}</div>
-            <div class="visor-cable-meta">${rfsYear}${length ? ' • ' + length : ''}${cable.rfsYear === currentYear && cable._statusSource ? ' • ' + escapeHtml(cable._statusSource) : ''}${!hasGeometry ? ' • No map data' : ''}</div>
+            <div class="visor-cable-meta">${rfsDisplay}${length ? ' • ' + length : ''}${cable.rfsYear === currentYear && cable._statusSource ? ' • ' + escapeHtml(cable._statusSource) : ''}${!hasGeometry ? ' • No map data' : ''}</div>
           </div>
         </div>
       `;
