@@ -10,7 +10,7 @@
   If encoding breaks, start over from the clean source file.
   ===============================================================
 -->
-<!-- NexiMap Studio v61.60 - Segment-chaining for multi-segment GeoJSON/KML import - 2025-02-12 -->
+<!-- NexiMap Studio v61.61 - Dedup + branch-aware chaining for GeoJSON/KML import - 2025-02-12 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -4584,7 +4584,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.60</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.61</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -36714,6 +36714,18 @@ function loadProjectObject(obj) {
     if (!segments || segments.length === 0) return [];
     if (segments.length === 1) return segments[0];
 
+    // --- STEP 1: Deduplicate exact-copy geometries ---
+    const seen = new Set();
+    const unique = [];
+    for (const seg of segments) {
+      const key = seg.map(c => c[0].toFixed(5) + ',' + c[1].toFixed(5)).join('|');
+      if (!seen.has(key)) { seen.add(key); unique.push(seg); }
+    }
+    if (unique.length !== segments.length) {
+      console.log('[PATH IMPORT] Dedup: ' + segments.length + ' -> ' + unique.length + ' unique segments');
+    }
+    if (unique.length === 1) return unique[0];
+
     // Helper: distance squared between two [lon,lat] points
     function distSq(a, b) {
       const dlat = (a[1] - b[1]);
@@ -36721,109 +36733,108 @@ function loadProjectObject(obj) {
       return dlat * dlat + dlon * dlon;
     }
 
-    // Build array of segment objects with start/end references
-    const segs = segments.map((coords, i) => ({
-      id: i,
-      coords: coords,
-      start: coords[0],
-      end: coords[coords.length - 1],
+    // Snap tolerance: ~2km in degrees
+    const SNAP = 0.02;
+    const SNAP_SQ = SNAP * SNAP;
+
+    const segs = unique.map((coords, i) => ({
+      id: i, coords: coords,
+      start: coords[0], end: coords[coords.length - 1],
       used: false
     }));
 
-    // Start with the longest segment as seed (often the main trunk)
-    let seedIdx = 0;
-    let maxLen = 0;
-    for (let i = 0; i < segs.length; i++) {
-      if (segs[i].coords.length > maxLen) {
-        maxLen = segs[i].coords.length;
-        seedIdx = i;
+    // --- STEP 2: Build endpoint degree map ---
+    const epGrid = new Map();
+    function gridKey(c) { return Math.floor(c[1] / SNAP) + ',' + Math.floor(c[0] / SNAP); }
+
+    for (const seg of segs) {
+      for (const ep of [seg.start, seg.end]) {
+        const gk = gridKey(ep);
+        if (!epGrid.has(gk)) epGrid.set(gk, []);
+        epGrid.get(gk).push(ep);
       }
     }
 
-    // Build a chain from the seed
+    function junctionDegree(pt) {
+      const gx = Math.floor(pt[1] / SNAP), gy = Math.floor(pt[0] / SNAP);
+      let count = 0;
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const cell = epGrid.get((gx+dx) + ',' + (gy+dy));
+          if (!cell) continue;
+          for (const ep of cell) {
+            if (Math.abs(pt[1] - ep[1]) < SNAP && Math.abs(pt[0] - ep[0]) < SNAP) count++;
+          }
+        }
+      }
+      return count;
+    }
+
+    // --- STEP 3: Chain segments, stopping at branches ---
+    // Find seed: longest segment
+    let seedIdx = 0, maxLen = 0;
+    for (let i = 0; i < segs.length; i++) {
+      if (segs[i].coords.length > maxLen) { maxLen = segs[i].coords.length; seedIdx = i; }
+    }
+
     let chain = [...segs[seedIdx].coords];
     segs[seedIdx].used = true;
     let usedCount = 1;
 
-    // Tolerance for endpoint matching: ~50 meters in degrees
-    const TOLERANCE_SQ = 0.0005 * 0.0005; // ~55m at equator
-
-    // Extend from both ends of the chain
     let changed = true;
     while (changed && usedCount < segs.length) {
       changed = false;
       const chainStart = chain[0];
       const chainEnd = chain[chain.length - 1];
 
-      // Find best match to extend from chain END
-      let bestEndIdx = -1, bestEndDist = Infinity, bestEndReverse = false;
-      for (let i = 0; i < segs.length; i++) {
-        if (segs[i].used) continue;
-        const dStartToEnd = distSq(chainEnd, segs[i].start);
-        const dEndToEnd = distSq(chainEnd, segs[i].end);
-        const minD = Math.min(dStartToEnd, dEndToEnd);
-        if (minD < bestEndDist) {
-          bestEndDist = minD;
-          bestEndIdx = i;
-          bestEndReverse = dEndToEnd < dStartToEnd;
+      // Extend from END if not at a branch
+      const endDeg = junctionDegree(chainEnd);
+      if (endDeg <= 2) {
+        let beIdx = -1, beDist = Infinity, beRev = false;
+        for (let i = 0; i < segs.length; i++) {
+          if (segs[i].used) continue;
+          const dS = distSq(chainEnd, segs[i].start);
+          const dE = distSq(chainEnd, segs[i].end);
+          const m = Math.min(dS, dE);
+          if (m < beDist) { beDist = m; beIdx = i; beRev = dE < dS; }
+        }
+        if (beIdx >= 0 && beDist <= SNAP_SQ) {
+          const seg = segs[beIdx];
+          const coords = beRev ? [...seg.coords].reverse() : seg.coords;
+          const skip = (distSq(chain[chain.length - 1], coords[0]) < SNAP_SQ) ? 1 : 0;
+          for (let j = skip; j < coords.length; j++) chain.push(coords[j]);
+          seg.used = true; usedCount++; changed = true;
+          continue;
         }
       }
 
-      // Find best match to extend from chain START
-      let bestStartIdx = -1, bestStartDist = Infinity, bestStartReverse = false;
-      for (let i = 0; i < segs.length; i++) {
-        if (segs[i].used) continue;
-        const dEndToStart = distSq(chainStart, segs[i].end);
-        const dStartToStart = distSq(chainStart, segs[i].start);
-        const minD = Math.min(dEndToStart, dStartToStart);
-        if (minD < bestStartDist) {
-          bestStartDist = minD;
-          bestStartIdx = i;
-          bestStartReverse = dStartToStart < dEndToStart;
+      // Extend from START if not at a branch
+      const startDeg = junctionDegree(chainStart);
+      if (startDeg <= 2) {
+        let bsIdx = -1, bsDist = Infinity, bsRev = false;
+        for (let i = 0; i < segs.length; i++) {
+          if (segs[i].used) continue;
+          const dE = distSq(chainStart, segs[i].end);
+          const dS = distSq(chainStart, segs[i].start);
+          const m = Math.min(dE, dS);
+          if (m < bsDist) { bsDist = m; bsIdx = i; bsRev = dS < dE; }
+        }
+        if (bsIdx >= 0 && bsDist <= SNAP_SQ) {
+          const seg = segs[bsIdx];
+          const coords = bsRev ? [...seg.coords].reverse() : seg.coords;
+          const trim = (distSq(chain[0], coords[coords.length - 1]) < SNAP_SQ) ? 1 : 0;
+          const prepend = coords.slice(0, coords.length - trim);
+          chain = [...prepend, ...chain];
+          seg.used = true; usedCount++; changed = true;
+          continue;
         }
       }
 
-      // Extend whichever end has the closer match (prefer within tolerance)
-      if (bestEndIdx >= 0 && bestEndDist <= TOLERANCE_SQ && (bestEndDist <= bestStartDist || bestStartDist > TOLERANCE_SQ)) {
-        const seg = segs[bestEndIdx];
-        const coords = bestEndReverse ? [...seg.coords].reverse() : seg.coords;
-        // Skip first point if it's essentially the same as chain end (avoid duplicates)
-        const startI = (distSq(chain[chain.length - 1], coords[0]) < TOLERANCE_SQ) ? 1 : 0;
-        for (let j = startI; j < coords.length; j++) chain.push(coords[j]);
-        seg.used = true;
-        usedCount++;
-        changed = true;
-      } else if (bestStartIdx >= 0 && bestStartDist <= TOLERANCE_SQ) {
-        const seg = segs[bestStartIdx];
-        const coords = bestStartReverse ? [...seg.coords].reverse() : seg.coords;
-        const endI = (distSq(chain[0], coords[coords.length - 1]) < TOLERANCE_SQ) ? coords.length - 1 : coords.length;
-        const prepend = coords.slice(0, endI);
-        chain = [...prepend, ...chain];
-        seg.used = true;
-        usedCount++;
-        changed = true;
-      } else if (bestEndIdx >= 0 || bestStartIdx >= 0) {
-        // No match within tolerance - try larger jump (for disconnected sub-paths)
-        // Use the closer of the two
-        if (bestEndDist <= bestStartDist && bestEndIdx >= 0) {
-          const seg = segs[bestEndIdx];
-          const coords = bestEndReverse ? [...seg.coords].reverse() : seg.coords;
-          for (const c of coords) chain.push(c);
-          seg.used = true;
-          usedCount++;
-          changed = true;
-        } else if (bestStartIdx >= 0) {
-          const seg = segs[bestStartIdx];
-          const coords = bestStartReverse ? [...seg.coords].reverse() : seg.coords;
-          chain = [...coords, ...chain];
-          seg.used = true;
-          usedCount++;
-          changed = true;
-        }
-      }
+      // Neither end could extend within tolerance at a non-branch — stop
+      break;
     }
 
-    console.log('[PATH IMPORT] Chained ' + usedCount + '/' + segments.length + ' segments into path of ' + chain.length + ' points');
+    console.log('[PATH IMPORT] Chained ' + usedCount + '/' + unique.length + ' segments into path of ' + chain.length + ' points (dedup removed ' + (segments.length - unique.length) + ')');
     return chain;
   }
 
@@ -45661,7 +45672,7 @@ function handlePathKmlImport(e) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.60 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.61 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
