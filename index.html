@@ -10,7 +10,7 @@
   If encoding breaks, start over from the clean source file.
   ===============================================================
 -->
-<!-- NexiMap Studio v61.61 - Dedup + branch-aware chaining for GeoJSON/KML import - 2025-02-12 -->
+<!-- NexiMap Studio v61.62 - GeoJSON export for selected cables in Cable System List - 2025-02-12 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -4584,7 +4584,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.61</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.62</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -7146,7 +7146,14 @@
       <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; gap:8px; flex-wrap:wrap;">
         <button class="btn primary" id="btnNewCableSystem" style="flex:1; min-width:50px;">+ New</button>
         <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:50px;" title="Import cable systems from database or API">📥 Import</button>
-        <button class="btn" id="btnExportCableSystems" style="flex:1; min-width:50px;" title="Export cable systems to JSON">📤 Export</button>
+        <div style="position:relative; flex:1; min-width:50px; display:flex;">
+          <button class="btn" id="btnExportCableSystems" style="flex:1; border-top-right-radius:0; border-bottom-right-radius:0;" title="Export cable systems to GeoJSON">📤 Export</button>
+          <button class="btn" id="btnExportCableDropdown" style="padding:4px 4px; border-top-left-radius:0; border-bottom-left-radius:0; border-left:1px solid #ccc;" title="Export options">▼</button>
+          <div id="exportCableDropdownMenu" style="display:none; position:absolute; bottom:100%; right:0; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:9999; min-width:180px; margin-bottom:2px;">
+            <button class="btn" id="btnExportCableGeoJSON" style="display:block; width:100%; text-align:left; border:none; border-radius:6px 6px 0 0; padding:8px 12px; font-size:11px;">🌍 Export as GeoJSON</button>
+            <button class="btn" id="btnExportCableJSON" style="display:block; width:100%; text-align:left; border:none; border-radius:0 0 6px 6px; padding:8px 12px; font-size:11px;">📄 Export as JSON (internal)</button>
+          </div>
+        </div>
         <button class="btn" id="btnDeleteCableSystem" style="flex:1; min-width:50px;">Delete</button>
       </div>
       <div style="padding:4px 12px 8px; display:flex; gap:8px;">
@@ -19651,13 +19658,27 @@ function loadProjectObject(obj) {
     });
   }
 
-  // Export cable systems button
+  // Export cable systems button (default = GeoJSON)
   const btnExportCableSystems = document.getElementById('btnExportCableSystems');
   if (btnExportCableSystems) {
     btnExportCableSystems.addEventListener('click', () => {
-      exportCableSystems();
+      exportCableSystemsAsGeoJSON();
     });
   }
+  // Export dropdown toggle
+  const btnExportCableDropdown = document.getElementById('btnExportCableDropdown');
+  const exportCableDropdownMenu = document.getElementById('exportCableDropdownMenu');
+  if (btnExportCableDropdown && exportCableDropdownMenu) {
+    btnExportCableDropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+      exportCableDropdownMenu.style.display = exportCableDropdownMenu.style.display === 'none' ? 'block' : 'none';
+    });
+    document.addEventListener('click', () => { exportCableDropdownMenu.style.display = 'none'; });
+  }
+  const btnExportCableGeoJSON = document.getElementById('btnExportCableGeoJSON');
+  if (btnExportCableGeoJSON) btnExportCableGeoJSON.addEventListener('click', () => { exportCableDropdownMenu.style.display = 'none'; exportCableSystemsAsGeoJSON(); });
+  const btnExportCableJSON = document.getElementById('btnExportCableJSON');
+  if (btnExportCableJSON) btnExportCableJSON.addEventListener('click', () => { exportCableDropdownMenu.style.display = 'none'; exportCableSystems(); });
 
   // Delete cable system button
   if (btnDeleteCableSystem) {
@@ -22061,6 +22082,106 @@ function loadProjectObject(obj) {
     URL.revokeObjectURL(url);
 
     showToast('Exported ' + state.cableSystems.length + ' cable system(s) to JSON.');
+  }
+
+  // Export cable systems as standard GeoJSON FeatureCollection
+  // If multi-select is active, exports only selected cables; otherwise exports all
+  function exportCableSystemsAsGeoJSON() {
+    // Determine which cables to export
+    const multiSelectActive = document.getElementById('cableNavMultiSelect')?.checked || false;
+    let cablesToExport;
+
+    if (multiSelectActive && state.multiSelectedCableSystems && state.multiSelectedCableSystems.size > 0) {
+      cablesToExport = state.cableSystems.filter(cs => state.multiSelectedCableSystems.has(cs.id));
+    } else if (state.selectedCableSystem) {
+      // Single selection - export just the selected one
+      cablesToExport = state.cableSystems.filter(cs => cs.id === state.selectedCableSystem);
+    } else {
+      // No selection - export all
+      cablesToExport = state.cableSystems;
+    }
+
+    if (cablesToExport.length === 0) {
+      showToast('No cable systems to export. Select cables first or ensure Cable System List is not empty.');
+      return;
+    }
+
+    // Only export cables that have geometry
+    const withGeometry = cablesToExport.filter(cs => cs.geometry);
+    const withoutGeometry = cablesToExport.filter(cs => !cs.geometry);
+
+    if (withGeometry.length === 0) {
+      showToast('None of the selected cable systems have geometry data to export as GeoJSON.');
+      return;
+    }
+
+    // Build GeoJSON FeatureCollection
+    const features = [];
+    withGeometry.forEach(cs => {
+      const properties = {
+        id: cs.id,
+        name: cs.name,
+        shortName: cs.shortName || cs.name,
+        color: cs.color || '#0077b6',
+        region: cs.region || 'Unknown',
+        status: cs.status || 'unknown',
+        rfs: cs.rfs || '',
+        rfsYear: cs.rfsYear || null,
+        owners: cs.owners || [],
+        length_km: cs.length_km || null,
+        source: cs.source || 'NexiMap',
+        stroke: cs.color || '#0077b6',
+        'stroke-width': 2,
+        'stroke-opacity': 1
+      };
+      if (cs.fiberAtlanticId) properties.fiberAtlanticId = cs.fiberAtlanticId;
+      if (cs.fiberAtlanticName) properties.fiberAtlanticName = cs.fiberAtlanticName;
+      if (cs.faLiveStatus) properties.faLiveStatus = cs.faLiveStatus;
+
+      // Handle different geometry types
+      const geom = cs.geometry;
+      if (geom.type === 'MultiLineString' || geom.type === 'LineString' || geom.type === 'Point' || geom.type === 'MultiPoint' || geom.type === 'Polygon' || geom.type === 'MultiPolygon' || geom.type === 'GeometryCollection') {
+        features.push({
+          type: 'Feature',
+          properties: properties,
+          geometry: geom
+        });
+      } else if (geom.coordinates) {
+        // Fallback: assume LineString if coordinates present but no type
+        features.push({
+          type: 'Feature',
+          properties: properties,
+          geometry: { type: 'LineString', coordinates: geom.coordinates }
+        });
+      }
+    });
+
+    const geojson = {
+      type: 'FeatureCollection',
+      name: 'NexiMap Studio Cable Export',
+      exportedAt: new Date().toISOString(),
+      features: features
+    };
+
+    // Download
+    const jsonStr = JSON.stringify(geojson, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/geo+json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    const nameHint = cablesToExport.length === 1 ? '_' + (cablesToExport[0].shortName || cablesToExport[0].name).replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 40) : '';
+    a.download = 'cables_geojson' + nameHint + '_' + dateStr + '.geojson';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    let msg = 'Exported ' + withGeometry.length + ' cable(s) as GeoJSON.';
+    if (withoutGeometry.length > 0) {
+      msg += ' (' + withoutGeometry.length + ' skipped - no geometry)';
+    }
+    showToast(msg);
   }
 
   function executeCsBulkImport() {
@@ -45672,7 +45793,7 @@ function handlePathKmlImport(e) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.61 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.62 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
