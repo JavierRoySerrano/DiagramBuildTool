@@ -10,7 +10,7 @@
   If encoding breaks, start over from the clean source file.
   ===============================================================
 -->
-<!-- NexiMap Studio v61.63 - GeoJSON export for selected cables in Cable System List - 2025-02-12 -->
+<!-- NexiMap Studio v61.64 - GeoJSON export for selected cables in Cable System List - 2025-02-12 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -4584,7 +4584,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.63</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.64</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -7143,18 +7143,18 @@
       <div id="cableSystemList" style="flex:1; overflow-y:auto; padding:4px;">
         <div class="muted" style="padding:12px; text-align:center;">No cable systems defined.<br/>Click "New" to create one.</div>
       </div>
-      <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:flex; gap:8px; flex-wrap:wrap;">
-        <button class="btn primary" id="btnNewCableSystem" style="flex:1; min-width:50px;">+ New</button>
-        <button class="btn" id="btnImportCableSystems" style="flex:1; min-width:50px;" title="Import cable systems from database or API">📥 Import</button>
-        <div style="position:relative; flex:1; min-width:50px; display:flex;">
-          <button class="btn" id="btnExportCableSystems" style="flex:1; border-top-right-radius:0; border-bottom-right-radius:0;" title="Export cable systems to GeoJSON">📤 Export</button>
-          <button class="btn" id="btnExportCableDropdown" style="padding:4px 4px; border-top-left-radius:0; border-bottom-left-radius:0; border-left:1px solid #ccc;" title="Export options">▼</button>
+      <div style="padding:8px 12px; border-top:1px solid #e0e0e0; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:6px;">
+        <button class="btn primary" id="btnNewCableSystem" style="font-size:11px; padding:5px 2px;">+ New</button>
+        <button class="btn" id="btnImportCableSystems" style="font-size:11px; padding:5px 2px;" title="Import cable systems from database or API">📥 Import</button>
+        <div style="position:relative; display:flex;">
+          <button class="btn" id="btnExportCableSystems" style="flex:1; font-size:11px; padding:5px 2px; border-top-right-radius:0; border-bottom-right-radius:0;" title="Export cable systems to GeoJSON">📤 Export</button>
+          <button class="btn" id="btnExportCableDropdown" style="padding:4px 3px; border-top-left-radius:0; border-bottom-left-radius:0; border-left:1px solid #ccc; font-size:10px;" title="Export options">▼</button>
           <div id="exportCableDropdownMenu" style="display:none; position:absolute; bottom:100%; right:0; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:9999; min-width:180px; margin-bottom:2px;">
             <button class="btn" id="btnExportCableGeoJSON" style="display:block; width:100%; text-align:left; border:none; border-radius:6px 6px 0 0; padding:8px 12px; font-size:11px;">🌍 Export as GeoJSON</button>
             <button class="btn" id="btnExportCableJSON" style="display:block; width:100%; text-align:left; border:none; border-radius:0 0 6px 6px; padding:8px 12px; font-size:11px;">📄 Export as JSON (internal)</button>
           </div>
         </div>
-        <button class="btn" id="btnDeleteCableSystem" style="flex:1; min-width:50px;">Delete</button>
+        <button class="btn" id="btnDeleteCableSystem" style="font-size:11px; padding:5px 2px;">🗑 Delete</button>
       </div>
       <div style="padding:4px 12px 8px; display:flex; gap:8px;">
         <button class="btn" id="btnBatchAutoMatchFA" style="flex:1; font-size:10px; padding:4px 8px; background:#f0fdf4; border-color:#86efac; color:#166534;" title="Auto-match all cable systems with FiberAtlantic for live status">🔗 Link All to FiberAtlantic</button>
@@ -19316,6 +19316,7 @@ function loadProjectObject(obj) {
 
   // Render and update UI
   render();
+  updateCableNavigatorList();
   dirty = false;
 }
 
@@ -45793,7 +45794,7 @@ function handlePathKmlImport(e) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.63 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.64 <span style="color:#b0b0b0; font-size:11px;">• Build 2025-02-12</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
