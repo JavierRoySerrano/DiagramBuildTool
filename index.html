@@ -7180,10 +7180,6 @@
           <input type="radio" name="csBulkSrc" id="rdoSrcLocal" value="local" checked style="margin:0;" />
           <span style="font-size:12px;">📂 Internal</span>
         </label>
-        <label id="lblSrcPublicDb" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid transparent; background:white;">
-          <input type="radio" name="csBulkSrc" id="rdoSrcPublicDb" value="publicdb" style="margin:0;" />
-          <span style="font-size:12px;">📦 Public Cable Database</span>
-        </label>
         <label id="lblSrcTG" style="display:flex; align-items:center; gap:6px; cursor:pointer; padding:6px 12px; border-radius:6px; border:2px solid transparent; background:white;">
           <input type="radio" name="csBulkSrc" id="rdoSrcTG" value="telegeography" style="margin:0;" />
           <span style="font-size:12px;">🌍 TeleGeography (500+)</span>
@@ -20751,15 +20747,13 @@ function loadProjectObject(obj) {
 
     // Determine source
     const srcList = document.getElementById('visorSrcList');
-    const srcDb = document.getElementById('visorSrcDb');
     const srcAPI = document.getElementById('visorSrcAPI');
 
     let source = 'list'; // default to Cable List
-    if (srcDb?.checked) source = 'db';
     if (srcAPI?.checked) source = 'api';
 
     // Update title
-    const sourceLabels = { list: 'Cables from Cable List', db: 'Cables from Public Cable Database', api: 'Cables from TeleGeography' };
+    const sourceLabels = { list: 'Cables from Cable List', api: 'Cables from TeleGeography' };
     if (titleEl) titleEl.textContent = sourceLabels[source];
 
     if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#666;">Loading cables...</div>';
@@ -20770,12 +20764,9 @@ function loadProjectObject(obj) {
       if (source === 'list') {
         // Load from Cable System List (state.cableSystems)
         db = loadCablesFromCableList();
-      } else if (source === 'api') {
+      } else {
         // Load from TeleGeography API
         db = await loadFromTeleGeographyAPI();
-      } else {
-        // Load from Public Cable Database (community/public cable data)
-        db = await loadFromPublicCableDatabase();
       }
 
       console.log('[CableVisor] Loaded from ' + source + ':', db ? Object.keys(db.cables || {}).length : 0, 'cables');
@@ -20828,66 +20819,10 @@ function loadProjectObject(obj) {
   }
 
   // Cloudflare Worker proxy URLs for cable data sources
-  // Public Cable Database (community/GitHub-sourced cable data with geometry)
-  const PUBLIC_CABLE_DB_API = 'https://submarine-cable-api.fcoroyse-spam.workers.dev';
-  // TeleGeography real geodata API (authoritative cable geometry from TeleGeography)
-  const TG_GEODATA_API = 'https://tg-cablesystem-geodata.fcoroyse-spam.workers.dev';
+  // TeleGeography geodata API (authoritative cable geometry from TeleGeography)
+  const TG_GEODATA_API = 'https://submarine-cable-api.fcoroyse-spam.workers.dev';
   // TeleGeography per-cable metadata (RFS, owners, landing points, etc.)
   const CABLE_META_API = 'https://tg-cablesystem-rfs-metadata.fcoroyse-spam.workers.dev';
-
-  // ============== PUBLIC CABLE DATABASE LOADER ==============
-  // Loads from the community/GitHub-sourced cable geometry database
-  // Same GeoJSON format as TeleGeography but sourced from public/community data
-  async function loadFromPublicCableDatabase() {
-    const listEl = document.getElementById('cableVisorCableList');
-    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">📦 Loading from Public Cable Database...</div>';
-
-    try {
-      const geoResponse = await fetch(`${PUBLIC_CABLE_DB_API}/cable-geo`);
-      if (!geoResponse.ok) throw new Error(`Failed to fetch cable geometry: ${geoResponse.status}`);
-      const geoData = await geoResponse.json();
-
-      const totalCables = geoData.features ? geoData.features.length : 0;
-      console.log(`[PublicCableDb] Loaded ${totalCables} cable geometries`);
-
-      // Build cable database from GeoJSON features (minimal metadata, no per-cable API calls)
-      const cables = {};
-      (geoData.features || []).forEach(feature => {
-        const props = feature.properties;
-        if (!props || !props.id) return;
-
-        cables[props.id] = {
-          id: props.id,
-          name: props.name || props.id,
-          shortName: (props.name || props.id).length > 20 ? (props.name || props.id).substring(0, 18) + '...' : (props.name || props.id),
-          color: props.color || '#939597',
-          region: inferRegionFromCoordinates(feature.geometry),
-          status: 'unknown',
-          rfs: '',
-          rfsYear: null,
-          owners: [],
-          ownersText: 'Unknown',
-          description: (props.name || props.id) + ' submarine cable',
-          length_km: null,
-          geometry: feature.geometry,
-          source: 'Public Cable Database'
-        };
-      });
-
-      console.log(`[PublicCableDb] Built database with ${Object.keys(cables).length} cables`);
-
-      return {
-        version: '1.0',
-        lastUpdated: new Date().toISOString().split('T')[0],
-        source: 'Public Cable Database',
-        cables: cables
-      };
-
-    } catch (err) {
-      console.error('[PublicCableDb] Error:', err);
-      throw err;
-    }
-  }
 
   // Load cable data from TeleGeography via real geodata API + metadata enrichment
   // Uses TG_GEODATA_API for GeoJSON geometry and CABLE_META_API (tg-cablesystem-rfs-metadata) for per-cable RFS/metadata
@@ -21647,7 +21582,6 @@ function loadProjectObject(obj) {
 
     // Source toggle radio buttons
     const srcList = document.getElementById('visorSrcList');
-    const srcDb = document.getElementById('visorSrcDb');
     const srcAPI = document.getElementById('visorSrcAPI');
 
     if (openBtn) openBtn.addEventListener('click', showCableVisor);
@@ -21668,12 +21602,6 @@ function loadProjectObject(obj) {
     if (srcList) srcList.addEventListener('change', () => {
       if (srcList.checked) {
         cableVisorState.cableDatabase = null; // Clear cache
-        loadCableVisorData(true);
-      }
-    });
-    if (srcDb) srcDb.addEventListener('change', () => {
-      if (srcDb.checked) {
-        cableVisorState.cableDatabase = null;
         loadCableVisorData(true);
       }
     });
@@ -21781,7 +21709,7 @@ function loadProjectObject(obj) {
   // ========== CABLE SYSTEM BULK IMPORT ==========
   let csBulkImportSelection = new Set();
   let csBulkImportCables = {};
-  let csBulkSource = 'local'; // 'local' | 'publicdb' | 'telegeography'
+  let csBulkSource = 'local'; // 'local' | 'telegeography'
 
   async function showCableSystemBulkImportModal() {
     const modal = document.getElementById('csBulkImportModal');
@@ -21798,12 +21726,11 @@ function loadProjectObject(obj) {
     // Show modal
     modal.style.display = 'flex';
 
-    // Setup 3-source toggle (once)
+    // Setup 2-source toggle (once)
     const sourceRadios = modal.querySelectorAll('input[name="csBulkSrc"]');
     if (sourceRadios.length && !sourceRadios[0]._bound) {
       const allLabels = {
         local: document.getElementById('lblSrcLocal'),
-        publicdb: document.getElementById('lblSrcPublicDb'),
         telegeography: document.getElementById('lblSrcTG')
       };
       sourceRadios.forEach(radio => {
@@ -21838,8 +21765,8 @@ function loadProjectObject(obj) {
     updateCsBulkImportCount();
 
     // Show loading
-    const srcNames = { local: 'Internal database', publicdb: 'Public Cable Database', telegeography: 'TeleGeography API' };
-    const srcIcons = { local: '📂', publicdb: '📦', telegeography: '🌍' };
+    const srcNames = { local: 'Internal database', telegeography: 'TeleGeography API' };
+    const srcIcons = { local: '📂', telegeography: '🌍' };
     const srcName = srcNames[csBulkSource] || 'database';
     const srcIcon = srcIcons[csBulkSource] || '📂';
     cableList.innerHTML = '<div style="text-align:center; padding:40px; color:#666;">' +
@@ -21851,8 +21778,6 @@ function loadProjectObject(obj) {
       let db;
       if (csBulkSource === 'telegeography') {
         db = await loadFromTeleGeographyAPI();
-      } else if (csBulkSource === 'publicdb') {
-        db = await loadFromPublicCableDatabase();
       } else {
         db = await loadSubmarineCableDb();
       }
@@ -45026,10 +44951,6 @@ function handlePathKmlImport(e) {
       <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
         <input type="radio" name="visorSource" id="visorSrcList" value="list" checked style="margin:0;" />
         📋 Cable List
-      </label>
-      <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
-        <input type="radio" name="visorSource" id="visorSrcDb" value="db" style="margin:0;" />
-        📁 Public DB
       </label>
       <label style="display:flex; align-items:center; gap:4px; cursor:pointer; font-size:11px;">
         <input type="radio" name="visorSource" id="visorSrcAPI" value="api" style="margin:0;" />
