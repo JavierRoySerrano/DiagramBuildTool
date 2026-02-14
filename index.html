@@ -7184,6 +7184,7 @@
           <input type="radio" name="csBulkSrc" id="rdoSrcTG" value="telegeography" style="margin:0;" />
           <span style="font-size:12px;">🌍 TeleGeography (500+)</span>
         </label>
+        <button id="btnBulkRefreshAPI" class="btn" style="padding:4px 10px; font-size:11px; margin-left:auto;" title="Fetch fresh data from TeleGeography API">🔄 Refresh from API</button>
       </div>
 
       <div style="padding:12px 20px; border-bottom:1px solid #e0e0e0; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
@@ -20765,8 +20766,8 @@ function loadProjectObject(obj) {
         // Load from Cable System List (state.cableSystems)
         db = loadCablesFromCableList();
       } else {
-        // Load from TeleGeography API
-        db = await loadFromTeleGeographyAPI();
+        // Load from local TeleGeography data
+        db = await loadFromLocalTeleGeographyData();
       }
 
       console.log('[CableVisor] Loaded from ' + source + ':', db ? Object.keys(db.cables || {}).length : 0, 'cables');
@@ -20819,36 +20820,53 @@ function loadProjectObject(obj) {
   }
 
   // Cloudflare Worker proxy URLs for cable data sources
-  // TeleGeography geodata API (authoritative cable geometry from TeleGeography)
   const TG_GEODATA_API = 'https://submarine-cable-api.fcoroyse-spam.workers.dev';
-  // TeleGeography per-cable metadata (RFS, owners, landing points, etc.)
   const CABLE_META_API = 'https://tg-cablesystem-rfs-metadata.fcoroyse-spam.workers.dev';
+  // Local pre-fetched TeleGeography data (geometry + metadata combined)
+  const TG_LOCAL_DATA = 'data/telegeography_cables.json';
 
-  // Load cable data from TeleGeography via real geodata API + metadata enrichment
-  // Uses TG_GEODATA_API for GeoJSON geometry and CABLE_META_API (tg-cablesystem-rfs-metadata) for per-cable RFS/metadata
-  // Cross-checks with FiberAtlantic ONLY for cables where rfs_year == current year
-  async function loadFromTeleGeographyAPI() {
+  // Load TeleGeography data from local pre-fetched file (default, fast)
+  async function loadFromLocalTeleGeographyData() {
     const listEl = document.getElementById('cableVisorCableList');
-    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading from TeleGeography geodata API...</div>';
+    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading TeleGeography data...</div>';
 
     try {
-      // Step 1: Fetch cable GeoJSON via TeleGeography real geodata API
+      const resp = await fetch(TG_LOCAL_DATA);
+      if (!resp.ok) throw new Error(`Failed to load local data: ${resp.status}`);
+      const combined = await resp.json();
+
+      const geoData = combined.geometry;
+      const metaData = combined.metadata || {};
+      const totalCables = geoData.features ? geoData.features.length : 0;
+      console.log(`[CableVisor] Loaded ${totalCables} cables from local file (${Object.keys(metaData).length} with metadata, updated: ${combined.lastUpdated})`);
+
+      return await buildTeleGeographyCableDatabase(geoData, metaData, listEl);
+    } catch (err) {
+      console.error('[CableVisor] Local data error:', err);
+      throw err;
+    }
+  }
+
+  // Load TeleGeography data from live API (for refresh/update)
+  async function loadFromTeleGeographyAPI() {
+    const listEl = document.getElementById('cableVisorCableList');
+    if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Fetching live data from TeleGeography API...</div>';
+
+    try {
+      // Step 1: Fetch cable GeoJSON
       const geoResponse = await fetch(`${TG_GEODATA_API}/cable-geo`);
       if (!geoResponse.ok) throw new Error(`Failed to fetch cable geometry: ${geoResponse.status}`);
       const geoData = await geoResponse.json();
 
       const totalCables = geoData.features ? geoData.features.length : 0;
-      console.log(`[CableVisor] Loaded ${totalCables} cable geometries`);
+      console.log(`[CableVisor] Loaded ${totalCables} cable geometries from API`);
 
-      // Step 2: Fetch per-cable metadata from tg-cablesystem-rfs-metadata
-      // The /cable/{slug} endpoint returns: { id, name, rfs, rfs_year, is_planned, owners, suppliers, length, landing_points, url }
+      // Step 2: Fetch per-cable metadata
       if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading metadata for ${totalCables} cables... <span id="metaProgress">0</span>/${totalCables}</div>`;
 
       let metaData = {};
       let metaFetched = 0;
       let metaErrors = 0;
-
-      // Batch fetch metadata in parallel (max 10 concurrent)
       const batchSize = 10;
       const features = geoData.features || [];
       for (let i = 0; i < features.length; i += batchSize) {
@@ -20874,9 +20892,20 @@ function loadProjectObject(obj) {
         await Promise.all(promises);
       }
 
-      console.log(`[CableVisor] Fetched metadata for ${Object.keys(metaData).length} cables (${metaErrors} errors) from tg-cablesystem-rfs-metadata`);
+      console.log(`[CableVisor] Fetched metadata for ${Object.keys(metaData).length} cables (${metaErrors} errors) from API`);
 
-      // Step 3: Fetch FiberAtlantic cable list for live status cross-check (current-year RFS only)
+      return await buildTeleGeographyCableDatabase(geoData, metaData, listEl);
+    } catch (err) {
+      console.error('[CableVisor] TeleGeography API error:', err);
+      throw err;
+    }
+  }
+
+  // Build cable database from geometry + metadata (shared by local and API loaders)
+  async function buildTeleGeographyCableDatabase(geoData, metaData, listEl) {
+      const features = geoData.features || [];
+
+      // FiberAtlantic cross-check for current-year RFS cables
       const currentYear = new Date().getFullYear();
       const currentYearCables = features.filter(f => {
         const m = metaData[f.properties?.id];
@@ -21093,11 +21122,6 @@ function loadProjectObject(obj) {
         source: 'TeleGeography SubmarineCableMap API',
         cables: cables
       };
-
-    } catch (err) {
-      console.error('[CableVisor] TeleGeography API error:', err);
-      throw err;
-    }
   }
 
   // Infer region from cable coordinates
@@ -21612,6 +21636,28 @@ function loadProjectObject(obj) {
       }
     });
 
+    // Refresh from API button — fetches live data instead of local file
+    const refreshBtn = document.getElementById('btnVisorRefreshAPI');
+    if (refreshBtn) refreshBtn.addEventListener('click', async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.textContent = '⏳ Fetching...';
+      try {
+        cableVisorState.cableDatabase = null;
+        clearAllVisorCables();
+        const db = await loadFromTeleGeographyAPI();
+        if (db && db.cables) {
+          cableVisorState.cableDatabase = db;
+          populateCableVisorRegionFilter(db);
+          renderCableVisorList();
+        }
+      } catch (err) {
+        const listEl = document.getElementById('cableVisorCableList');
+        if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#c00;">API refresh failed: ' + err.message + '</div>';
+      }
+      refreshBtn.disabled = false;
+      refreshBtn.textContent = '🔄 Refresh from API';
+    });
+
     console.log('[CableVisor] Event handlers initialized');
   }
 
@@ -21750,6 +21796,32 @@ function loadProjectObject(obj) {
       });
     }
 
+    // Refresh from API button
+    const bulkRefreshBtn = document.getElementById('btnBulkRefreshAPI');
+    if (bulkRefreshBtn && !bulkRefreshBtn._bound) {
+      bulkRefreshBtn.addEventListener('click', async () => {
+        bulkRefreshBtn.disabled = true;
+        bulkRefreshBtn.textContent = '⏳ Fetching...';
+        try {
+          const db = await loadFromTeleGeographyAPI();
+          const cables = db.cables || {};
+          csBulkImportCables = cables;
+          csBulkImportSelection.clear();
+          updateCsBulkImportCount();
+          const regions = [...new Set(Object.values(cables).map(c => c.region))].sort();
+          const regionFilter = document.getElementById('csBulkRegionFilter');
+          if (regionFilter) regionFilter.innerHTML = '<option value="">All Regions</option>' + regions.map(r => '<option value="' + r + '">' + r + '</option>').join('');
+          renderCsBulkCableList();
+        } catch (err) {
+          const cl = document.getElementById('csBulkCableList');
+          if (cl) cl.innerHTML = '<div style="padding:20px; text-align:center; color:#c00;">API refresh failed: ' + err.message + '</div>';
+        }
+        bulkRefreshBtn.disabled = false;
+        bulkRefreshBtn.textContent = '🔄 Refresh from API';
+      });
+      bulkRefreshBtn._bound = true;
+    }
+
     // Load cables
     await loadBulkImportCables();
   }
@@ -21777,7 +21849,7 @@ function loadProjectObject(obj) {
       // Load cable database based on selected source
       let db;
       if (csBulkSource === 'telegeography') {
-        db = await loadFromTeleGeographyAPI();
+        db = await loadFromLocalTeleGeographyData();
       } else {
         db = await loadSubmarineCableDb();
       }
@@ -44956,6 +45028,7 @@ function handlePathKmlImport(e) {
         <input type="radio" name="visorSource" id="visorSrcAPI" value="api" style="margin:0;" />
         🌐 TeleGeo
       </label>
+      <button id="btnVisorRefreshAPI" class="btn" style="padding:3px 8px; font-size:10px; margin-left:auto;" title="Fetch fresh data from TeleGeography API (slow, ~500 requests)">🔄 Refresh from API</button>
     </div>
     <div style="display:flex; gap:8px; align-items:center;">
       <input type="text" id="cableVisorSearch" placeholder="Search cables..." style="flex:1;" />
