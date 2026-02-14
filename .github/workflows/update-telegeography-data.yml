@@ -1,0 +1,119 @@
+name: Update TeleGeography Cable Data
+
+on:
+  schedule:
+    # Runs every Monday at 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Fetch TeleGeography data
+        run: |
+          python3 << 'PYEOF'
+          import json
+          import urllib.request
+          import time
+          import os
+          from datetime import datetime
+
+          print("=== Fetching TeleGeography Submarine Cable Data ===")
+
+          # Step 1: Fetch cable geometry
+          print("\n[1/2] Fetching cable geometry...")
+          geo_url = 'https://submarine-cable-api.fcoroyse-spam.workers.dev/cable-geo'
+          req = urllib.request.Request(geo_url, headers={
+              'Accept': 'application/json',
+              'User-Agent': 'Neximap-GitHub-Action/1.0'
+          })
+          with urllib.request.urlopen(req, timeout=30) as resp:
+              geo = json.loads(resp.read().decode())
+
+          cable_ids = sorted(set(
+              f['properties']['id']
+              for f in geo.get('features', [])
+              if f.get('properties', {}).get('id')
+          ))
+          print(f"  -> {len(cable_ids)} unique cables")
+
+          # Step 2: Fetch per-cable metadata
+          print(f"\n[2/2] Fetching metadata for {len(cable_ids)} cables...")
+          meta_api = 'https://tg-cablesystem-rfs-metadata.fcoroyse-spam.workers.dev/cable'
+          metadata = {}
+          errors = 0
+
+          for i, cid in enumerate(cable_ids):
+              try:
+                  url = f"{meta_api}/{cid}"
+                  req = urllib.request.Request(url, headers={
+                      'Accept': 'application/json',
+                      'User-Agent': 'Neximap-GitHub-Action/1.0'
+                  })
+                  with urllib.request.urlopen(req, timeout=15) as resp:
+                      data = json.loads(resp.read().decode())
+                      metadata[cid] = data
+              except Exception:
+                  errors += 1
+
+              if (i + 1) % 50 == 0:
+                  print(f"  -> Progress: {i+1}/{len(cable_ids)} ({len(metadata)} ok, {errors} errors)")
+
+              # Rate limiting
+              if (i + 1) % 10 == 0:
+                  time.sleep(0.3)
+
+          print(f"  -> Done: {len(metadata)} with metadata, {errors} errors")
+
+          # Combine and save
+          combined = {
+              "version": "1.0",
+              "lastUpdated": datetime.utcnow().strftime("%Y-%m-%d"),
+              "source": "TeleGeography Submarine Cable Map",
+              "totalCables": len(cable_ids),
+              "totalWithMetadata": len(metadata),
+              "geometry": geo,
+              "metadata": metadata
+          }
+
+          output_path = 'data/telegeography_cables.json'
+          with open(output_path, 'w') as f:
+              json.dump(combined, f, separators=(',', ':'))
+
+          size_mb = os.path.getsize(output_path) / (1024 * 1024)
+          print(f"\n=== Saved to {output_path} ({size_mb:.2f} MB) ===")
+          print(f"  Cables: {len(cable_ids)} geometry, {len(metadata)} metadata")
+          print(f"  Date: {combined['lastUpdated']}")
+          PYEOF
+
+      - name: Check for changes
+        id: check
+        run: |
+          if git diff --quiet data/telegeography_cables.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in cable data."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected — will commit."
+          fi
+
+      - name: Commit and push
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/telegeography_cables.json
+          git commit -m "chore: auto-update TeleGeography cable data ($(date -u +%Y-%m-%d))"
+          git push
