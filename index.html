@@ -36428,6 +36428,43 @@ function loadProjectObject(obj) {
    * finds the closest point on the path to each node and trims accordingly.
    * Short connector lines from node to nearest path point are added.
    */
+
+  /**
+   * Find the closest coordinate on a GeoJSON geometry (LineString or MultiLineString)
+   * to a given target coordinate. Returns [lng, lat] of the closest point.
+   */
+  function findClosestPointOnGeometry(geometry, targetCoords) {
+    if (!geometry || !geometry.coordinates) return null;
+
+    let closestPoint = null;
+    let closestDist = Infinity;
+    const tLon = targetCoords[0];
+    const tLat = targetCoords[1];
+    const cosLat = Math.cos(tLat * Math.PI / 180);
+
+    const checkCoords = (coords) => {
+      for (const coord of coords) {
+        const dLon = (coord[0] - tLon) * cosLat;
+        const dLat = coord[1] - tLat;
+        const dist = dLon * dLon + dLat * dLat;
+        if (dist < closestDist) {
+          closestDist = dist;
+          closestPoint = [coord[0], coord[1]];
+        }
+      }
+    };
+
+    if (geometry.type === 'LineString') {
+      checkCoords(geometry.coordinates);
+    } else if (geometry.type === 'MultiLineString') {
+      for (const segment of geometry.coordinates) {
+        checkCoords(segment);
+      }
+    }
+
+    return closestPoint;
+  }
+
   function buildSmartPathCoords(sourceCoords, targetCoords, pathPoints) {
     if (!pathPoints || pathPoints.length === 0) {
       return [sourceCoords, targetCoords];
@@ -38092,6 +38129,17 @@ function handlePathKmlImport(e) {
         // Ignore errors during style transitions
       }
 
+      // Remove edge connector layer and source
+      try {
+        if (mapLibreState.map.getLayer('neximap-edge-connectors-layer')) {
+          mapLibreState.map.removeLayer('neximap-edge-connectors-layer');
+        }
+        if (mapLibreState.map.getSource('neximap-edge-connectors')) {
+          mapLibreState.map.removeSource('neximap-edge-connectors');
+        }
+      } catch(e) {}
+
+
       // Also clean up any legacy individual edge layers
       mapLibreState.lines.forEach(lineId => {
         try {
@@ -38171,6 +38219,7 @@ function handlePathKmlImport(e) {
 
     // Collect all edges as GeoJSON features for a single layer (more efficient, no flickering)
     const edgeFeatures = [];
+    const connectorFeatures = []; // Dotted lines connecting nodes to cable geometry
     const edgeLabelData = []; // For link labels
     const edgeDataForSelection = []; // For click detection
 
@@ -38267,6 +38316,30 @@ function handlePathKmlImport(e) {
           if (mapLibreState.pathRenderMode === 'paths' && e.cableGeometry && e.cableGeometry.coordinates) {
             // Use original cable geometry directly (supports MultiLineString natively)
             edgeGeometry = e.cableGeometry;
+
+            // Create dotted connector lines from each node to closest point on cable
+            const closestToFrom = findClosestPointOnGeometry(e.cableGeometry, fromCoords);
+            const closestToTo = findClosestPointOnGeometry(e.cableGeometry, toCoords);
+            if (closestToFrom) {
+              const dx = closestToFrom[0] - fromCoords[0], dy = closestToFrom[1] - fromCoords[1];
+              if (dx * dx + dy * dy > 1e-10) { // Only add if not already overlapping
+                connectorFeatures.push({
+                  type: 'Feature',
+                  properties: { color: edgeColor, width: Math.max(1, edgeWidth * 0.6) },
+                  geometry: { type: 'LineString', coordinates: [fromCoords, closestToFrom] }
+                });
+              }
+            }
+            if (closestToTo) {
+              const dx = closestToTo[0] - toCoords[0], dy = closestToTo[1] - toCoords[1];
+              if (dx * dx + dy * dy > 1e-10) {
+                connectorFeatures.push({
+                  type: 'Feature',
+                  properties: { color: edgeColor, width: Math.max(1, edgeWidth * 0.6) },
+                  geometry: { type: 'LineString', coordinates: [toCoords, closestToTo] }
+                });
+              }
+            }
           } else if (mapLibreState.pathRenderMode === 'paths' && e.pathGeometry && e.pathGeometry.length > 0) {
             // Fallback to simplified pathGeometry with smart connection
             edgeGeometry = {
@@ -38419,6 +38492,40 @@ function handlePathKmlImport(e) {
         // using queryRenderedFeatures for reliability
       } catch (err) {
         console.warn('Failed to add edges layer:', err);
+      }
+    }
+
+    // Add dotted connector lines (node-to-cable extensions)
+    if (connectorFeatures.length > 0) {
+      const connSourceId = 'neximap-edge-connectors';
+      const connLayerId = 'neximap-edge-connectors-layer';
+
+      try {
+        mapLibreState.map.addSource(connSourceId, {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: connectorFeatures }
+        });
+
+        mapLibreState.map.addLayer({
+          id: connLayerId,
+          type: 'line',
+          source: connSourceId,
+          paint: {
+            'line-color': ['get', 'color'],
+            'line-width': ['get', 'width'],
+            'line-opacity': 0.7,
+            'line-dasharray': [2, 3]
+          },
+          layout: {
+            'line-cap': 'round',
+            'line-join': 'round'
+          }
+        });
+
+        mapLibreState.lines.push(connLayerId);
+        mapLibreState.lines.push(connSourceId);
+      } catch (err) {
+        console.warn('Failed to add connector layer:', err);
       }
     }
 
