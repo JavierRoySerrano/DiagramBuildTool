@@ -26679,6 +26679,12 @@ function loadProjectObject(obj) {
       }
     }
 
+    // Fallback: check the cable system's own geometry property (set during bulk import)
+    if (!hasGeometry && cs.geometry && cs.geometry.coordinates) {
+      hasGeometry = true;
+      geometryData = { geometry: cs.geometry, segments: cs.segments || null };
+    }
+
     // Build dialog HTML
     const overlay = document.createElement('div');
     overlay.id = 'cableGeoOverlay';
