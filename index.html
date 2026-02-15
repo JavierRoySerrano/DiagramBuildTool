@@ -38312,8 +38312,10 @@ function handlePathKmlImport(e) {
           const edgeId = e.id || `edge-${idx}`;
 
           // Determine geometry - prefer full-fidelity cableGeometry (preserves MultiLineString)
+          // cableGeometry is always rendered when present (explicitly assigned geometry),
+          // pathGeometry is only rendered when pathRenderMode === 'paths'
           let edgeGeometry;
-          if (mapLibreState.pathRenderMode === 'paths' && e.cableGeometry && e.cableGeometry.coordinates) {
+          if (e.cableGeometry && e.cableGeometry.coordinates) {
             // Use original cable geometry directly (supports MultiLineString natively)
             edgeGeometry = e.cableGeometry;
 
