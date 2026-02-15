@@ -10,7 +10,7 @@
   If encoding breaks, start over from the clean source file.
   ===============================================================
 -->
-<!-- NexiMap Studio v61.66 - Always render cableGeometry on map when present - 2026-02-15 -->
+<!-- NexiMap Studio v61.67 - Unified cableGeometry field with KML view toggle - 2026-02-15 -->
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -4584,7 +4584,7 @@
       </svg>
       <span style="font-weight:600; font-size:15px; color:#5a67d8; letter-spacing:-0.3px;">NexiMap</span>
       <span style="font-weight:400; font-size:15px; color:#666; letter-spacing:-0.3px;">Studio</span>
-      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.66</span>
+      <span id="appVersionBadge" style="font-size:9px; font-weight:500; color:#94a3b8; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:4px; padding:1px 5px; margin-left:2px; letter-spacing:0.2px; cursor:default; user-select:none;" title="Click for version info">v61.67</span>
     </div>
     <button class="menu-item" id="btnFile" type="button">File</button>
     <button class="menu-item" id="btnEditMenu" type="button">Edit</button>
@@ -5574,14 +5574,14 @@
     </button>
 
     <!-- Show Paths Toggle (only visible when in Map view) -->
-    <button class="tool-btn" id="btnShowPaths" type="button" title="Toggle cable path display - Show actual cable routes instead of straight lines" style="display:none; color: #6366f1;">
+    <button class="tool-btn" id="btnShowPaths" type="button" title="KML View - Toggle between cable geometry routes and straight lines" style="display:none; color: #6366f1;">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <!-- Wavy path icon -->
         <circle cx="4" cy="12" r="2" fill="currentColor"/>
         <circle cx="20" cy="12" r="2" fill="currentColor"/>
         <path d="M6 12 Q 9 6, 12 12 T 18 12"/>
       </svg>
-      <span style="font-size:10px; margin-left:2px;">Paths</span>
+      <span style="font-size:10px; margin-left:2px;">KML</span>
     </button>
 
     <!-- Route Finder Button -->
@@ -16256,9 +16256,10 @@ if (groupTitleFontInline) {
       iruOamPercent: defaultOAM,
       iruOamAnnualIncrement: defaultOAMInc,
       commercialCostMode: 'lease',
-      // Path geometry fields (for geographic cable routing)
-      pathGeometry: null,       // GeoJSON coordinates array [[lng,lat], ...] or null
-      cableGeometry: null,      // Original GeoJSON geometry object {type, coordinates} for full-fidelity rendering
+      // Cable geometry (unified field for geographic cable routing on map)
+      // Stores GeoJSON geometry object {type: 'LineString'|'MultiLineString', coordinates: ...}
+      // Source can be manual dots, KML/GeoJSON import, or TeleGeography Cable Database
+      cableGeometry: null,
       pathSource: null,         // 'manual' | 'telegeography' | 'kml-import' | null
       pathCableRef: null        // Reference name if from Cable Database
     };
@@ -18968,9 +18969,12 @@ function loadProjectObject(obj) {
     iruOamAnnualIncrement: (typeof e.iruOamAnnualIncrement === 'number') ? e.iruOamAnnualIncrement : 0,
     // Cost mode for pathfinding
     commercialCostMode: e.commercialCostMode || 'lease',
-    // Path geometry (for geographic cable routing on map)
-    pathGeometry: Array.isArray(e.pathGeometry) ? e.pathGeometry : null,
-    cableGeometry: (e.cableGeometry && e.cableGeometry.type && e.cableGeometry.coordinates) ? e.cableGeometry : null,
+    // Cable geometry (unified field - migrate old pathGeometry for backward compatibility)
+    cableGeometry: (e.cableGeometry && e.cableGeometry.type && e.cableGeometry.coordinates)
+      ? e.cableGeometry
+      : (Array.isArray(e.pathGeometry) && e.pathGeometry.length > 0)
+        ? { type: 'LineString', coordinates: e.pathGeometry }
+        : null,
     pathSource: e.pathSource || null
   }));
 
@@ -26362,7 +26366,7 @@ function loadProjectObject(obj) {
   function showEdgeContextMenu(e, edge) {
     const nodeA = findNode(edge.a);
     const nodeB = findNode(edge.b);
-    const hasPath = edge.pathGeometry && edge.pathGeometry.length > 0;
+    const hasPath = !!(edge.cableGeometry && edge.cableGeometry.coordinates);
     const hasPasteStyle = _ctxStyleClipboard && _ctxStyleClipboard.type === 'edge';
 
     const items = [
@@ -26397,7 +26401,6 @@ function loadProjectObject(obj) {
           break;
         case 'duplicate': {
           const de = { ...edge, id: state.nextEdge++, label: (edge.label || '') + ' (copy)', name: (edge.name || '') + ' (copy)' };
-          if (de.pathGeometry) de.pathGeometry = [...de.pathGeometry];
           if (de.cableGeometry) de.cableGeometry = JSON.parse(JSON.stringify(de.cableGeometry));
           state.edges.push(de);
           select({ type: 'edge', id: de.id });
@@ -26830,11 +26833,7 @@ function loadProjectObject(obj) {
         // Extract coordinates
         const coords = extractCoordinatesFromGeometry(geometryData.geometry, selectedSegs);
         if (coords.length > 0) {
-          // Reduce waypoints for editing path (simplified)
-          const reduced = reduceWaypoints(coords, 200);
-          edge.pathGeometry = reduced;
-
-          // Store original full-fidelity GeoJSON geometry for map rendering
+          // Store GeoJSON geometry for map rendering (unified cableGeometry field)
           // If specific segments were selected, build a filtered geometry; otherwise use as-is
           if (selectedSegs && geometryData.geometry.type === 'MultiLineString') {
             const filteredCoords = selectedSegs
@@ -26847,7 +26846,7 @@ function loadProjectObject(obj) {
             edge.cableGeometry = JSON.parse(JSON.stringify(geometryData.geometry));
           }
 
-          showToast(`Assigned "${cs.shortName}" + geometry (${reduced.length} waypoints) to ${linkLabel}`);
+          showToast(`Assigned "${cs.shortName}" + geometry (${coords.length} waypoints) to ${linkLabel}`);
         } else {
           showToast(`Assigned "${cs.shortName}" to ${linkLabel} (no geometry segments selected)`);
         }
@@ -35372,7 +35371,7 @@ function loadProjectObject(obj) {
       // Update button label
       const labelSpan = btnShowPaths.querySelector('span');
       if (labelSpan) {
-        labelSpan.textContent = isPathsMode ? 'Paths ✓' : 'Paths';
+        labelSpan.textContent = isPathsMode ? 'KML ✓' : 'KML';
       }
 
       // Re-render map
@@ -35381,13 +35380,13 @@ function loadProjectObject(obj) {
         renderMapLibreContent();
       }
 
-      // Count links with paths
-      const linksWithPaths = state.edges.filter(e => e.cableGeometry || (e.pathGeometry && e.pathGeometry.length > 0)).length;
+      // Count links with geometry
+      const linksWithPaths = state.edges.filter(e => e.cableGeometry && e.cableGeometry.coordinates).length;
 
       if (isPathsMode) {
-        showToast(`Showing cable paths (${linksWithPaths} link${linksWithPaths !== 1 ? 's' : ''} with paths)`);
+        showToast(`KML view ON (${linksWithPaths} link${linksWithPaths !== 1 ? 's' : ''} with geometry)`);
       } else {
-        showToast('Showing straight lines');
+        showToast('KML view OFF — straight lines');
       }
     });
   }
@@ -36020,7 +36019,7 @@ function loadProjectObject(obj) {
     // Style mode: 'canvas' or 'simplified'
     styleMode: 'canvas',
     // Path rendering mode: 'lines' or 'paths'
-    pathRenderMode: 'lines', // 'lines' = straight lines, 'paths' = show pathGeometry if available
+    pathRenderMode: 'lines', // 'lines' = straight lines, 'paths' = KML view (show cableGeometry)
     // Simplified view settings (used when styleMode is 'simplified')
     simplified: {
       nodeFill: '#dae8fc',
@@ -36070,10 +36069,11 @@ function loadProjectObject(obj) {
 
     if (!statusIcon || !statusText) return;
 
-    if (edge.pathGeometry && edge.pathGeometry.length > 0) {
+    const waypointCount = edge.cableGeometry ? extractCoordsFromGeometry(edge.cableGeometry).length : 0;
+    if (edge.cableGeometry && waypointCount > 0) {
       // Has path
       statusIcon.textContent = '🛤️';
-      statusText.textContent = `Path defined (${edge.pathGeometry.length} waypoints)`;
+      statusText.textContent = `Path defined (${waypointCount} waypoints)`;
       statusText.style.color = '#059669';
 
       let details = [];
@@ -36130,9 +36130,10 @@ function loadProjectObject(obj) {
     const targetCoords = [parseFloat(nodeB.gpsLon), parseFloat(nodeB.gpsLat)];
 
 
-    // Save original path for cancel/restore
-    state.pathEditMode.originalPath = edge.pathGeometry ? [...edge.pathGeometry] : null;
-    state.pathEditMode.currentPath = edge.pathGeometry ? [...edge.pathGeometry] : [];
+    // Save original geometry for cancel/restore (keep full GeoJSON object)
+    state.pathEditMode.originalPath = edge.cableGeometry ? JSON.parse(JSON.stringify(edge.cableGeometry)) : null;
+    // Extract flat coordinate array for editing
+    state.pathEditMode.currentPath = edge.cableGeometry ? extractCoordsFromGeometry(edge.cableGeometry) : [];
     state.pathEditMode.linkId = linkId;
     state.pathEditMode.hasUnsavedChanges = false;
     state.pathEditMode.editMethod = null;
@@ -36242,20 +36243,23 @@ function loadProjectObject(obj) {
     const edge = findEdge(linkId);
 
     if (save && edge) {
-      // Save the path
+      // Save the path as unified cableGeometry (GeoJSON format)
       if (state.pathEditMode.currentPath && state.pathEditMode.currentPath.length > 0) {
-        edge.pathGeometry = [...state.pathEditMode.currentPath];
+        edge.cableGeometry = {
+          type: 'LineString',
+          coordinates: [...state.pathEditMode.currentPath]
+        };
         edge.pathSource = state.pathEditMode.editMethod || 'manual';
       } else {
-        edge.pathGeometry = null;
+        edge.cableGeometry = null;
         edge.pathSource = null;
         edge.pathCableRef = null;
       }
       commit();
       showToast('Path saved successfully');
     } else if (!save && edge && state.pathEditMode.hasUnsavedChanges) {
-      // Restore original
-      edge.pathGeometry = state.pathEditMode.originalPath;
+      // Restore original GeoJSON geometry
+      edge.cableGeometry = state.pathEditMode.originalPath;
       showToast('Changes discarded');
     }
 
@@ -36428,6 +36432,20 @@ function loadProjectObject(obj) {
    * finds the closest point on the path to each node and trims accordingly.
    * Short connector lines from node to nearest path point are added.
    */
+
+  /**
+   * Extract flat coordinate array from a GeoJSON geometry object.
+   * For LineString: returns coordinates directly.
+   * For MultiLineString: flattens all segments into one array.
+   */
+  function extractCoordsFromGeometry(geom) {
+    if (!geom || !geom.coordinates) return [];
+    if (geom.type === 'LineString') return geom.coordinates.map(c => [c[0], c[1]]);
+    if (geom.type === 'MultiLineString') {
+      return geom.coordinates.reduce((acc, seg) => acc.concat(seg.map(c => [c[0], c[1]])), []);
+    }
+    return [];
+  }
 
   /**
    * Find the closest coordinate on a GeoJSON geometry (LineString or MultiLineString)
@@ -36831,7 +36849,6 @@ function loadProjectObject(obj) {
     const edge = findEdge(linkId);
     if (!edge) return;
 
-    edge.pathGeometry = null;
     edge.cableGeometry = null;
     edge.pathSource = null;
     edge.pathCableRef = null;
@@ -38311,12 +38328,10 @@ function handlePathKmlImport(e) {
 
           const edgeId = e.id || `edge-${idx}`;
 
-          // Determine geometry - prefer full-fidelity cableGeometry (preserves MultiLineString)
-          // cableGeometry is always rendered when present (explicitly assigned geometry),
-          // pathGeometry is only rendered when pathRenderMode === 'paths'
+          // Determine geometry: KML view shows cableGeometry, otherwise straight lines
           let edgeGeometry;
-          if (e.cableGeometry && e.cableGeometry.coordinates) {
-            // Use original cable geometry directly (supports MultiLineString natively)
+          if (mapLibreState.pathRenderMode === 'paths' && e.cableGeometry && e.cableGeometry.coordinates) {
+            // KML view ON - use cable geometry (supports LineString & MultiLineString)
             edgeGeometry = e.cableGeometry;
 
             // Create dotted connector lines from each node to closest point on cable
@@ -38324,7 +38339,7 @@ function handlePathKmlImport(e) {
             const closestToTo = findClosestPointOnGeometry(e.cableGeometry, toCoords);
             if (closestToFrom) {
               const dx = closestToFrom[0] - fromCoords[0], dy = closestToFrom[1] - fromCoords[1];
-              if (dx * dx + dy * dy > 1e-10) { // Only add if not already overlapping
+              if (dx * dx + dy * dy > 1e-10) {
                 connectorFeatures.push({
                   type: 'Feature',
                   properties: { color: edgeColor, width: Math.max(1, edgeWidth * 0.6) },
@@ -38342,14 +38357,8 @@ function handlePathKmlImport(e) {
                 });
               }
             }
-          } else if (mapLibreState.pathRenderMode === 'paths' && e.pathGeometry && e.pathGeometry.length > 0) {
-            // Fallback to simplified pathGeometry with smart connection
-            edgeGeometry = {
-              type: 'LineString',
-              coordinates: buildSmartPathCoords(fromCoords, toCoords, e.pathGeometry)
-            };
           } else {
-            // Use straight line
+            // Straight line (KML view OFF or no geometry defined)
             edgeGeometry = {
               type: 'LineString',
               coordinates: [offsetFrom, offsetTo]
@@ -38378,7 +38387,7 @@ function handlePathKmlImport(e) {
               color: edgeColor, // Keep original color
               width: edgeWidth,
               selected: isSelected,
-              hasPath: !!(e.cableGeometry || (e.pathGeometry && e.pathGeometry.length > 0))
+              hasPath: !!(e.cableGeometry && e.cableGeometry.coordinates)
             },
             geometry: edgeGeometry
           });
@@ -45947,7 +45956,7 @@ function handlePathKmlImport(e) {
         <circle cx="24" cy="24" r="2.5" fill="white"/>
       </svg>
       <h2 style="margin:0 0 4px; font-size:20px; color:#333;">NexiMap Studio</h2>
-      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.66 <span style="color:#b0b0b0; font-size:11px;">• Build 2026-02-15</span></p>
+      <p style="margin:0 0 16px; color:#888; font-size:13px;" id="aboutVersionText">Version 61.67 <span style="color:#b0b0b0; font-size:11px;">• Build 2026-02-15</span></p>
       <p style="margin:0 0 20px; color:#555; font-size:13px; line-height:1.6;">
         Professional network topology and diagram design tool with geographic mapping, cost analysis, and route optimization.
       </p>
