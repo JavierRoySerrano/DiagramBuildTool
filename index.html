@@ -36898,165 +36898,6 @@ function loadProjectObject(obj) {
   }
 
   // Handle KML/GeoJSON file import
-  
-  /**
-   * chainSegmentsIntoPath(segments)
-   * Takes an array of segments (each segment is [[lon,lat], [lon,lat], ...])
-   * and chains them into a single ordered polyline by matching endpoints.
-   * Uses greedy nearest-neighbor: pick a segment, extend from either end
-   * by finding the segment whose endpoint is closest to the current chain's end.
-   * Tolerance-based matching with fallback to best available match.
-   */
-  function chainSegmentsIntoPath(segments) {
-    if (!segments || segments.length === 0) return [];
-    if (segments.length === 1) return segments[0];
-
-    // --- STEP 1: Deduplicate exact-copy geometries ---
-    const seen = new Set();
-    const unique = [];
-    for (const seg of segments) {
-      const key = seg.map(c => c[0].toFixed(5) + ',' + c[1].toFixed(5)).join('|');
-      if (!seen.has(key)) { seen.add(key); unique.push(seg); }
-    }
-    if (unique.length !== segments.length) {
-      console.log('[PATH IMPORT] Dedup: ' + segments.length + ' -> ' + unique.length + ' unique segments');
-    }
-    if (unique.length === 1) return unique[0];
-
-    // Helper: distance squared between two [lon,lat] points
-    function distSq(a, b) {
-      const dlat = (a[1] - b[1]);
-      const dlon = (a[0] - b[0]) * Math.cos((a[1] + b[1]) * Math.PI / 360);
-      return dlat * dlat + dlon * dlon;
-    }
-
-    // Snap tolerance: ~2km in degrees
-    const SNAP = 0.02;
-    const SNAP_SQ = SNAP * SNAP;
-
-    const segs = unique.map((coords, i) => ({
-      id: i, coords: coords,
-      start: coords[0], end: coords[coords.length - 1],
-      used: false
-    }));
-
-    // --- STEP 2: Build endpoint degree map ---
-    const epGrid = new Map();
-    function gridKey(c) { return Math.floor(c[1] / SNAP) + ',' + Math.floor(c[0] / SNAP); }
-
-    for (const seg of segs) {
-      for (const ep of [seg.start, seg.end]) {
-        const gk = gridKey(ep);
-        if (!epGrid.has(gk)) epGrid.set(gk, []);
-        epGrid.get(gk).push(ep);
-      }
-    }
-
-    function junctionDegree(pt) {
-      const gx = Math.floor(pt[1] / SNAP), gy = Math.floor(pt[0] / SNAP);
-      let count = 0;
-      for (let dx = -1; dx <= 1; dx++) {
-        for (let dy = -1; dy <= 1; dy++) {
-          const cell = epGrid.get((gx+dx) + ',' + (gy+dy));
-          if (!cell) continue;
-          for (const ep of cell) {
-            if (Math.abs(pt[1] - ep[1]) < SNAP && Math.abs(pt[0] - ep[0]) < SNAP) count++;
-          }
-        }
-      }
-      return count;
-    }
-
-    // --- STEP 3: Chain segments into connected groups ---
-    // Build multiple chains: start with a seed, extend as far as possible,
-    // then start a new chain from remaining unused segments until all are used.
-    const allChains = [];
-
-    while (true) {
-      // Find seed among unused: longest segment
-      let seedIdx = -1, maxLen = 0;
-      for (let i = 0; i < segs.length; i++) {
-        if (!segs[i].used && segs[i].coords.length > maxLen) {
-          maxLen = segs[i].coords.length; seedIdx = i;
-        }
-      }
-      if (seedIdx < 0) break; // All segments used
-
-      let chain = [...segs[seedIdx].coords];
-      segs[seedIdx].used = true;
-
-      let changed = true;
-      while (changed) {
-        changed = false;
-        const chainStart = chain[0];
-        const chainEnd = chain[chain.length - 1];
-
-        // Extend from END if not at a branch
-        const endDeg = junctionDegree(chainEnd);
-        if (endDeg <= 2) {
-          let beIdx = -1, beDist = Infinity, beRev = false;
-          for (let i = 0; i < segs.length; i++) {
-            if (segs[i].used) continue;
-            const dS = distSq(chainEnd, segs[i].start);
-            const dE = distSq(chainEnd, segs[i].end);
-            const m = Math.min(dS, dE);
-            if (m < beDist) { beDist = m; beIdx = i; beRev = dE < dS; }
-          }
-          if (beIdx >= 0 && beDist <= SNAP_SQ) {
-            const seg = segs[beIdx];
-            const coords = beRev ? [...seg.coords].reverse() : seg.coords;
-            const skip = (distSq(chain[chain.length - 1], coords[0]) < SNAP_SQ) ? 1 : 0;
-            for (let j = skip; j < coords.length; j++) chain.push(coords[j]);
-            seg.used = true; changed = true;
-            continue;
-          }
-        }
-
-        // Extend from START if not at a branch
-        const startDeg = junctionDegree(chainStart);
-        if (startDeg <= 2) {
-          let bsIdx = -1, bsDist = Infinity, bsRev = false;
-          for (let i = 0; i < segs.length; i++) {
-            if (segs[i].used) continue;
-            const dE = distSq(chainStart, segs[i].end);
-            const dS = distSq(chainStart, segs[i].start);
-            const m = Math.min(dE, dS);
-            if (m < bsDist) { bsDist = m; bsIdx = i; bsRev = dS < dE; }
-          }
-          if (bsIdx >= 0 && bsDist <= SNAP_SQ) {
-            const seg = segs[bsIdx];
-            const coords = bsRev ? [...seg.coords].reverse() : seg.coords;
-            const trim = (distSq(chain[0], coords[coords.length - 1]) < SNAP_SQ) ? 1 : 0;
-            const prepend = coords.slice(0, coords.length - trim);
-            chain = [...prepend, ...chain];
-            seg.used = true; changed = true;
-            continue;
-          }
-        }
-
-        // Neither end could extend within tolerance at a non-branch — stop this chain
-        break;
-      }
-
-      allChains.push(chain);
-    }
-
-    // --- STEP 4: Sort chains geographically (west-to-east) and concatenate ---
-    allChains.sort((a, b) => {
-      const aLon = a.reduce((s, c) => s + c[0], 0) / a.length;
-      const bLon = b.reduce((s, c) => s + c[0], 0) / b.length;
-      return aLon - bLon;
-    });
-
-    let result = [];
-    for (const chain of allChains) {
-      for (const coord of chain) result.push(coord);
-    }
-
-    const totalUsed = segs.filter(s => s.used).length;
-    console.log('[PATH IMPORT] Built ' + allChains.length + ' chain(s) from ' + totalUsed + '/' + unique.length + ' segments into path of ' + result.length + ' points (dedup removed ' + (segments.length - unique.length) + ')');
-    return result;
-  }
 
 function handlePathKmlImport(e) {
     const file = e.target.files[0];
@@ -37072,32 +36913,22 @@ function handlePathKmlImport(e) {
           const parser = new DOMParser();
           const kmlDoc = parser.parseFromString(event.target.result, 'text/xml');
 
-          // Extract coordinates from KML - collect segments for chaining
-          const kmlSegments = [];
+          // Extract all coordinates from KML as-is, preserving document order
           const coordElements = kmlDoc.querySelectorAll('coordinates');
           coordElements.forEach(coordEl => {
             const coordText = coordEl.textContent.trim();
             const points = coordText.split(/\s+/);
-            const segment = [];
             points.forEach(point => {
               const parts = point.split(',');
               if (parts.length >= 2) {
                 const lon = parseFloat(parts[0]);
                 const lat = parseFloat(parts[1]);
                 if (isFinite(lon) && isFinite(lat)) {
-                  segment.push([lon, lat]);
+                  coordinates.push([lon, lat]);
                 }
               }
             });
-            if (segment.length >= 2) kmlSegments.push(segment);
           });
-          // Chain KML segments into a connected path
-          if (kmlSegments.length > 1) {
-            console.log('[PATH IMPORT] KML: Found ' + kmlSegments.length + ' segments, chaining...');
-            coordinates = chainSegmentsIntoPath(kmlSegments);
-          } else if (kmlSegments.length === 1) {
-            coordinates = kmlSegments[0];
-          }
         } else {
           // Parse GeoJSON - extract all coordinates as-is, preserving original order
           const geojson = JSON.parse(event.target.result);
