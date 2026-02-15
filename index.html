@@ -37099,56 +37099,40 @@ function handlePathKmlImport(e) {
             coordinates = kmlSegments[0];
           }
         } else {
-          // Parse GeoJSON - collect individual segments for chaining
+          // Parse GeoJSON - extract all coordinates as-is, preserving original order
           const geojson = JSON.parse(event.target.result);
-          const segments = []; // Array of arrays of [lon,lat]
 
-          // Recursive segment extractor - keeps LineStrings as separate segments
-          function extractSegments(geom) {
+          function extractCoords(geom) {
             if (!geom) return;
             switch (geom.type) {
               case 'LineString':
-                if (geom.coordinates.length >= 2) segments.push(geom.coordinates);
+                geom.coordinates.forEach(c => coordinates.push(c));
                 break;
               case 'MultiLineString':
               case 'Polygon':
-                geom.coordinates.forEach(ring => { if (ring.length >= 2) segments.push(ring); });
+                geom.coordinates.forEach(ring => ring.forEach(c => coordinates.push(c)));
                 break;
               case 'MultiPolygon':
-                geom.coordinates.forEach(poly => { poly.forEach(ring => { if (ring.length >= 2) segments.push(ring); }); });
+                geom.coordinates.forEach(poly => poly.forEach(ring => ring.forEach(c => coordinates.push(c))));
                 break;
               case 'Point':
                 coordinates.push(geom.coordinates);
                 break;
               case 'MultiPoint':
-                coordinates = coordinates.concat(geom.coordinates);
+                geom.coordinates.forEach(c => coordinates.push(c));
                 break;
               case 'GeometryCollection':
-                (geom.geometries || []).forEach(g => extractSegments(g));
+                (geom.geometries || []).forEach(g => extractCoords(g));
                 break;
             }
           }
 
           if (geojson.type === 'FeatureCollection') {
-            (geojson.features || []).forEach(f => extractSegments(f.geometry));
+            (geojson.features || []).forEach(f => extractCoords(f.geometry));
           } else if (geojson.type === 'Feature') {
-            extractSegments(geojson.geometry);
+            extractCoords(geojson.geometry);
           } else {
-            extractSegments(geojson);
-          }
-
-          // Chain segments into a connected path if multiple segments found
-          // Preserve any Point coordinates already collected
-          const pointCoords = coordinates.slice();
-          if (segments.length > 1) {
-            console.log('[PATH IMPORT] Found ' + segments.length + ' segments, chaining...');
-            coordinates = chainSegmentsIntoPath(segments);
-          } else if (segments.length === 1) {
-            coordinates = segments[0];
-          }
-          // Append any Point coordinates that were extracted
-          if (pointCoords.length > 0) {
-            coordinates = coordinates.concat(pointCoords);
+            extractCoords(geojson);
           }
         }
 
