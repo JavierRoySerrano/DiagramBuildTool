@@ -36967,72 +36967,95 @@ function loadProjectObject(obj) {
       return count;
     }
 
-    // --- STEP 3: Chain segments, stopping at branches ---
-    // Find seed: longest segment
-    let seedIdx = 0, maxLen = 0;
-    for (let i = 0; i < segs.length; i++) {
-      if (segs[i].coords.length > maxLen) { maxLen = segs[i].coords.length; seedIdx = i; }
-    }
+    // --- STEP 3: Chain segments into connected groups ---
+    // Build multiple chains: start with a seed, extend as far as possible,
+    // then start a new chain from remaining unused segments until all are used.
+    const allChains = [];
 
-    let chain = [...segs[seedIdx].coords];
-    segs[seedIdx].used = true;
-    let usedCount = 1;
-
-    let changed = true;
-    while (changed && usedCount < segs.length) {
-      changed = false;
-      const chainStart = chain[0];
-      const chainEnd = chain[chain.length - 1];
-
-      // Extend from END if not at a branch
-      const endDeg = junctionDegree(chainEnd);
-      if (endDeg <= 2) {
-        let beIdx = -1, beDist = Infinity, beRev = false;
-        for (let i = 0; i < segs.length; i++) {
-          if (segs[i].used) continue;
-          const dS = distSq(chainEnd, segs[i].start);
-          const dE = distSq(chainEnd, segs[i].end);
-          const m = Math.min(dS, dE);
-          if (m < beDist) { beDist = m; beIdx = i; beRev = dE < dS; }
-        }
-        if (beIdx >= 0 && beDist <= SNAP_SQ) {
-          const seg = segs[beIdx];
-          const coords = beRev ? [...seg.coords].reverse() : seg.coords;
-          const skip = (distSq(chain[chain.length - 1], coords[0]) < SNAP_SQ) ? 1 : 0;
-          for (let j = skip; j < coords.length; j++) chain.push(coords[j]);
-          seg.used = true; usedCount++; changed = true;
-          continue;
+    while (true) {
+      // Find seed among unused: longest segment
+      let seedIdx = -1, maxLen = 0;
+      for (let i = 0; i < segs.length; i++) {
+        if (!segs[i].used && segs[i].coords.length > maxLen) {
+          maxLen = segs[i].coords.length; seedIdx = i;
         }
       }
+      if (seedIdx < 0) break; // All segments used
 
-      // Extend from START if not at a branch
-      const startDeg = junctionDegree(chainStart);
-      if (startDeg <= 2) {
-        let bsIdx = -1, bsDist = Infinity, bsRev = false;
-        for (let i = 0; i < segs.length; i++) {
-          if (segs[i].used) continue;
-          const dE = distSq(chainStart, segs[i].end);
-          const dS = distSq(chainStart, segs[i].start);
-          const m = Math.min(dE, dS);
-          if (m < bsDist) { bsDist = m; bsIdx = i; bsRev = dS < dE; }
+      let chain = [...segs[seedIdx].coords];
+      segs[seedIdx].used = true;
+
+      let changed = true;
+      while (changed) {
+        changed = false;
+        const chainStart = chain[0];
+        const chainEnd = chain[chain.length - 1];
+
+        // Extend from END if not at a branch
+        const endDeg = junctionDegree(chainEnd);
+        if (endDeg <= 2) {
+          let beIdx = -1, beDist = Infinity, beRev = false;
+          for (let i = 0; i < segs.length; i++) {
+            if (segs[i].used) continue;
+            const dS = distSq(chainEnd, segs[i].start);
+            const dE = distSq(chainEnd, segs[i].end);
+            const m = Math.min(dS, dE);
+            if (m < beDist) { beDist = m; beIdx = i; beRev = dE < dS; }
+          }
+          if (beIdx >= 0 && beDist <= SNAP_SQ) {
+            const seg = segs[beIdx];
+            const coords = beRev ? [...seg.coords].reverse() : seg.coords;
+            const skip = (distSq(chain[chain.length - 1], coords[0]) < SNAP_SQ) ? 1 : 0;
+            for (let j = skip; j < coords.length; j++) chain.push(coords[j]);
+            seg.used = true; changed = true;
+            continue;
+          }
         }
-        if (bsIdx >= 0 && bsDist <= SNAP_SQ) {
-          const seg = segs[bsIdx];
-          const coords = bsRev ? [...seg.coords].reverse() : seg.coords;
-          const trim = (distSq(chain[0], coords[coords.length - 1]) < SNAP_SQ) ? 1 : 0;
-          const prepend = coords.slice(0, coords.length - trim);
-          chain = [...prepend, ...chain];
-          seg.used = true; usedCount++; changed = true;
-          continue;
+
+        // Extend from START if not at a branch
+        const startDeg = junctionDegree(chainStart);
+        if (startDeg <= 2) {
+          let bsIdx = -1, bsDist = Infinity, bsRev = false;
+          for (let i = 0; i < segs.length; i++) {
+            if (segs[i].used) continue;
+            const dE = distSq(chainStart, segs[i].end);
+            const dS = distSq(chainStart, segs[i].start);
+            const m = Math.min(dE, dS);
+            if (m < bsDist) { bsDist = m; bsIdx = i; bsRev = dS < dE; }
+          }
+          if (bsIdx >= 0 && bsDist <= SNAP_SQ) {
+            const seg = segs[bsIdx];
+            const coords = bsRev ? [...seg.coords].reverse() : seg.coords;
+            const trim = (distSq(chain[0], coords[coords.length - 1]) < SNAP_SQ) ? 1 : 0;
+            const prepend = coords.slice(0, coords.length - trim);
+            chain = [...prepend, ...chain];
+            seg.used = true; changed = true;
+            continue;
+          }
         }
+
+        // Neither end could extend within tolerance at a non-branch — stop this chain
+        break;
       }
 
-      // Neither end could extend within tolerance at a non-branch — stop
-      break;
+      allChains.push(chain);
     }
 
-    console.log('[PATH IMPORT] Chained ' + usedCount + '/' + unique.length + ' segments into path of ' + chain.length + ' points (dedup removed ' + (segments.length - unique.length) + ')');
-    return chain;
+    // --- STEP 4: Sort chains geographically (west-to-east) and concatenate ---
+    allChains.sort((a, b) => {
+      const aLon = a.reduce((s, c) => s + c[0], 0) / a.length;
+      const bLon = b.reduce((s, c) => s + c[0], 0) / b.length;
+      return aLon - bLon;
+    });
+
+    let result = [];
+    for (const chain of allChains) {
+      for (const coord of chain) result.push(coord);
+    }
+
+    const totalUsed = segs.filter(s => s.used).length;
+    console.log('[PATH IMPORT] Built ' + allChains.length + ' chain(s) from ' + totalUsed + '/' + unique.length + ' segments into path of ' + result.length + ' points (dedup removed ' + (segments.length - unique.length) + ')');
+    return result;
   }
 
 function handlePathKmlImport(e) {
@@ -37115,13 +37138,18 @@ function handlePathKmlImport(e) {
           }
 
           // Chain segments into a connected path if multiple segments found
+          // Preserve any Point coordinates already collected
+          const pointCoords = coordinates.slice();
           if (segments.length > 1) {
             console.log('[PATH IMPORT] Found ' + segments.length + ' segments, chaining...');
             coordinates = chainSegmentsIntoPath(segments);
           } else if (segments.length === 1) {
             coordinates = segments[0];
           }
-          // Points (if any) were already pushed to coordinates above
+          // Append any Point coordinates that were extracted
+          if (pointCoords.length > 0) {
+            coordinates = coordinates.concat(pointCoords);
+          }
         }
 
         if (coordinates.length === 0) {
