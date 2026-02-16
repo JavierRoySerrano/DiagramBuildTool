@@ -13351,6 +13351,54 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       }
     }
 
+    // During link drag (Alt+drag): draw rubber-band line and snap ring on target
+    if (state.dragging?.type === 'linkDrag') {
+      const srcNode = findNode(state.dragging.sourceId);
+      if (srcNode) {
+        // Draw rubber-band line from source node to cursor
+        const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1', srcNode.x); line.setAttribute('y1', srcNode.y);
+        line.setAttribute('x2', state.dragging.mx); line.setAttribute('y2', state.dragging.my);
+        line.setAttribute('stroke', '#0096D6');
+        line.setAttribute('stroke-width', '2');
+        line.setAttribute('stroke-dasharray', '6 4');
+        line.setAttribute('pointer-events', 'none');
+        line.setAttribute('opacity', '0.8');
+        svg.appendChild(line);
+
+        // Show snap ring on nearest target node
+        let bestNode = null, bestDist = Infinity;
+        state.nodes.forEach(n => {
+          if (!isNodeVisible(n)) return;
+          if (n.id === srcNode.id) return; // can't link to self
+          const dx = n.x - state.dragging.mx;
+          const dy = n.y - state.dragging.my;
+          const d = Math.sqrt(dx*dx + dy*dy);
+          if (d < bestDist) { bestDist = d; bestNode = n; }
+        });
+        if (bestNode && bestDist < 80) {
+          const ring = document.createElementNS('http://www.w3.org/2000/svg','circle');
+          ring.setAttribute('cx', bestNode.x); ring.setAttribute('cy', bestNode.y);
+          ring.setAttribute('r', (bestNode.r || 18) + 8);
+          ring.setAttribute('class', 'endpoint-snap-ring');
+          svg.appendChild(ring);
+          // Snap the rubber-band line to the target node center
+          line.setAttribute('x2', bestNode.x);
+          line.setAttribute('y2', bestNode.y);
+        }
+
+        // Show source node highlight ring
+        const srcRing = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        srcRing.setAttribute('cx', srcNode.x); srcRing.setAttribute('cy', srcNode.y);
+        srcRing.setAttribute('r', (srcNode.r || 18) + 6);
+        srcRing.setAttribute('fill', 'none');
+        srcRing.setAttribute('stroke', '#ff9800');
+        srcRing.setAttribute('stroke-width', '2.5');
+        srcRing.setAttribute('pointer-events', 'none');
+        svg.appendChild(srcRing);
+      }
+    }
+
     if (state.connectFrom) {
       const n = findNode(state.connectFrom);
       if (n && isNodeVisible(n)) {
@@ -14673,6 +14721,16 @@ document.getElementById('miSave').addEventListener('click', () => { closeAllMenu
       if (ev.shiftKey && !(ev.ctrlKey || ev.metaKey)) {
         ev.stopPropagation();
         console.log(`[NODE MOUSEDOWN] Node ${n.id} - Shift+click, letting mouseup handle multi-select`);
+        return;
+      }
+
+      // Alt+drag from node to create a new link (drag-to-link)
+      if (ev.altKey && !(ev.ctrlKey || ev.metaKey)) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        const m = getMouse(ev);
+        state.dragging = { type: 'linkDrag', sourceId: n.id, mx: m.x, my: m.y };
+        console.log(`[LINK DRAG] Started from node ${n.id} (Alt+drag)`);
         return;
       }
 
@@ -16980,6 +17038,13 @@ if (groupTitleFontInline) {
       return;
     }
 
+    if (state.dragging.type === 'linkDrag') {
+      state.dragging.mx = m.x;
+      state.dragging.my = m.y;
+      render();
+      return;
+    }
+
     if (state.dragging.type === 'nodeNameLabel') {
       const n = findNode(state.dragging.id); if (!n) return;
       const targetX = m.x + state.dragging.dx;
@@ -17128,6 +17193,27 @@ if (groupTitleFontInline) {
         } else {
           showToast('No node nearby — link unchanged');
         }
+      }
+    }
+
+    // Finalize link drag (Alt+drag): create a new link to the nearest node
+    if (state.dragging?.type === 'linkDrag') {
+      const sourceId = state.dragging.sourceId;
+      let bestNode = null, bestDist = Infinity;
+      state.nodes.forEach(n => {
+        if (!isNodeVisible(n)) return;
+        if (n.id === sourceId) return; // can't link to self
+        const dx = n.x - state.dragging.mx;
+        const dy = n.y - state.dragging.my;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if (d < bestDist) { bestDist = d; bestNode = n; }
+      });
+      if (bestNode && bestDist < 80) {
+        const srcNode = findNode(sourceId);
+        createEdge(sourceId, bestNode.id, false);
+        showToast(`✓ Link created: "${srcNode?.name || 'Node ' + sourceId}" → "${bestNode.name || 'Node ' + bestNode.id}"`);
+      } else {
+        showToast('No target node nearby — drag cancelled');
       }
     }
 
