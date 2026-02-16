@@ -26861,8 +26861,18 @@ function loadProjectObject(obj) {
         if (edgeCableSystemEl) edgeCableSystemEl.value = cs.id;
       }
 
-      select({ type: 'edge', id: edge.id });
+      // Clear selection so the link renders with cable-system colour only, no glow
+      clearSelection();
+      if (window.mapLibreState) {
+        mapLibreState.selectedEdge = null;
+        mapLibreState.selectedNode = null;
+      }
       commit(); render();
+      updateInspector();
+      if (window.mapLibreState && mapLibreState.active && typeof renderMapLibreContent === 'function') {
+        mapLibreState.skipFitBounds = true;
+        renderMapLibreContent();
+      }
       closeDialog();
     });
   }
