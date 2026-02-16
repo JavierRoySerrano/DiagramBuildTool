@@ -8947,6 +8947,8 @@
 
     // Current library tab
     libraryTab: 'nodes',  // 'nodes' or 'containers'
+    // Selected items in the shape library (Set of shape IDs)
+    selectedLibraryItems: new Set(),
 
     // Format painter (session-only)
     styleBrush: null,
@@ -25630,6 +25632,11 @@ function loadProjectObject(obj) {
     } else {
       renderNodeShapesLibrary(searchTerm);
     }
+
+    // Update selection bar after render
+    if (typeof updateLibrarySelectionActions === 'function') {
+      updateLibrarySelectionActions();
+    }
   }
 
   // Render node shapes library
@@ -25683,8 +25690,9 @@ function loadProjectObject(obj) {
 
       items.forEach(item => {
         const thumb = generateShapeThumbnail(item);
+        const selClass = state.selectedLibraryItems.has(item.id) ? ' selected' : '';
         html += `
-          <div class="library-item" draggable="true" data-library-id="${item.id}" data-library-type="node" title="${item.name}">
+          <div class="library-item${selClass}" draggable="true" data-library-id="${item.id}" data-library-type="node" title="${item.name}">
             <div class="library-item-preview">${thumb}</div>
             <div class="library-item-name">${item.name}</div>
             <div class="library-item-menu" onclick="event.stopPropagation(); showLibraryItemMenu('${item.id}', event)">⋮</div>
@@ -25697,10 +25705,11 @@ function loadProjectObject(obj) {
 
     libraryContent.innerHTML = html;
 
-    // Add drag handlers
-    libraryContent.querySelectorAll('.library-item').forEach(item => {
+    // Add drag, click, and dblclick handlers
+    libraryContent.querySelectorAll('.library-item[data-library-id]').forEach(item => {
       item.addEventListener('dragstart', handleLibraryDragStart);
       item.addEventListener('dblclick', handleLibraryDoubleClick);
+      item.addEventListener('click', handleLibraryItemClick);
     });
   }
 
@@ -25759,8 +25768,9 @@ function loadProjectObject(obj) {
       items.forEach(item => {
         // Generate thumbnail - for container shapes, show the SVG
         const thumb = item.svgData || '<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" fill="none" stroke="currentColor"/></svg>';
+        const selClass = state.selectedLibraryItems.has(item.id) ? ' selected' : '';
         html += `
-          <div class="library-item" draggable="true" data-container-shape-id="${item.id}" data-library-type="container" title="${item.name} - Drag to canvas to create container">
+          <div class="library-item${selClass}" draggable="true" data-container-shape-id="${item.id}" data-library-type="container" title="${item.name} - Drag to canvas to create container">
             <div class="library-item-preview" style="opacity:0.7;">${thumb}</div>
             <div class="library-item-name">${item.name}</div>
             <div class="library-item-menu" onclick="event.stopPropagation(); showContainerShapeMenu('${item.id}', event)">⋮</div>
@@ -25773,7 +25783,7 @@ function loadProjectObject(obj) {
 
     libraryContent.innerHTML = html;
 
-    // Add drag and click handlers for container shapes
+    // Add drag, click, and dblclick handlers for container shapes
     libraryContent.querySelectorAll('.library-item[data-container-shape-id]').forEach(item => {
       // Enable dragging
       item.addEventListener('dragstart', (e) => {
@@ -25782,7 +25792,7 @@ function loadProjectObject(obj) {
         e.dataTransfer.effectAllowed = 'copy';
       });
 
-      // Double-click to apply to selected container (legacy behavior)
+      // Double-click to apply to selected container
       item.addEventListener('dblclick', (e) => {
         const shapeId = item.dataset.containerShapeId;
         // If a container is selected, apply shape to it
@@ -25792,6 +25802,9 @@ function loadProjectObject(obj) {
           showToast('Drag to canvas to create container, or select a container first');
         }
       });
+
+      // Click for selection
+      item.addEventListener('click', handleLibraryItemClick);
     });
   }
 
@@ -25817,6 +25830,95 @@ function loadProjectObject(obj) {
       // Fallback: center of canvas
       createNodeFromLibrary(libraryId, state.canvasWidth / 2, state.canvasHeight / 2);
     }
+  }
+
+  // Handle click on library item for selection (single-click = select, Shift+click = toggle multi-select)
+  function handleLibraryItemClick(e) {
+    // Don't interfere with the ⋮ menu button
+    if (e.target.closest('.library-item-menu')) return;
+
+    const el = e.currentTarget;
+    const itemId = el.dataset.libraryId || el.dataset.containerShapeId;
+    if (!itemId) return;
+
+    if (e.shiftKey) {
+      // Shift+click: toggle this item in multi-selection
+      if (state.selectedLibraryItems.has(itemId)) {
+        state.selectedLibraryItems.delete(itemId);
+        el.classList.remove('selected');
+      } else {
+        state.selectedLibraryItems.add(itemId);
+        el.classList.add('selected');
+      }
+    } else {
+      // Normal click: select only this item (clear others)
+      state.selectedLibraryItems.clear();
+      libraryContent.querySelectorAll('.library-item.selected').forEach(s => s.classList.remove('selected'));
+      state.selectedLibraryItems.add(itemId);
+      el.classList.add('selected');
+    }
+
+    updateLibrarySelectionActions();
+  }
+
+  // Update the library selection action bar (show/hide Delete Selected button)
+  function updateLibrarySelectionActions() {
+    const count = state.selectedLibraryItems.size;
+    let bar = document.getElementById('librarySelectionBar');
+
+    if (count === 0) {
+      if (bar) bar.style.display = 'none';
+      return;
+    }
+
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 'librarySelectionBar';
+      bar.style.cssText = 'display:flex; gap:4px; padding:4px 8px; background:#f0f0ff; border-top:1px solid #ddd; align-items:center; font-size:11px;';
+      // Insert before the action buttons at the bottom
+      const actionsNodes = document.getElementById('libraryActionsNodes');
+      const actionsContainers = document.getElementById('libraryActionsContainers');
+      const insertBefore = (state.libraryTab === 'containers' ? actionsContainers : actionsNodes) || actionsNodes;
+      if (insertBefore) {
+        insertBefore.parentElement.insertBefore(bar, insertBefore);
+      }
+    }
+
+    bar.style.display = 'flex';
+    bar.innerHTML = `
+      <span style="flex:1; color:#444;">${count} selected</span>
+      <button id="btnDeleteSelectedLibrary" style="padding:2px 8px; font-size:11px; background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; cursor:pointer; color:#b91c1c;">Delete</button>
+      <button id="btnClearLibrarySelection" style="padding:2px 8px; font-size:11px; background:#f3f4f6; border:1px solid #d1d5db; border-radius:4px; cursor:pointer; color:#374151;">Clear</button>
+    `;
+
+    document.getElementById('btnDeleteSelectedLibrary').addEventListener('click', deleteSelectedLibraryItems);
+    document.getElementById('btnClearLibrarySelection').addEventListener('click', () => {
+      state.selectedLibraryItems.clear();
+      libraryContent.querySelectorAll('.library-item.selected').forEach(s => s.classList.remove('selected'));
+      updateLibrarySelectionActions();
+    });
+  }
+
+  // Delete all selected library items
+  function deleteSelectedLibraryItems() {
+    const count = state.selectedLibraryItems.size;
+    if (count === 0) return;
+
+    if (!confirm(`Delete ${count} selected shape(s) from library?`)) return;
+
+    state.selectedLibraryItems.forEach(id => {
+      if (state.shapeLibrary.shapes[id]) {
+        delete state.shapeLibrary.shapes[id];
+      }
+      if (state.shapeLibrary.containerShapes && state.shapeLibrary.containerShapes[id]) {
+        delete state.shapeLibrary.containerShapes[id];
+      }
+    });
+
+    state.selectedLibraryItems.clear();
+    saveShapeLibrary();
+    renderLibraryPanel();
+    showToast(`Deleted ${count} shape(s)`);
   }
 
   // Create node from library shape
@@ -27448,6 +27550,8 @@ function loadProjectObject(obj) {
       if (window.mapLibreState) {
         mapLibreState.selectedEdge = null;
         mapLibreState.selectedNode = null;
+        mapLibreState.selectedNodes.clear();
+        mapLibreState.selectedEdges.clear();
       }
       commit(); render();
       updateInspector();
@@ -36608,6 +36712,8 @@ function loadProjectObject(obj) {
     // Selection state
     selectedNode: null,
     selectedEdge: null,
+    selectedNodes: new Set(),
+    selectedEdges: new Set(),
     selectionEnabled: true,
     // Style mode: 'canvas' or 'simplified'
     styleMode: 'canvas',
@@ -38514,7 +38620,7 @@ function handlePathKmlImport(e) {
           }
 
           // Normal selection (route finder not active)
-          selectEdgeOnMap(clickedId);
+          selectEdgeOnMap(clickedId, e.originalEvent?.shiftKey);
         });
 
         // Set up persistent mousemove handler for cursor changes
@@ -38826,7 +38932,7 @@ function handlePathKmlImport(e) {
           }
 
           // Check if selected - but DON'T change color
-          const isSelected = mapLibreState.selectedEdge === e.id;
+          const isSelected = mapLibreState.selectedEdge === e.id || mapLibreState.selectedEdges.has(e.id);
 
           const edgeId = e.id || `edge-${idx}`;
 
@@ -39050,7 +39156,7 @@ function handlePathKmlImport(e) {
         labelEl.dataset.edgeId = labelInfo.edgeId;
         labelEl.textContent = labelInfo.text;
 
-        const isSelected = mapLibreState.selectedEdge === labelInfo.edgeId;
+        const isSelected = mapLibreState.selectedEdge === labelInfo.edgeId || mapLibreState.selectedEdges.has(labelInfo.edgeId);
         labelEl.style.cssText = `
           background: ${isSelected ? '#e0f2fe' : 'rgba(255,255,255,0.9)'};
           padding: 1px 4px;
@@ -39070,7 +39176,7 @@ function handlePathKmlImport(e) {
         if (selectionEnabled) {
           labelEl.addEventListener('click', (ev) => {
             ev.stopPropagation();
-            selectEdgeOnMap(labelInfo.edgeId);
+            selectEdgeOnMap(labelInfo.edgeId, ev.shiftKey);
           });
         }
 
@@ -39097,7 +39203,7 @@ function handlePathKmlImport(e) {
       el.className = 'maplibre-node-marker';
       el.dataset.nodeId = n.id; // Store node ID for selection and path finder
 
-      const isSelected = mapLibreState.selectedNode === n.id;
+      const isSelected = mapLibreState.selectedNode === n.id || mapLibreState.selectedNodes.has(n.id);
 
       // Check if in link mode (creating links)
       const isLinkSource = window.linkMode && window.linkSourceNode === n.id;
@@ -39278,7 +39384,7 @@ function handlePathKmlImport(e) {
         if (mapLibreState.pathFinderActive) {
           selectNodeForMapLibrePathFinder(n.id);
         } else if (mapLibreState.selectionEnabled) {
-          selectNodeOnMap(n.id);
+          selectNodeOnMap(n.id, ev.shiftKey);
         }
       });
 
@@ -39371,14 +39477,35 @@ function handlePathKmlImport(e) {
   // ============== MAPLIBRE SELECTION FUNCTIONS ==============
 
   // Select a node on the map and show in Inspector
-  function selectNodeOnMap(nodeId) {
-    // Clear previous selection
-    mapLibreState.selectedEdge = null;
-    mapLibreState.selectedNode = nodeId;
-
-    // Update the global state to sync with Inspector
+  function selectNodeOnMap(nodeId, shiftKey) {
     const node = findNode(nodeId);
-    if (node) {
+    if (!node) return;
+
+    if (shiftKey) {
+      // Shift+click: toggle node in multi-selection
+      if (mapLibreState.selectedNodes.has(nodeId)) {
+        mapLibreState.selectedNodes.delete(nodeId);
+        state.selection.nodes.delete(nodeId);
+      } else {
+        mapLibreState.selectedNodes.add(nodeId);
+        state.selection.nodes.add(nodeId);
+      }
+      // Clear single selection pointers
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = null;
+      state.selected = null;
+
+      const count = mapLibreState.selectedNodes.size + mapLibreState.selectedEdges.size;
+      showToast(`Selected ${count} item(s)`);
+    } else {
+      // Normal click: clear multi-selection, select single node
+      mapLibreState.selectedNodes.clear();
+      mapLibreState.selectedEdges.clear();
+      state.selection.nodes.clear();
+      state.selection.edges.clear();
+
+      mapLibreState.selectedEdge = null;
+      mapLibreState.selectedNode = nodeId;
       state.selected = { type: 'node', id: nodeId };
 
       // Apply format painter if armed
@@ -39389,28 +39516,52 @@ function handlePathKmlImport(e) {
       } else {
         showToast(`🔵 Selected: ${node.name || node.code || nodeId}`);
       }
-
-      // Update Inspector
-      if (typeof updateInspector === 'function') {
-        updateInspector();
-      }
-
-      // Re-render to show selection highlight (without re-fitting bounds)
-      mapLibreState.skipFitBounds = true;
-      renderMapLibreContent();
     }
+
+    // Update Inspector
+    if (typeof updateInspector === 'function') {
+      updateInspector();
+    }
+
+    // Re-render to show selection highlight (without re-fitting bounds)
+    mapLibreState.skipFitBounds = true;
+    renderMapLibreContent();
   }
 
   // Select an edge on the map and show in Inspector
-  function selectEdgeOnMap(edgeId) {
-    // Clear previous selection
-    mapLibreState.selectedNode = null;
-    mapLibreState.selectedEdge = edgeId;
-
+  function selectEdgeOnMap(edgeId, shiftKey) {
     // Find the edge
     const edge = state.edges.find(e => e.id === edgeId || `edge-${state.edges.indexOf(e)}` === edgeId);
-    if (edge) {
-      state.selected = { type: 'edge', id: edge.id || edgeId, a: edge.a, b: edge.b };
+    if (!edge) return;
+
+    const resolvedId = edge.id || edgeId;
+
+    if (shiftKey) {
+      // Shift+click: toggle edge in multi-selection
+      if (mapLibreState.selectedEdges.has(resolvedId)) {
+        mapLibreState.selectedEdges.delete(resolvedId);
+        state.selection.edges.delete(resolvedId);
+      } else {
+        mapLibreState.selectedEdges.add(resolvedId);
+        state.selection.edges.add(resolvedId);
+      }
+      // Clear single selection pointers
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = null;
+      state.selected = null;
+
+      const count = mapLibreState.selectedNodes.size + mapLibreState.selectedEdges.size;
+      showToast(`Selected ${count} item(s)`);
+    } else {
+      // Normal click: clear multi-selection, select single edge
+      mapLibreState.selectedNodes.clear();
+      mapLibreState.selectedEdges.clear();
+      state.selection.nodes.clear();
+      state.selection.edges.clear();
+
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = resolvedId;
+      state.selected = { type: 'edge', id: resolvedId, a: edge.a, b: edge.b };
 
       // Apply format painter if armed
       if (state.styleBrush && state.styleBrush.type === 'edge') {
@@ -39425,23 +39576,27 @@ function handlePathKmlImport(e) {
         const label = edge.label || edge.tag || '';
         showToast(`🔗 Selected link: ${nodeA?.name || edge.a} ↔ ${nodeB?.name || edge.b}${label ? ' (' + label + ')' : ''}`);
       }
-
-      // Update Inspector
-      if (typeof updateInspector === 'function') {
-        updateInspector();
-      }
-
-      // Re-render to show selection highlight (without re-fitting bounds)
-      mapLibreState.skipFitBounds = true;
-      renderMapLibreContent();
     }
+
+    // Update Inspector
+    if (typeof updateInspector === 'function') {
+      updateInspector();
+    }
+
+    // Re-render to show selection highlight (without re-fitting bounds)
+    mapLibreState.skipFitBounds = true;
+    renderMapLibreContent();
   }
 
   // Clear selection on map
   function clearMapSelection() {
     mapLibreState.selectedNode = null;
     mapLibreState.selectedEdge = null;
+    mapLibreState.selectedNodes.clear();
+    mapLibreState.selectedEdges.clear();
     state.selected = null;
+    state.selection.nodes.clear();
+    state.selection.edges.clear();
 
     if (typeof updateInspector === 'function') {
       updateInspector();
@@ -39487,8 +39642,8 @@ function handlePathKmlImport(e) {
         return;
       }
 
-      // Only deselect if not clicking on a marker
-      if (mapLibreState.selectionEnabled) {
+      // Only deselect if not clicking on a marker and Shift is not held
+      if (mapLibreState.selectionEnabled && !e.originalEvent?.shiftKey) {
         const target = e.originalEvent?.target;
         if (target && !target.closest('.maplibre-node-marker') && !target.closest('.maplibre-link-label')) {
           clearMapSelection();
