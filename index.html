@@ -27448,6 +27448,8 @@ function loadProjectObject(obj) {
       if (window.mapLibreState) {
         mapLibreState.selectedEdge = null;
         mapLibreState.selectedNode = null;
+        mapLibreState.selectedNodes.clear();
+        mapLibreState.selectedEdges.clear();
       }
       commit(); render();
       updateInspector();
@@ -36608,6 +36610,8 @@ function loadProjectObject(obj) {
     // Selection state
     selectedNode: null,
     selectedEdge: null,
+    selectedNodes: new Set(),
+    selectedEdges: new Set(),
     selectionEnabled: true,
     // Style mode: 'canvas' or 'simplified'
     styleMode: 'canvas',
@@ -38514,7 +38518,7 @@ function handlePathKmlImport(e) {
           }
 
           // Normal selection (route finder not active)
-          selectEdgeOnMap(clickedId);
+          selectEdgeOnMap(clickedId, e.originalEvent?.shiftKey);
         });
 
         // Set up persistent mousemove handler for cursor changes
@@ -38826,7 +38830,7 @@ function handlePathKmlImport(e) {
           }
 
           // Check if selected - but DON'T change color
-          const isSelected = mapLibreState.selectedEdge === e.id;
+          const isSelected = mapLibreState.selectedEdge === e.id || mapLibreState.selectedEdges.has(e.id);
 
           const edgeId = e.id || `edge-${idx}`;
 
@@ -39050,7 +39054,7 @@ function handlePathKmlImport(e) {
         labelEl.dataset.edgeId = labelInfo.edgeId;
         labelEl.textContent = labelInfo.text;
 
-        const isSelected = mapLibreState.selectedEdge === labelInfo.edgeId;
+        const isSelected = mapLibreState.selectedEdge === labelInfo.edgeId || mapLibreState.selectedEdges.has(labelInfo.edgeId);
         labelEl.style.cssText = `
           background: ${isSelected ? '#e0f2fe' : 'rgba(255,255,255,0.9)'};
           padding: 1px 4px;
@@ -39070,7 +39074,7 @@ function handlePathKmlImport(e) {
         if (selectionEnabled) {
           labelEl.addEventListener('click', (ev) => {
             ev.stopPropagation();
-            selectEdgeOnMap(labelInfo.edgeId);
+            selectEdgeOnMap(labelInfo.edgeId, ev.shiftKey);
           });
         }
 
@@ -39097,7 +39101,7 @@ function handlePathKmlImport(e) {
       el.className = 'maplibre-node-marker';
       el.dataset.nodeId = n.id; // Store node ID for selection and path finder
 
-      const isSelected = mapLibreState.selectedNode === n.id;
+      const isSelected = mapLibreState.selectedNode === n.id || mapLibreState.selectedNodes.has(n.id);
 
       // Check if in link mode (creating links)
       const isLinkSource = window.linkMode && window.linkSourceNode === n.id;
@@ -39278,7 +39282,7 @@ function handlePathKmlImport(e) {
         if (mapLibreState.pathFinderActive) {
           selectNodeForMapLibrePathFinder(n.id);
         } else if (mapLibreState.selectionEnabled) {
-          selectNodeOnMap(n.id);
+          selectNodeOnMap(n.id, ev.shiftKey);
         }
       });
 
@@ -39371,14 +39375,35 @@ function handlePathKmlImport(e) {
   // ============== MAPLIBRE SELECTION FUNCTIONS ==============
 
   // Select a node on the map and show in Inspector
-  function selectNodeOnMap(nodeId) {
-    // Clear previous selection
-    mapLibreState.selectedEdge = null;
-    mapLibreState.selectedNode = nodeId;
-
-    // Update the global state to sync with Inspector
+  function selectNodeOnMap(nodeId, shiftKey) {
     const node = findNode(nodeId);
-    if (node) {
+    if (!node) return;
+
+    if (shiftKey) {
+      // Shift+click: toggle node in multi-selection
+      if (mapLibreState.selectedNodes.has(nodeId)) {
+        mapLibreState.selectedNodes.delete(nodeId);
+        state.selection.nodes.delete(nodeId);
+      } else {
+        mapLibreState.selectedNodes.add(nodeId);
+        state.selection.nodes.add(nodeId);
+      }
+      // Clear single selection pointers
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = null;
+      state.selected = null;
+
+      const count = mapLibreState.selectedNodes.size + mapLibreState.selectedEdges.size;
+      showToast(`Selected ${count} item(s)`);
+    } else {
+      // Normal click: clear multi-selection, select single node
+      mapLibreState.selectedNodes.clear();
+      mapLibreState.selectedEdges.clear();
+      state.selection.nodes.clear();
+      state.selection.edges.clear();
+
+      mapLibreState.selectedEdge = null;
+      mapLibreState.selectedNode = nodeId;
       state.selected = { type: 'node', id: nodeId };
 
       // Apply format painter if armed
@@ -39389,28 +39414,52 @@ function handlePathKmlImport(e) {
       } else {
         showToast(`🔵 Selected: ${node.name || node.code || nodeId}`);
       }
-
-      // Update Inspector
-      if (typeof updateInspector === 'function') {
-        updateInspector();
-      }
-
-      // Re-render to show selection highlight (without re-fitting bounds)
-      mapLibreState.skipFitBounds = true;
-      renderMapLibreContent();
     }
+
+    // Update Inspector
+    if (typeof updateInspector === 'function') {
+      updateInspector();
+    }
+
+    // Re-render to show selection highlight (without re-fitting bounds)
+    mapLibreState.skipFitBounds = true;
+    renderMapLibreContent();
   }
 
   // Select an edge on the map and show in Inspector
-  function selectEdgeOnMap(edgeId) {
-    // Clear previous selection
-    mapLibreState.selectedNode = null;
-    mapLibreState.selectedEdge = edgeId;
-
+  function selectEdgeOnMap(edgeId, shiftKey) {
     // Find the edge
     const edge = state.edges.find(e => e.id === edgeId || `edge-${state.edges.indexOf(e)}` === edgeId);
-    if (edge) {
-      state.selected = { type: 'edge', id: edge.id || edgeId, a: edge.a, b: edge.b };
+    if (!edge) return;
+
+    const resolvedId = edge.id || edgeId;
+
+    if (shiftKey) {
+      // Shift+click: toggle edge in multi-selection
+      if (mapLibreState.selectedEdges.has(resolvedId)) {
+        mapLibreState.selectedEdges.delete(resolvedId);
+        state.selection.edges.delete(resolvedId);
+      } else {
+        mapLibreState.selectedEdges.add(resolvedId);
+        state.selection.edges.add(resolvedId);
+      }
+      // Clear single selection pointers
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = null;
+      state.selected = null;
+
+      const count = mapLibreState.selectedNodes.size + mapLibreState.selectedEdges.size;
+      showToast(`Selected ${count} item(s)`);
+    } else {
+      // Normal click: clear multi-selection, select single edge
+      mapLibreState.selectedNodes.clear();
+      mapLibreState.selectedEdges.clear();
+      state.selection.nodes.clear();
+      state.selection.edges.clear();
+
+      mapLibreState.selectedNode = null;
+      mapLibreState.selectedEdge = resolvedId;
+      state.selected = { type: 'edge', id: resolvedId, a: edge.a, b: edge.b };
 
       // Apply format painter if armed
       if (state.styleBrush && state.styleBrush.type === 'edge') {
@@ -39425,23 +39474,27 @@ function handlePathKmlImport(e) {
         const label = edge.label || edge.tag || '';
         showToast(`🔗 Selected link: ${nodeA?.name || edge.a} ↔ ${nodeB?.name || edge.b}${label ? ' (' + label + ')' : ''}`);
       }
-
-      // Update Inspector
-      if (typeof updateInspector === 'function') {
-        updateInspector();
-      }
-
-      // Re-render to show selection highlight (without re-fitting bounds)
-      mapLibreState.skipFitBounds = true;
-      renderMapLibreContent();
     }
+
+    // Update Inspector
+    if (typeof updateInspector === 'function') {
+      updateInspector();
+    }
+
+    // Re-render to show selection highlight (without re-fitting bounds)
+    mapLibreState.skipFitBounds = true;
+    renderMapLibreContent();
   }
 
   // Clear selection on map
   function clearMapSelection() {
     mapLibreState.selectedNode = null;
     mapLibreState.selectedEdge = null;
+    mapLibreState.selectedNodes.clear();
+    mapLibreState.selectedEdges.clear();
     state.selected = null;
+    state.selection.nodes.clear();
+    state.selection.edges.clear();
 
     if (typeof updateInspector === 'function') {
       updateInspector();
@@ -39487,8 +39540,8 @@ function handlePathKmlImport(e) {
         return;
       }
 
-      // Only deselect if not clicking on a marker
-      if (mapLibreState.selectionEnabled) {
+      // Only deselect if not clicking on a marker and Shift is not held
+      if (mapLibreState.selectionEnabled && !e.originalEvent?.shiftKey) {
         const target = e.originalEvent?.target;
         if (target && !target.closest('.maplibre-node-marker') && !target.closest('.maplibre-link-label')) {
           clearMapSelection();
