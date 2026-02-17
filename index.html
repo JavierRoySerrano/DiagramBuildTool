@@ -21301,17 +21301,20 @@ function loadProjectObject(obj) {
       `;
     }).join('');
 
-    // Landing points / CLS
+    // Landing points
     const lpContainer = document.getElementById('visorLandingPoints');
     const lpList = document.getElementById('visorLpList');
     if (cable.landingPoints && cable.landingPoints.length > 0) {
       lpContainer.style.display = 'block';
-      lpList.innerHTML = cable.landingPoints.map(lp => `
-        <span class="visor-lp-tag" title="${lp.lat ? `${lp.lat}, ${lp.lon}` : ''}">
+      lpList.innerHTML = cable.landingPoints.map(lp => {
+        const coordStr = lp.coordinates ? `${lp.coordinates[1].toFixed(4)}, ${lp.coordinates[0].toFixed(4)}` : (lp.lat ? `${lp.lat}, ${lp.lon}` : '');
+        return `
+        <span class="visor-lp-tag" title="${coordStr}">
           <span class="lp-dot"></span>
           ${escapeHtml(lp.name)}${lp.country ? ', ' + escapeHtml(lp.country) : ''}
         </span>
-      `).join('');
+      `;
+      }).join('');
     } else {
       lpContainer.style.display = 'none';
     }
@@ -47542,7 +47545,7 @@ function handlePathKmlImport(e) {
   <div id="cableVisorHeader">
     <h3>🌐 Submarine Cable Visor</h3>
     <div id="cableVisorControls">
-      <button id="btnCableVisorPresentation" title="Presentation Mode (Fullscreen)">&#x1F4FA;</button>
+      <button id="btnCableVisorPresentation" title="Presentation Mode (Fullscreen)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg></button>
       <button id="btnCableVisorMaximize" title="Maximize/Restore">⬜</button>
       <button id="btnCableVisorClose" title="Close Visor">✕</button>
     </div>
@@ -47598,7 +47601,7 @@ function handlePathKmlImport(e) {
     <div class="visor-detail-body" id="visorDetailBody">
       <div class="visor-detail-grid" id="visorDetailGrid"></div>
       <div class="visor-landing-points" id="visorLandingPoints" style="display:none;">
-        <h5>📍 Landing Stations (CLS)</h5>
+        <h5>📍 Landing Stations</h5>
         <div class="visor-lp-list" id="visorLpList"></div>
       </div>
     </div>
