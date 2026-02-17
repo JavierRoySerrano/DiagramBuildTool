@@ -23606,11 +23606,13 @@ function loadProjectObject(obj) {
         if (!window._dcDatabase || !window._dcDatabase.loaded) {
           window._dcDatabase = dcVisorState.dcDatabase;
         }
+        // Merge cable stations from separate file
+        await mergeCableStationsDatabase();
       }
 
       populateDCVisorRegionFilter();
       renderDCVisorList();
-      console.log('[DCVisor] Loaded', dcVisorState.dcDatabase.facilities.length, 'datacenters');
+      console.log('[DCVisor] Loaded', dcVisorState.dcDatabase.facilities.length, 'facilities (DCs + cable stations)');
 
     } catch (err) {
       console.error('[DCVisor] Failed to load DCs:', err);
@@ -50460,33 +50462,60 @@ function handlePathKmlImport(e) {
   window._dcExpandedId = null;  // Currently expanded detail panel
   window._dcSelectedId = null;
 
-  // Load PeeringDB facilities database
+  // Load PeeringDB facilities database + cable stations from separate file
   async function loadDCDatabase() {
     try {
-      // Load both datacenter facilities and cable stations in parallel
-      const [dcResp, csResp] = await Promise.all([
-        fetch('data/peeringdb_facilities.json'),
-        fetch('data/cable_stations_db.json').catch(() => null)
-      ]);
-      if (!dcResp.ok) throw new Error(`HTTP ${dcResp.status}`);
-      const dcData = await dcResp.json();
-      const facilities = dcData.facilities || [];
+      const resp = await fetch('data/peeringdb_facilities.json');
+      if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+      const data = await resp.json();
+      window._dcDatabase = { facilities: data.facilities || [], meta: data.meta || {}, loaded: true };
+      console.log(`[DC] Loaded ${window._dcDatabase.facilities.length} facilities from PeeringDB`);
 
-      // Merge cable stations if available
-      if (csResp && csResp.ok) {
-        const csData = await csResp.json();
-        const cableStations = csData.facilities || [];
-        facilities.push(...cableStations);
-        console.log(`[DC] Loaded ${cableStations.length} cable landing stations`);
-      }
-
-      window._dcDatabase = { facilities, meta: dcData.meta || {}, loaded: true };
-      console.log(`[DC] Loaded ${window._dcDatabase.facilities.length} total facilities`);
+      // Load cable stations from separate file and merge
+      await mergeCableStationsDatabase();
       renderDCList();
       populateDCCountryFilter();
     } catch (err) {
       console.error('[DC] Failed to load database:', err);
       document.getElementById('dcList').innerHTML = '<div class="muted" style="padding:12px; text-align:center; color:#b91c1c;">Failed to load datacenter database.</div>';
+    }
+  }
+
+  // Load cable stations from dedicated file and merge into _dcDatabase
+  async function mergeCableStationsDatabase() {
+    try {
+      // Try cable_stations_db.json first (comprehensive), fall back to cable_stations.json
+      let resp = await fetch('data/cable_stations_db.json');
+      if (!resp.ok) {
+        resp = await fetch('data/cable_stations.json');
+      }
+      if (!resp.ok) {
+        console.warn(`[DC] No cable stations file found (HTTP ${resp.status}), skipping.`);
+        return;
+      }
+      const csData = await resp.json();
+      const csFacilities = csData.facilities || [];
+      if (csFacilities.length === 0) return;
+
+      // Avoid duplicates: collect existing IDs
+      const existingIds = new Set(window._dcDatabase.facilities.map(f => f.id));
+      let merged = 0;
+      for (const cs of csFacilities) {
+        if (!existingIds.has(cs.id)) {
+          window._dcDatabase.facilities.push(cs);
+          existingIds.add(cs.id);
+          merged++;
+        }
+      }
+
+      // Update meta counts
+      const totalCS = window._dcDatabase.facilities.filter(f => (f.facility_type || 'datacenter') === 'cable_station').length;
+      window._dcDatabase.meta.total_cable_stations = totalCS;
+      window._dcDatabase.meta.total_facilities = window._dcDatabase.facilities.length;
+
+      console.log(`[DC] Merged ${merged} cable stations (${totalCS} total cable stations)`);
+    } catch (err) {
+      console.warn('[DC] Could not load cable stations, continuing without them:', err.message);
     }
   }
 
