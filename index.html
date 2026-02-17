@@ -5792,7 +5792,7 @@
   </div>
 
   <!-- Toolbar Line 2: Filters and Panels -->
-  <div style="display:flex; align-items:center; gap:2px; padding:4px 12px; background:#f5f5f5; border-top:1px solid #e8e8e8;">
+  <div style="display:flex; align-items:center; gap:2px; padding:4px 12px; background:#f5f5f5; border-top:1px solid #e8e8e8; flex-wrap:wrap;">
     <!-- Tag Filter -->
     <div style="position:relative;">
       <button class="tool-btn" id="btnTagFilter" type="button" title="Filter by Tags">
@@ -30358,7 +30358,9 @@ function loadProjectObject(obj) {
     // ============== PROTECTION PATH SETTINGS ==============
     protectionPath: null,                 // Calculated protection path result
     protectionClosureNodes: new Set(),    // Selected ring closure node IDs
-    primaryPathForProtection: null        // Stores the primary path when calculating protection
+    primaryPathForProtection: null,       // Stores the primary path when calculating protection
+    storedRoutesForProtection: null,      // Stores all routes when protection is set up (preserves across filter changes)
+    storedActiveRouteIndex: 0             // Stores the active route index for restoration
     // ============== END PROTECTION PATH SETTINGS ==============
   };
 
@@ -31783,6 +31785,13 @@ function loadProjectObject(obj) {
     routeFinderState.originNodeId = null;
     routeFinderState.destNodeId = null;
 
+    // Clear protection state
+    routeFinderState.protectionPath = null;
+    routeFinderState.protectionClosureNodes.clear();
+    routeFinderState.primaryPathForProtection = null;
+    routeFinderState.storedRoutesForProtection = null;
+    routeFinderState.storedActiveRouteIndex = 0;
+
     // Hide panel
     const panel = document.getElementById('routeFinderPanel');
     if (panel) {
@@ -31896,9 +31905,12 @@ function loadProjectObject(obj) {
       showToast(`🔴 New Destination: ${node.name || 'Node ' + nodeId}`);
     }
 
-    // Clear previous routes
+    // Clear previous routes and protection state (endpoints changed)
     routeFinderState.routes = [];
     routeFinderState.activeRouteIndex = 0;
+    routeFinderState.protectionPath = null;
+    routeFinderState.protectionClosureNodes.clear();
+    routeFinderState.primaryPathForProtection = null;
 
     updateRouteFinderUI();
     highlightEndpoints();
@@ -31920,6 +31932,17 @@ function loadProjectObject(obj) {
     const canCalculate = routeFinderState.originNodeId && routeFinderState.destNodeId;
     if (btnCalculateRoutes) btnCalculateRoutes.disabled = !canCalculate;
 
+    // If routes were cleared by a filter/constraint change but we have stored routes for protection,
+    // restore them so the primary path stays visible on screen and the user can calculate protection
+    let routesRestoredFromStorage = false;
+    if (routeFinderState.routes.length === 0 && routeFinderState.storedRoutesForProtection && routeFinderState.storedRoutesForProtection.length > 0) {
+      routeFinderState.routes = [...routeFinderState.storedRoutesForProtection];
+      routeFinderState.activeRouteIndex = routeFinderState.storedActiveRouteIndex || 0;
+      routesRestoredFromStorage = true;
+      // Clear stale protection result since filters changed
+      routeFinderState.protectionPath = null;
+    }
+
     // Update routes section
     if (routeFinderState.routes.length > 0) {
       if (routeResultsSection) routeResultsSection.style.display = 'block';
@@ -31939,7 +31962,11 @@ function loadProjectObject(obj) {
       if (protSection) {
         protSection.style.display = 'block';
         protSection.classList.remove('collapsed');
-        populateProtectionClosureNodes();
+        // Only re-populate closure nodes on fresh calculations, not filter-change restorations
+        // This preserves the user's intermediate closure node selections when changing filters
+        if (!routesRestoredFromStorage) {
+          populateProtectionClosureNodes();
+        }
       }
     } else {
       if (routeResultsSection) routeResultsSection.style.display = 'none';
@@ -31948,18 +31975,32 @@ function loadProjectObject(obj) {
       const saveAsMLGContainer = document.getElementById('saveAsMLGContainer');
       if (saveAsMLGContainer) saveAsMLGContainer.style.display = 'none';
 
-      // Hide protection path section and clear state
-      const protSection = document.getElementById('routeProtectionSection');
-      const protResultDiv = document.getElementById('protectionPathResult');
-      const protErrorDiv = document.getElementById('protectionPathError');
-      const saveProtMLGContainer = document.getElementById('saveProtectedMLGContainer');
-      if (protSection) protSection.style.display = 'none';
-      if (protResultDiv) protResultDiv.style.display = 'none';
-      if (protErrorDiv) protErrorDiv.style.display = 'none';
-      if (saveProtMLGContainer) saveProtMLGContainer.style.display = 'none';
-      routeFinderState.protectionPath = null;
-      routeFinderState.protectionClosureNodes.clear();
-      routeFinderState.primaryPathForProtection = null;
+      // Preserve protection section if a primary path was stored for protection calculation
+      // This allows users to modify filters/constraints and still calculate protection paths
+      if (routeFinderState.primaryPathForProtection) {
+        // Keep protection section visible - user can still calculate protection with new filters
+        // Only clear the previous protection result since filters changed
+        routeFinderState.protectionPath = null;
+        const protResultDiv = document.getElementById('protectionPathResult');
+        const protErrorDiv = document.getElementById('protectionPathError');
+        const saveProtMLGContainer = document.getElementById('saveProtectedMLGContainer');
+        if (protResultDiv) protResultDiv.style.display = 'none';
+        if (protErrorDiv) protErrorDiv.style.display = 'none';
+        if (saveProtMLGContainer) saveProtMLGContainer.style.display = 'none';
+      } else {
+        // No primary path stored - fully hide protection section and clear state
+        const protSection = document.getElementById('routeProtectionSection');
+        const protResultDiv = document.getElementById('protectionPathResult');
+        const protErrorDiv = document.getElementById('protectionPathError');
+        const saveProtMLGContainer = document.getElementById('saveProtectedMLGContainer');
+        if (protSection) protSection.style.display = 'none';
+        if (protResultDiv) protResultDiv.style.display = 'none';
+        if (protErrorDiv) protErrorDiv.style.display = 'none';
+        if (saveProtMLGContainer) saveProtMLGContainer.style.display = 'none';
+        routeFinderState.protectionPath = null;
+        routeFinderState.protectionClosureNodes.clear();
+        routeFinderState.primaryPathForProtection = null;
+      }
     }
 
     // Update protection path display if calculated
@@ -31987,6 +32028,9 @@ function loadProjectObject(obj) {
 
     // Store the primary path for protection calculation
     routeFinderState.primaryPathForProtection = route;
+    // Store all routes so they can be restored when filter changes clear them
+    routeFinderState.storedRoutesForProtection = [...routeFinderState.routes];
+    routeFinderState.storedActiveRouteIndex = routeFinderState.activeRouteIndex;
 
     // Get origin and destination
     const originId = route.path[0];
@@ -32540,6 +32584,8 @@ function loadProjectObject(obj) {
     routeFinderState.protectionPath = null;
     routeFinderState.primaryPathForProtection = null;
     routeFinderState.protectionClosureNodes.clear();
+    routeFinderState.storedRoutesForProtection = null;
+    routeFinderState.storedActiveRouteIndex = 0;
 
     // Hide protection UI
     const protectionResultDiv = document.getElementById('protectionPathResult');
@@ -33644,6 +33690,144 @@ function loadProjectObject(obj) {
     });
 
     console.log('[Protection Highlight] Total highlighted:', highlightedCount, 'edges');
+
+    // Also render protection path in MapLibre if active
+    renderProtectionPathInMapLibre(protectionPath);
+  }
+
+  // Render protection path in MapLibre Geo Dynamic Map
+  function renderProtectionPathInMapLibre(protectionPath) {
+    if (!window.mapLibreState || !window.mapLibreState.map || !window.mapLibreState.isStyleLoaded) return;
+    if (!protectionPath || !protectionPath.segments || protectionPath.segments.length === 0) return;
+
+    // Clear any existing protection path layers
+    clearMapLibreProtectionPath();
+
+    const protectionColor = '#f59e0b'; // Amber - same as CSS route-protection-path
+    const useKmlPaths = mapLibreState.pathRenderMode === 'paths';
+    const features = [];
+
+    if (useKmlPaths) {
+      // KML mode: use cable geometry for each segment when available
+      protectionPath.segments.forEach((segment, i) => {
+        if (segment.edgeId) {
+          const edge = findEdge(segment.edgeId);
+          if (edge && edge.cableGeometry && edge.cableGeometry.coordinates) {
+            features.push({
+              type: 'Feature',
+              properties: {},
+              geometry: edge.cableGeometry
+            });
+          } else {
+            // No cable geometry - straight line between segment nodes
+            const fromNodeId = protectionPath.path[i];
+            const toNodeId = protectionPath.path[i + 1];
+            const fromNode = findNode(fromNodeId);
+            const toNode = findNode(toNodeId);
+            if (fromNode && toNode && fromNode.gpsLat != null && fromNode.gpsLon != null &&
+                toNode.gpsLat != null && toNode.gpsLon != null) {
+              features.push({
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: [[fromNode.gpsLon, fromNode.gpsLat], [toNode.gpsLon, toNode.gpsLat]]
+                }
+              });
+            }
+          }
+        }
+      });
+    }
+
+    // Fallback: node-to-node straight line path
+    if (features.length === 0 && protectionPath.path) {
+      const coordinates = [];
+      protectionPath.path.forEach(nodeId => {
+        const node = findNode(nodeId);
+        if (node && node.gpsLat != null && node.gpsLon != null) {
+          coordinates.push([node.gpsLon, node.gpsLat]);
+        }
+      });
+
+      if (coordinates.length >= 2) {
+        features.push({
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: coordinates
+          }
+        });
+      }
+    }
+
+    if (features.length === 0) return;
+
+    try {
+      mapLibreState.map.addSource('route-finder-protection', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: features
+        }
+      });
+
+      // Add outer glow layer
+      mapLibreState.map.addLayer({
+        id: 'route-finder-protection-glow',
+        type: 'line',
+        source: 'route-finder-protection',
+        paint: {
+          'line-color': protectionColor,
+          'line-width': 10,
+          'line-opacity': 0.3,
+          'line-blur': 3
+        },
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        }
+      });
+
+      // Add main protection path layer (dashed to distinguish from primary)
+      mapLibreState.map.addLayer({
+        id: 'route-finder-protection-main',
+        type: 'line',
+        source: 'route-finder-protection',
+        paint: {
+          'line-color': protectionColor,
+          'line-width': 4,
+          'line-opacity': 0.9,
+          'line-dasharray': [4, 3]
+        },
+        layout: {
+          'line-cap': 'round',
+          'line-join': 'round'
+        }
+      });
+    } catch (err) {
+      console.warn('Failed to render protection path in MapLibre:', err);
+    }
+  }
+
+  // Clear protection path from MapLibre
+  function clearMapLibreProtectionPath() {
+    if (!window.mapLibreState || !window.mapLibreState.map) return;
+
+    try {
+      if (mapLibreState.map.getLayer('route-finder-protection-glow')) {
+        mapLibreState.map.removeLayer('route-finder-protection-glow');
+      }
+      if (mapLibreState.map.getLayer('route-finder-protection-main')) {
+        mapLibreState.map.removeLayer('route-finder-protection-main');
+      }
+      if (mapLibreState.map.getSource('route-finder-protection')) {
+        mapLibreState.map.removeSource('route-finder-protection');
+      }
+    } catch (err) {
+      // Ignore errors during cleanup
+    }
   }
 
   // Render route in MapLibre Geo Dynamic Map
@@ -33653,27 +33837,128 @@ function loadProjectObject(obj) {
     // Clear any existing route path
     clearMapLibreRoutePath();
 
-    // Build path coordinates from route nodes
-    const coordinates = [];
-    route.path.forEach(nodeId => {
-      const node = findNode(nodeId);
-      if (node && node.gpsLat != null && node.gpsLon != null) {
-        coordinates.push([node.gpsLon, node.gpsLat]);
-      }
-    });
+    const useKmlPaths = mapLibreState.pathRenderMode === 'paths';
 
-    if (coordinates.length < 2) return;
+    // Build geometry features from route segments
+    const features = [];
+
+    if (useKmlPaths && route.segments) {
+      // KML mode: use cable geometry for each segment when available
+      route.segments.forEach((segment, i) => {
+        if (segment.edgeId) {
+          const edge = findEdge(segment.edgeId);
+          if (edge && edge.cableGeometry && edge.cableGeometry.coordinates) {
+            // Use the KML cable geometry
+            features.push({
+              type: 'Feature',
+              properties: {},
+              geometry: edge.cableGeometry
+            });
+          } else {
+            // No cable geometry - use straight line between nodes
+            const fromNodeId = route.path[i];
+            const toNodeId = route.path[i + 1];
+            const fromNode = findNode(fromNodeId);
+            const toNode = findNode(toNodeId);
+            if (fromNode && toNode && fromNode.gpsLat != null && fromNode.gpsLon != null &&
+                toNode.gpsLat != null && toNode.gpsLon != null) {
+              features.push({
+                type: 'Feature',
+                properties: {},
+                geometry: {
+                  type: 'LineString',
+                  coordinates: [[fromNode.gpsLon, fromNode.gpsLat], [toNode.gpsLon, toNode.gpsLat]]
+                }
+              });
+            }
+          }
+        } else if (segment.implicit) {
+          // Implicit segment - straight line between nodes
+          const fromNodeId = route.path[i];
+          const toNodeId = route.path[i + 1];
+          const fromNode = findNode(fromNodeId);
+          const toNode = findNode(toNodeId);
+          if (fromNode && toNode && fromNode.gpsLat != null && fromNode.gpsLon != null &&
+              toNode.gpsLat != null && toNode.gpsLon != null) {
+            features.push({
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [[fromNode.gpsLon, fromNode.gpsLat], [toNode.gpsLon, toNode.gpsLat]]
+              }
+            });
+          }
+        } else if (segment.isMLG && segment.mlgId) {
+          // MLG segment - collect all constituent link geometries
+          const mlg = typeof findMultilinkGroup === 'function' ? findMultilinkGroup(segment.mlgId) : null;
+          if (mlg && mlg.segments) {
+            mlg.segments.forEach(seg => {
+              if (seg.paths) {
+                seg.paths.forEach(path => {
+                  if (path.links) {
+                    path.links.forEach(linkId => {
+                      const edge = findEdge(linkId);
+                      if (edge && edge.cableGeometry && edge.cableGeometry.coordinates) {
+                        features.push({
+                          type: 'Feature',
+                          properties: {},
+                          geometry: edge.cableGeometry
+                        });
+                      } else if (edge) {
+                        const fromNode = findNode(edge.a);
+                        const toNode = findNode(edge.b);
+                        if (fromNode && toNode && fromNode.gpsLat != null && fromNode.gpsLon != null &&
+                            toNode.gpsLat != null && toNode.gpsLon != null) {
+                          features.push({
+                            type: 'Feature',
+                            properties: {},
+                            geometry: {
+                              type: 'LineString',
+                              coordinates: [[fromNode.gpsLon, fromNode.gpsLat], [toNode.gpsLon, toNode.gpsLat]]
+                            }
+                          });
+                        }
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        }
+      });
+    }
+
+    // If no KML features were built (KML mode off or no segments), fall back to node-to-node path
+    if (features.length === 0) {
+      const coordinates = [];
+      route.path.forEach(nodeId => {
+        const node = findNode(nodeId);
+        if (node && node.gpsLat != null && node.gpsLon != null) {
+          coordinates.push([node.gpsLon, node.gpsLat]);
+        }
+      });
+
+      if (coordinates.length < 2) return;
+
+      features.push({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: coordinates
+        }
+      });
+    }
 
     try {
-      // Add the route path source
+      // Add the route path source as a FeatureCollection (supports multiple geometries)
       mapLibreState.map.addSource('route-finder-path', {
         type: 'geojson',
         data: {
-          type: 'Feature',
-          geometry: {
-            type: 'LineString',
-            coordinates: coordinates
-          }
+          type: 'FeatureCollection',
+          features: features
         }
       });
 
@@ -33732,6 +34017,9 @@ function loadProjectObject(obj) {
       if (mapLibreState.map.getSource('route-finder-path')) {
         mapLibreState.map.removeSource('route-finder-path');
       }
+
+      // Also clear protection path layers
+      clearMapLibreProtectionPath();
 
       // Clear node highlights
       clearRouteNodeHighlightsInMapLibre();
@@ -33794,6 +34082,12 @@ function loadProjectObject(obj) {
 
     routeFinderState.routes = [];
     routeFinderState.activeRouteIndex = 0;
+    // Clear protection state on endpoint change
+    routeFinderState.protectionPath = null;
+    routeFinderState.protectionClosureNodes.clear();
+    routeFinderState.primaryPathForProtection = null;
+    routeFinderState.storedRoutesForProtection = null;
+    routeFinderState.storedActiveRouteIndex = 0;
 
     updateRouteFinderUI();
     highlightEndpoints();
@@ -33844,11 +34138,23 @@ function loadProjectObject(obj) {
         }
         routeFinderState.originNodeId = val;
         routeFinderState.routes = [];
+        // Clear protection state on endpoint change
+        routeFinderState.protectionPath = null;
+        routeFinderState.protectionClosureNodes.clear();
+        routeFinderState.primaryPathForProtection = null;
+        routeFinderState.storedRoutesForProtection = null;
+        routeFinderState.storedActiveRouteIndex = 0;
         updateRouteFinderUI();
         highlightEndpoints();
       } else {
         routeFinderState.originNodeId = null;
         routeFinderState.routes = [];
+        // Clear protection state on endpoint change
+        routeFinderState.protectionPath = null;
+        routeFinderState.protectionClosureNodes.clear();
+        routeFinderState.primaryPathForProtection = null;
+        routeFinderState.storedRoutesForProtection = null;
+        routeFinderState.storedActiveRouteIndex = 0;
         updateRouteFinderUI();
         highlightEndpoints();
       }
@@ -33866,11 +34172,23 @@ function loadProjectObject(obj) {
         }
         routeFinderState.destNodeId = val;
         routeFinderState.routes = [];
+        // Clear protection state on endpoint change
+        routeFinderState.protectionPath = null;
+        routeFinderState.protectionClosureNodes.clear();
+        routeFinderState.primaryPathForProtection = null;
+        routeFinderState.storedRoutesForProtection = null;
+        routeFinderState.storedActiveRouteIndex = 0;
         updateRouteFinderUI();
         highlightEndpoints();
       } else {
         routeFinderState.destNodeId = null;
         routeFinderState.routes = [];
+        // Clear protection state on endpoint change
+        routeFinderState.protectionPath = null;
+        routeFinderState.protectionClosureNodes.clear();
+        routeFinderState.primaryPathForProtection = null;
+        routeFinderState.storedRoutesForProtection = null;
+        routeFinderState.storedActiveRouteIndex = 0;
         updateRouteFinderUI();
         highlightEndpoints();
       }
@@ -38776,6 +39094,11 @@ function loadProjectObject(obj) {
       if (mapLibreState.active && mapLibreState.map && mapLibreState.isStyleLoaded) {
         mapLibreState.skipFitBounds = true;
         renderMapLibreContent();
+      }
+
+      // Re-render route finder path highlights with the new render mode (KML vs straight lines)
+      if (typeof routeFinderState !== 'undefined' && routeFinderState.active && routeFinderState.routes.length > 0) {
+        setTimeout(() => highlightActiveRoute(), 200);
       }
 
       // Count links with geometry
