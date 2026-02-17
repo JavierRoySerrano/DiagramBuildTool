@@ -1251,6 +1251,23 @@
       z-index: 99999 !important;
     }
     #dcVisorPanel.show { display: flex; }
+    #dcVisorPanel.presentation-mode {
+      position: fixed !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      left: 0 !important;
+      top: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      border-radius: 0 !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      z-index: 999999 !important;
+      resize: none !important;
+    }
+    #dcVisorPanel.presentation-mode #dcVisorHeader {
+      cursor: default;
+    }
     #dcVisorHeader {
       display: flex;
       align-items: center;
@@ -1327,9 +1344,8 @@
       border-color: #9333ea;
     }
     #dcVisorList {
-      height: 180px;
-      min-height: 100px;
-      max-height: 300px;
+      flex: 0 1 180px;
+      min-height: 80px;
       overflow-y: auto;
       border-top: 1px solid #e0e0e0;
       background: white;
@@ -1374,6 +1390,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-shrink: 0;
     }
 
     /* Multilink Group Manager Panel */
@@ -7109,6 +7126,90 @@
           <div class="row">
             <label>Additional Tags (free text)</label>
             <input id="groupExtraTags" placeholder="e.g. area=APAC" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Datacenter Info Section (shown only for DC type containers) -->
+      <div class="inspector-section" data-section="group-dc-info" id="groupDCInfoSection" style="display:none;">
+        <div class="inspector-section-header" onclick="this.parentElement.classList.toggle('collapsed')">
+          <span>Datacenter Info</span>
+          <span class="section-icon">▼</span>
+        </div>
+        <div class="inspector-section-content">
+          <div class="row inline">
+            <div style="flex:1;">
+              <label>Organization</label>
+              <input id="groupDCOrgName" placeholder="e.g. Equinix" />
+            </div>
+            <div style="flex:0 0 80px;">
+              <label>PeeringDB ID</label>
+              <input id="groupDCPeeringDbId" type="text" readonly style="background:#f3f4f6;color:#666;" />
+            </div>
+          </div>
+          <div class="row">
+            <label>Address</label>
+            <input id="groupDCAddress" placeholder="e.g. 123 Data Center Drive" />
+          </div>
+          <div class="row inline">
+            <div style="flex:2;">
+              <label>City</label>
+              <input id="groupDCCity" placeholder="e.g. Frankfurt" />
+            </div>
+            <div style="flex:1;">
+              <label>Postal Code</label>
+              <input id="groupDCZipcode" placeholder="e.g. 60314" />
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>State / Region</label>
+              <input id="groupDCState" placeholder="e.g. Hesse" />
+            </div>
+            <div>
+              <label>Country</label>
+              <input id="groupDCCountry" placeholder="e.g. Germany" />
+            </div>
+          </div>
+          <div class="row inline">
+            <div>
+              <label>Continent</label>
+              <input id="groupDCRegion" placeholder="e.g. Europe" />
+            </div>
+            <div>
+              <label>Website</label>
+              <input id="groupDCWebsite" placeholder="https://..." />
+            </div>
+          </div>
+          <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e0e0e0;">
+            <label style="font-weight:600; font-size:11px; color:#9333ea;">GPS Coordinates</label>
+            <div class="row inline" style="margin-top:4px;">
+              <div>
+                <label style="font-size:10px;">Latitude</label>
+                <input id="groupDCLatitude" type="text" placeholder="e.g. 50.1109" style="font-family:monospace;font-size:11px;" />
+              </div>
+              <div>
+                <label style="font-size:10px;">Longitude</label>
+                <input id="groupDCLongitude" type="text" placeholder="e.g. 8.6821" style="font-family:monospace;font-size:11px;" />
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e0e0e0;">
+            <label style="font-weight:600; font-size:11px; color:#9333ea;">Network Presence</label>
+            <div class="row inline" style="margin-top:4px;">
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:18px;font-weight:700;color:#9333ea;" id="groupDCNetCount">0</div>
+                <div style="font-size:9px;color:#888;">Networks</div>
+              </div>
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:18px;font-weight:700;color:#2563eb;" id="groupDCIxCount">0</div>
+                <div style="font-size:9px;color:#888;">IXPs</div>
+              </div>
+              <div style="flex:1;text-align:center;">
+                <div style="font-size:18px;font-weight:700;color:#059669;" id="groupDCCarrierCount">0</div>
+                <div style="font-size:9px;color:#888;">Carriers</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -15800,6 +15901,32 @@ const groupTitle = document.getElementById('groupTitle');
         groupTransitLatency.value = g.transitLatency !== undefined && g.transitLatency !== null ? g.transitLatency : '';
       }
 
+      // Update Datacenter Info section visibility and values
+      const dcInfoSection = document.getElementById('groupDCInfoSection');
+      if (dcInfoSection) {
+        if (g.type === 'dc') {
+          dcInfoSection.style.display = '';
+          const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+          setVal('groupDCOrgName', g.dcOrgName);
+          setVal('groupDCPeeringDbId', g.dcPeeringDbId);
+          setVal('groupDCAddress', g.dcAddress);
+          setVal('groupDCCity', g.dcCity);
+          setVal('groupDCZipcode', g.dcZipcode);
+          setVal('groupDCState', g.dcState);
+          setVal('groupDCCountry', g.dcCountry);
+          setVal('groupDCRegion', g.dcRegion);
+          setVal('groupDCWebsite', g.dcWebsite);
+          setVal('groupDCLatitude', g.dcLatitude != null ? g.dcLatitude : '');
+          setVal('groupDCLongitude', g.dcLongitude != null ? g.dcLongitude : '');
+          const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+          setTxt('groupDCNetCount', g.dcNetCount || 0);
+          setTxt('groupDCIxCount', g.dcIxCount || 0);
+          setTxt('groupDCCarrierCount', g.dcCarrierCount || 0);
+        } else {
+          dcInfoSection.style.display = 'none';
+        }
+      }
+
       groupTitleFont.value = g.titleFont ?? 14;
       groupTitleColor.value = g.titleColor || "#333333";
       groupFill.value = g.fill || "#ffffff";
@@ -16448,6 +16575,35 @@ if (groupTitleFontInline) {
       commit();
     });
   }
+
+  // ============== GROUP DATACENTER INFO HANDLERS ==============
+  ['groupDCOrgName:dcOrgName', 'groupDCAddress:dcAddress', 'groupDCCity:dcCity',
+   'groupDCZipcode:dcZipcode', 'groupDCState:dcState', 'groupDCCountry:dcCountry',
+   'groupDCRegion:dcRegion', 'groupDCWebsite:dcWebsite'].forEach(pair => {
+    const [elId, prop] = pair.split(':');
+    const el = document.getElementById(elId);
+    if (el) {
+      el.addEventListener('input', () => {
+        if (state.selected?.type !== 'group') return;
+        const g = findGroup(state.selected.id); if (!g) return;
+        g[prop] = el.value;
+        commit();
+      });
+    }
+  });
+  ['groupDCLatitude:dcLatitude', 'groupDCLongitude:dcLongitude'].forEach(pair => {
+    const [elId, prop] = pair.split(':');
+    const el = document.getElementById(elId);
+    if (el) {
+      el.addEventListener('input', () => {
+        if (state.selected?.type !== 'group') return;
+        const g = findGroup(state.selected.id); if (!g) return;
+        const val = el.value.trim();
+        g[prop] = val === '' ? null : parseFloat(val) || null;
+        commit();
+      });
+    }
+  });
 
   // ============== GROUP COMMERCIAL COST HANDLERS ==============
 
@@ -23497,38 +23653,173 @@ function loadProjectObject(obj) {
     if (!panel || !header) return;
 
     let isDragging = false;
-    let startX, startY, startLeft, startTop;
+    let offsetX, offsetY;
 
     header.addEventListener('mousedown', (e) => {
       if (e.target.tagName === 'BUTTON') return;
       isDragging = true;
-      const rect = panel.getBoundingClientRect();
-      startX = e.clientX;
-      startY = e.clientY;
-      startLeft = rect.left;
-      startTop = rect.top;
-      panel.style.transition = 'none';
+      offsetX = e.clientX - panel.offsetLeft;
+      offsetY = e.clientY - panel.offsetTop;
+      panel.style.cursor = 'move';
       panel.style.right = 'auto';
       e.preventDefault();
     });
 
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      panel.style.left = Math.max(0, startLeft + dx) + 'px';
-      panel.style.top = Math.max(0, startTop + dy) + 'px';
+      panel.style.left = (e.clientX - offsetX) + 'px';
+      panel.style.top = (e.clientY - offsetY) + 'px';
     });
 
     document.addEventListener('mouseup', () => {
       if (isDragging) {
         isDragging = false;
-        panel.style.transition = '';
+        panel.style.cursor = '';
       }
     });
 
     dcVisorDraggableInitialized = true;
     console.log('[DCVisor] Draggable initialized');
+  }
+
+  // Presentation (fullscreen) mode for DC Visor
+  let dcVisorPresentationActive = false;
+  let dcVisorPresentationExitBtn = null;
+  let dcVisorPresentationHint = null;
+
+  function toggleDCVisorPresentation() {
+    if (dcVisorPresentationActive) {
+      exitDCVisorPresentation();
+    } else {
+      enterDCVisorPresentation();
+    }
+  }
+
+  function enterDCVisorPresentation() {
+    const panel = document.getElementById('dcVisorPanel');
+    if (!panel) return;
+
+    // Exit maximized mode if active
+    if (panel.classList.contains('maximized')) {
+      toggleDCVisorMaximize();
+    }
+
+    // Store original position/size
+    panel._presentationOriginal = {
+      width: panel.style.width,
+      height: panel.style.height,
+      left: panel.style.left,
+      top: panel.style.top
+    };
+
+    // Clear inline styles and enter presentation mode
+    panel.style.width = '';
+    panel.style.height = '';
+    panel.style.left = '';
+    panel.style.top = '';
+    panel.classList.add('presentation-mode');
+    dcVisorPresentationActive = true;
+
+    // Create close button (X)
+    dcVisorPresentationExitBtn = document.createElement('button');
+    dcVisorPresentationExitBtn.className = 'presentation-exit-btn';
+    dcVisorPresentationExitBtn.innerHTML = '&#x2715;';
+    dcVisorPresentationExitBtn.title = 'Exit Presentation (ESC)';
+    dcVisorPresentationExitBtn.addEventListener('click', exitDCVisorPresentation);
+    document.body.appendChild(dcVisorPresentationExitBtn);
+
+    // Show ESC hint that fades after 3 seconds
+    dcVisorPresentationHint = document.createElement('div');
+    dcVisorPresentationHint.className = 'presentation-esc-hint';
+    dcVisorPresentationHint.textContent = 'Press ESC to exit presentation mode';
+    document.body.appendChild(dcVisorPresentationHint);
+    setTimeout(() => {
+      if (dcVisorPresentationHint) {
+        dcVisorPresentationHint.style.opacity = '0';
+        setTimeout(() => {
+          if (dcVisorPresentationHint && dcVisorPresentationHint.parentNode) {
+            dcVisorPresentationHint.parentNode.removeChild(dcVisorPresentationHint);
+            dcVisorPresentationHint = null;
+          }
+        }, 1000);
+      }
+    }, 3000);
+
+    // Try native fullscreen
+    if (panel.requestFullscreen) {
+      panel.requestFullscreen().catch(() => {});
+    } else if (panel.webkitRequestFullscreen) {
+      panel.webkitRequestFullscreen();
+    }
+
+    // Add ESC key listener
+    document.addEventListener('keydown', handleDCPresentationEsc);
+    document.addEventListener('fullscreenchange', handleDCFullscreenChange);
+
+    // Resize map after entering
+    if (dcVisorState.map) {
+      setTimeout(() => dcVisorState.map.resize(), 100);
+    }
+
+    console.log('[DCVisor] Entered presentation mode');
+  }
+
+  function exitDCVisorPresentation() {
+    const panel = document.getElementById('dcVisorPanel');
+    if (!panel) return;
+
+    panel.classList.remove('presentation-mode');
+    dcVisorPresentationActive = false;
+
+    // Restore original position/size
+    if (panel._presentationOriginal) {
+      panel.style.width = panel._presentationOriginal.width;
+      panel.style.height = panel._presentationOriginal.height;
+      panel.style.left = panel._presentationOriginal.left;
+      panel.style.top = panel._presentationOriginal.top;
+    }
+
+    // Remove close button
+    if (dcVisorPresentationExitBtn && dcVisorPresentationExitBtn.parentNode) {
+      dcVisorPresentationExitBtn.parentNode.removeChild(dcVisorPresentationExitBtn);
+      dcVisorPresentationExitBtn = null;
+    }
+
+    // Remove hint
+    if (dcVisorPresentationHint && dcVisorPresentationHint.parentNode) {
+      dcVisorPresentationHint.parentNode.removeChild(dcVisorPresentationHint);
+      dcVisorPresentationHint = null;
+    }
+
+    // Exit native fullscreen if active
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+
+    // Remove listeners
+    document.removeEventListener('keydown', handleDCPresentationEsc);
+    document.removeEventListener('fullscreenchange', handleDCFullscreenChange);
+
+    // Resize map after exiting
+    if (dcVisorState.map) {
+      setTimeout(() => dcVisorState.map.resize(), 100);
+    }
+
+    console.log('[DCVisor] Exited presentation mode');
+  }
+
+  function handleDCPresentationEsc(e) {
+    if (e.key === 'Escape' && dcVisorPresentationActive) {
+      e.preventDefault();
+      e.stopPropagation();
+      exitDCVisorPresentation();
+    }
+  }
+
+  function handleDCFullscreenChange() {
+    if (!document.fullscreenElement && dcVisorPresentationActive) {
+      exitDCVisorPresentation();
+    }
   }
 
   // DC Visor map resize handle
@@ -23578,6 +23869,10 @@ function loadProjectObject(obj) {
     document.getElementById('btnDCVisorClose')?.addEventListener('click', (e) => {
       e.stopPropagation();
       hideDCVisor();
+    });
+    document.getElementById('btnDCVisorPresentation')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDCVisorPresentation();
     });
     document.getElementById('btnDCVisorMaximize')?.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -47626,6 +47921,7 @@ function handlePathKmlImport(e) {
   <div id="dcVisorHeader">
     <h3>&#x1F3E2; Datacenter Visor</h3>
     <div id="dcVisorControls">
+      <button id="btnDCVisorPresentation" title="Presentation Mode (Fullscreen)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
       <button id="btnDCVisorMaximize" title="Maximize/Restore">&#x2B1C;</button>
       <button id="btnDCVisorClose" title="Close Visor">&#x2715;</button>
     </div>
@@ -49327,24 +49623,23 @@ function handlePathKmlImport(e) {
     const nav = document.getElementById('dcNavigator');
     const header = document.getElementById('dcNavigatorHeader');
     if (!nav || !header) return;
-    let isDragging = false, startX, startY, startLeft, startTop;
+    let isDragging = false, offsetX, offsetY;
     header.addEventListener('mousedown', (e) => {
       if (e.target.closest('#dcNavigatorControls')) return;
       isDragging = true;
-      startX = e.clientX; startY = e.clientY;
-      const rect = nav.getBoundingClientRect();
-      startLeft = rect.left; startTop = rect.top;
-      nav.style.transition = 'none';
+      offsetX = e.clientX - nav.offsetLeft;
+      offsetY = e.clientY - nav.offsetTop;
+      nav.style.cursor = 'move';
       e.preventDefault();
     });
     document.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
+      nav.style.left = (e.clientX - offsetX) + 'px';
+      nav.style.top = (e.clientY - offsetY) + 'px';
       nav.style.right = 'auto';
-      nav.style.left = Math.max(0, startLeft + (e.clientX - startX)) + 'px';
-      nav.style.top = Math.max(0, startTop + (e.clientY - startY)) + 'px';
     });
     document.addEventListener('mouseup', () => {
-      if (isDragging) { isDragging = false; nav.style.transition = ''; }
+      if (isDragging) { isDragging = false; nav.style.cursor = ''; }
     });
   })();
 
@@ -49408,15 +49703,65 @@ function handlePathKmlImport(e) {
     }
 
     if (targetNode) {
-      // Drop on node → copy address + GPS
-      targetNode.address = [fac.address1, fac.address2].filter(Boolean).join(', ');
-      targetNode.city = fac.city || '';
-      targetNode.country = fac.country || '';
-      if (fac.latitude != null) targetNode.gpsLat = fac.latitude;
-      if (fac.longitude != null) targetNode.gpsLon = fac.longitude;
-      if (fac.state) targetNode.state = fac.state;
-      commit(); render(); updateInspector();
-      showToast(`Node "${targetNode.name}" updated with DC location: ${fac.name}`);
+      // Show name action dialog
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;display:flex;justify-content:center;align-items:center;';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:10px;padding:24px;max-width:420px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.3);">
+          <h3 style="margin:0 0 8px;font-size:16px;">🏢 Import Datacenter to Node</h3>
+          <div style="font-size:12px;color:#666;margin-bottom:16px;">
+            Dropping <strong>${escapeHtml(fac.name)}</strong> onto node <strong>"${escapeHtml(targetNode.name)}"</strong>
+          </div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:10px;">What should happen to the node name?</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;">
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:2px solid #ec4899;border-radius:6px;cursor:pointer;background:#fdf2f8;">
+              <input type="radio" name="dcNameAction" value="replace" checked style="margin:0;accent-color:#ec4899;" />
+              <div><strong>Replace</strong> — set name to "${escapeHtml(fac.name)}"</div>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="dcNameAction" value="append" style="margin:0;accent-color:#ec4899;" />
+              <div><strong>Append</strong> — "${escapeHtml(targetNode.name)} - ${escapeHtml(fac.name)}"</div>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #e0e0e0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="dcNameAction" value="keep" style="margin:0;accent-color:#ec4899;" />
+              <div><strong>Keep as is</strong> — leave "${escapeHtml(targetNode.name)}"</div>
+            </label>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;">
+            <button id="dcNameCancel" style="padding:8px 16px;border:1px solid #d0d0d0;border-radius:6px;background:#f8f8f8;cursor:pointer;font-size:13px;">Cancel</button>
+            <button id="dcNameApply" style="padding:8px 16px;border:none;border-radius:6px;background:#ec4899;color:white;cursor:pointer;font-size:13px;font-weight:600;">Apply</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#dcNameCancel').addEventListener('click', () => modal.remove());
+      modal.querySelector('#dcNameApply').addEventListener('click', () => {
+        const action = modal.querySelector('input[name="dcNameAction"]:checked').value;
+        if (action === 'replace') targetNode.name = fac.name;
+        else if (action === 'append') targetNode.name = targetNode.name + ' - ' + fac.name;
+        // 'keep' = do nothing to name
+
+        // Fill address fields
+        targetNode.address = [fac.address1, fac.address2].filter(Boolean).join(', ');
+        targetNode.city = fac.city || '';
+        targetNode.postalCode = fac.zipcode || '';
+        targetNode.county = '';
+        targetNode.state = fac.state || '';
+        targetNode.country = fac.country || '';
+        if (fac.latitude != null) targetNode.gpsLat = fac.latitude;
+        if (fac.longitude != null) targetNode.gpsLon = fac.longitude;
+
+        // Add 'Imported Datacenter' to filter tags
+        if (!targetNode.tags) targetNode.tags = ['default'];
+        if (!targetNode.tags.includes('Imported Datacenter')) {
+          targetNode.tags.push('Imported Datacenter');
+        }
+
+        commit(); render(); updateInspector();
+        showToast(`Node "${targetNode.name}" updated with DC: ${fac.name}`);
+        modal.remove();
+      });
       return;
     }
 
@@ -49440,6 +49785,11 @@ function handlePathKmlImport(e) {
     if (targetGroup) {
       // Drop on existing container → populate DC fields
       applyDCDataToGroup(targetGroup, fac);
+      // Add 'Imported Datacenter' to filter tags
+      if (!targetGroup.filterTags) targetGroup.filterTags = ['default'];
+      if (!targetGroup.filterTags.includes('Imported Datacenter')) {
+        targetGroup.filterTags.push('Imported Datacenter');
+      }
       commit(); render(); updateInspector();
       showToast(`Container "${targetGroup.title}" populated with DC data: ${fac.name}`);
       return;
@@ -49450,6 +49800,11 @@ function handlePathKmlImport(e) {
     const id = state.nextGroup++;
     const g = makeGroup(id, m.x - 140, m.y - 100, 'dc');
     applyDCDataToGroup(g, fac);
+    // Add 'Imported Datacenter' to filter tags
+    if (!g.filterTags) g.filterTags = ['default'];
+    if (!g.filterTags.includes('Imported Datacenter')) {
+      g.filterTags.push('Imported Datacenter');
+    }
     state.groups.push(g);
     if (g.type === 'dc') updateCountryRegionMembership(g);
     refreshAllMemberships();
