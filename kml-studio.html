@@ -232,6 +232,11 @@ header {
     font-size: 12px; font-weight: 500; color: var(--text);
     flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
+.folder-inline-rename {
+    width: 100%; font-size: 12px; font-weight: 500; color: var(--text);
+    background: var(--bg); border: 1px solid var(--accent); border-radius: 2px;
+    padding: 0 2px; outline: none; font-family: inherit;
+}
 
 .tree-folder-count {
     font-size: 10px; color: var(--text-muted);
@@ -2730,19 +2735,32 @@ function createFolderEl(folder) {
         renderAll(); updatePropsPanel();
     });
 
+    let folderClickTimer = null;
     header.addEventListener('click', (e) => {
         if (e.target.classList.contains('tree-folder-check')) return;
         if (e.target.closest('.tree-folder-vis')) return;
-        if (e.target.closest('.tree-toggle') || e.target.closest('.folder-icon')) {
-            // Click on toggle arrow or folder icon: expand/collapse
-            folder.expanded = !folder.expanded; renderFolderTree();
+        if (e.target.tagName === 'INPUT') return; // ignore clicks on inline edit input
+
+        const clickedName = e.target.closest('.tree-folder-name');
+        if (clickedName && selectedFolderId === folder.id) {
+            // Delay inline rename to distinguish from double-click
+            clearTimeout(folderClickTimer);
+            folderClickTimer = setTimeout(() => {
+                startFolderInlineRename(folder, clickedName);
+            }, 300);
         } else {
-            // Click on folder name/area: select folder
+            // Click anywhere else on header: select folder
             selectFolder(folder.id);
         }
     });
 
-    header.addEventListener('dblclick', (e) => { e.stopPropagation(); zoomToFolder(folder); });
+    header.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        clearTimeout(folderClickTimer); // Cancel pending inline rename
+        // Double click: expand/collapse folder
+        folder.expanded = !folder.expanded;
+        renderFolderTree();
+    });
 
     header.addEventListener('contextmenu', (e) => {
         e.preventDefault(); ctxTargetId = null; ctxTargetFolderId = folder.id;
@@ -2969,12 +2987,44 @@ function selectFolder(folderId) {
     collectLayers(folderId);
     // Set primary to first layer in folder
     if (selectedLayerIds.size > 0) selectedLayerId = [...selectedLayerIds][0];
-    // Expand folder
-    const f = projectData.folders.find(ff => ff.id === folderId);
-    if (f) f.expanded = true;
     renderFolderTree();
     renderMapLayers();
     updatePropsPanel();
+}
+
+// Inline rename for folder name (Google Earth style: single click on selected folder name)
+function startFolderInlineRename(folder, nameSpan) {
+    // Prevent multiple inline edits
+    if (nameSpan.querySelector('input')) return;
+
+    const currentName = folder.name;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'folder-inline-rename';
+    input.value = currentName;
+
+    // Replace span text with input
+    nameSpan.textContent = '';
+    nameSpan.appendChild(input);
+    input.focus();
+    input.select();
+
+    function commit() {
+        const newName = input.value.trim();
+        if (newName && newName !== currentName) {
+            folder.name = newName;
+        }
+        renderFolderTree();
+    }
+
+    input.addEventListener('blur', commit);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { input.value = currentName; input.blur(); }
+        e.stopPropagation();
+    });
+    input.addEventListener('click', (e) => e.stopPropagation());
+    input.addEventListener('dblclick', (e) => e.stopPropagation());
 }
 
 function updatePropsPanel() {
