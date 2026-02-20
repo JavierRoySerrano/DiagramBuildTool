@@ -533,6 +533,8 @@ header {
 .tree-item.multi-selected { background: #e0f0ff; }
 .tree-item.multi-selected.selected { background: var(--bg-selected); }
 .tree-folder-header.folder-selected { background: var(--bg-selected); }
+.tree-folder-header.folder-multi-selected { background: #e0f0ff; }
+.tree-folder-header.folder-multi-selected.folder-selected { background: var(--bg-selected); }
 
 /* Multi-selection info */
 .prop-multi-info { font-size: 11px; color: var(--text-secondary); padding: 2px 0; }
@@ -1495,6 +1497,8 @@ header {
         </div>
     </div>
     <div class="ctx-sep" data-for="both"></div>
+    <div class="ctx-item" data-for="multiFolder" id="ctxMergeFoldersItem" onclick="ctxMergeFolders()" style="display:none;">📦 Merge into Folder</div>
+    <div class="ctx-sep" data-for="multiFolder" id="ctxMergeFoldersSep" style="display:none;"></div>
     <div class="ctx-item danger" data-for="both" onclick="ctxDelete()">🗑️ Delete</div>
 </div>
 
@@ -1762,6 +1766,7 @@ const genFolderId = () => 'F' + (nextId++);
 let selectedLayerId = null;
 let selectedLayerIds = new Set(); // Multi-select set
 let selectedFolderId = null; // Folder selection
+let selectedFolderIds = new Set(); // Multi-folder selection set
 let editMode = false;
 let addPointMode = false;
 let ctxTargetId = null;
@@ -1808,6 +1813,7 @@ function restoreSnapshot(snap) {
     if (selectedLayerId && !projectData.layers[selectedLayerId]) selectedLayerId = null;
     selectedLayerIds = new Set([...selectedLayerIds].filter(id => projectData.layers[id]));
     if (selectedFolderId && !projectData.folders.find(f => f.id === selectedFolderId)) selectedFolderId = null;
+    selectedFolderIds = new Set([...selectedFolderIds].filter(id => projectData.folders.find(f => f.id === id)));
     renderAll(); updatePropsPanel(); updateStatus();
 }
 
@@ -2689,7 +2695,9 @@ function createFolderEl(folder) {
     div.draggable = true;
 
     const header = document.createElement('div');
-    header.className = 'tree-folder-header' + (selectedFolderId === folder.id ? ' folder-selected' : '');
+    header.className = 'tree-folder-header'
+        + (selectedFolderId === folder.id ? ' folder-selected' : '')
+        + (selectedFolderIds.has(folder.id) && selectedFolderId !== folder.id ? ' folder-multi-selected' : '');
     const count = countItems(folder);
     const isChecked = folder.checked !== false;
     const folderVis = folder.visible !== false;
@@ -2741,16 +2749,35 @@ function createFolderEl(folder) {
         if (e.target.closest('.tree-folder-vis')) return;
         if (e.target.tagName === 'INPUT') return; // ignore clicks on inline edit input
 
-        const clickedName = e.target.closest('.tree-folder-name');
-        if (clickedName && selectedFolderId === folder.id) {
-            // Delay inline rename to distinguish from double-click
-            clearTimeout(folderClickTimer);
-            folderClickTimer = setTimeout(() => {
-                startFolderInlineRename(folder, clickedName);
-            }, 300);
+        if (e.ctrlKey || e.metaKey) {
+            // Ctrl+Click: toggle this folder in multi-select
+            if (selectedFolderIds.has(folder.id)) {
+                selectedFolderIds.delete(folder.id);
+                if (selectedFolderId === folder.id) {
+                    selectedFolderId = selectedFolderIds.size > 0 ? [...selectedFolderIds][selectedFolderIds.size - 1] : null;
+                }
+            } else {
+                selectedFolderIds.add(folder.id);
+                selectedFolderId = folder.id;
+            }
+            selectedLayerId = null;
+            selectedLayerIds.clear();
+            renderFolderTree();
+            updatePropsPanel();
         } else {
-            // Click anywhere else on header: select folder
-            selectFolder(folder.id);
+            const clickedName = e.target.closest('.tree-folder-name');
+            if (clickedName && selectedFolderId === folder.id && selectedFolderIds.size <= 1) {
+                // Delay inline rename to distinguish from double-click
+                clearTimeout(folderClickTimer);
+                folderClickTimer = setTimeout(() => {
+                    startFolderInlineRename(folder, clickedName);
+                }, 300);
+            } else {
+                // Normal click: single select, clear multi-folder
+                selectedFolderIds.clear();
+                selectedFolderIds.add(folder.id);
+                selectFolder(folder.id);
+            }
         }
     });
 
@@ -2764,6 +2791,13 @@ function createFolderEl(folder) {
 
     header.addEventListener('contextmenu', (e) => {
         e.preventDefault(); ctxTargetId = null; ctxTargetFolderId = folder.id;
+        // If right-clicking a folder not in the multi-selection, reset to single select
+        if (!selectedFolderIds.has(folder.id)) {
+            selectedFolderIds.clear();
+            selectedFolderIds.add(folder.id);
+            selectedFolderId = folder.id;
+            renderFolderTree();
+        }
         showCtxMenu(e.clientX, e.clientY, true);
     });
 
@@ -2843,6 +2877,7 @@ function createFolderEl(folder) {
             } else {
                 // Normal click: single select, clear multi
                 selectedFolderId = null;
+                selectedFolderIds.clear();
                 selectLayer(layer.id);
             }
         });
@@ -3639,9 +3674,10 @@ window.selectAllItems = function() {
     ids.forEach(id => selectedLayerIds.add(id));
     selectedLayerId = ids.length > 0 ? ids[0] : null;
     selectedFolderId = null;
+    selectedFolderIds.clear();
     renderAll(); updatePropsPanel();
 };
-window.deselectAll = function() { selectedLayerId = null; selectedLayerIds.clear(); selectedFolderId = null; renderAll(); updatePropsPanel(); };
+window.deselectAll = function() { selectedLayerId = null; selectedLayerIds.clear(); selectedFolderId = null; selectedFolderIds.clear(); renderAll(); updatePropsPanel(); };
 
 // === CONTEXT MENU ===
 let ctxTargetFolderId = null;
@@ -3651,8 +3687,13 @@ function showCtxMenu(x, y, isFolder) {
     // Show/hide items based on target type
     m.querySelectorAll('[data-for]').forEach(el => {
         const forType = el.dataset.for;
+        if (forType === 'multiFolder') return; // handled separately below
         el.style.display = (forType === 'both' || forType === (isFolder ? 'folder' : 'layer')) ? '' : 'none';
     });
+    // Show "Merge into Folder" only when multiple folders are selected and right-clicking a folder
+    const showMerge = isFolder && selectedFolderIds.size >= 2;
+    document.getElementById('ctxMergeFoldersItem').style.display = showMerge ? '' : 'none';
+    document.getElementById('ctxMergeFoldersSep').style.display = showMerge ? '' : 'none';
     // Position then clamp to viewport (Enhancement 6)
     m.style.left = x + 'px'; m.style.top = y + 'px';
     m.classList.add('show');
@@ -3743,6 +3784,38 @@ window.ctxDelete = function() {
     } else {
         deleteLayer(ctxTargetId);
     }
+    ctxTargetFolderId = null;
+};
+
+window.ctxMergeFolders = function() {
+    if (selectedFolderIds.size < 2) { toast('Select at least 2 folders to merge', 'error'); return; }
+    const mergeCount = selectedFolderIds.size;
+    const folderName = prompt('Name for the merged folder:', 'Merged Folder');
+    if (!folderName) return;
+    pushUndo();
+    // Create a new root folder
+    const newFolderId = genFolderId();
+    const newFolder = { id: newFolderId, name: folderName.trim(), expanded: true, items: [], checked: true, parentId: null };
+    projectData.folders.push(newFolder);
+    // Move each selected folder into the new root folder
+    for (const fId of selectedFolderIds) {
+        const src = projectData.folders.find(f => f.id === fId);
+        if (!src) continue;
+        // Remove from old parent's items array
+        if (src.parentId) {
+            const oldParent = projectData.folders.find(f => f.id === src.parentId);
+            if (oldParent) oldParent.items = oldParent.items.filter(id => id !== fId);
+        }
+        // Set new parent
+        src.parentId = newFolderId;
+        if (!newFolder.items.includes(fId)) newFolder.items.push(fId);
+    }
+    // Clear selection and select the new merged folder
+    selectedFolderIds.clear();
+    selectedFolderIds.add(newFolderId);
+    selectFolder(newFolderId);
+    renderAll(); updatePropsPanel(); updateStatus();
+    toast(mergeCount + ' folders merged into "' + folderName.trim() + '"', 'success');
     ctxTargetFolderId = null;
 };
 
@@ -4897,7 +4970,7 @@ window.deleteMultiSelected = function() {
             projectData.folders.forEach(f => { f.items = f.items.filter(i => i !== id); });
         }
     });
-    selectedLayerId = null; selectedLayerIds.clear(); selectedFolderId = null;
+    selectedLayerId = null; selectedLayerIds.clear(); selectedFolderId = null; selectedFolderIds.clear();
     renderAll(); updatePropsPanel(); updateStatus();
     toast('Deleted layers', 'success');
 };
