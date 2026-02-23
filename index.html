@@ -2081,6 +2081,46 @@
       z-index: 100;
     }
 
+    /* KML Studio Integration */
+    #btnKMLStudio.kml-drop-active {
+      background: #dbeafe !important;
+      border: 2px dashed #3b82f6 !important;
+      animation: kml-pulse 0.8s ease-in-out infinite alternate;
+    }
+    @keyframes kml-pulse {
+      from { box-shadow: 0 0 4px rgba(59,130,246,0.3); }
+      to   { box-shadow: 0 0 12px rgba(59,130,246,0.6); }
+    }
+    #kmlStudioConfirmDialog {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.45); z-index: 10000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #kmlStudioConfirmDialog .kml-confirm-box {
+      background: #fff; border-radius: 10px; box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+      width: 480px; max-width: 90vw; max-height: 80vh; overflow-y: auto;
+    }
+    #kmlStudioConfirmDialog .kml-confirm-header {
+      padding: 16px 20px; border-bottom: 1px solid #e5e7eb;
+      font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px;
+    }
+    #kmlStudioConfirmDialog .kml-confirm-body { padding: 16px 20px; font-size: 13px; }
+    #kmlStudioConfirmDialog .kml-confirm-body table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+    #kmlStudioConfirmDialog .kml-confirm-body th { text-align: left; padding: 4px 8px; font-size: 11px; color: #6b7280; }
+    #kmlStudioConfirmDialog .kml-confirm-body td { padding: 4px 8px; font-size: 12px; border-top: 1px solid #f3f4f6; }
+    #kmlStudioConfirmDialog .kml-confirm-body select { width: 100%; padding: 4px 6px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; }
+    #kmlStudioConfirmDialog .kml-confirm-footer {
+      padding: 12px 20px; border-top: 1px solid #e5e7eb;
+      display: flex; justify-content: flex-end; gap: 8px;
+    }
+    #kmlStudioConfirmDialog .kml-confirm-footer button {
+      padding: 6px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid #d1d5db;
+      background: #f9fafb; color: #374151;
+    }
+    #kmlStudioConfirmDialog .kml-confirm-footer button.primary {
+      background: #3b82f6; color: #fff; border-color: #2563eb;
+    }
+
     /* Route Finder Panel - Inspector Style */
     #routeFinderPanel {
       position: absolute;
@@ -5455,6 +5495,10 @@
       <div class="item" id="miBulkEditNodes">📝 Bulk Edit Nodes...</div>
       <div class="sep"></div>
       <div class="item" id="miRecalculateCosts">🔄 Recalculate All Costs</div>
+      <div class="sep"></div>
+      <div class="menu-section-header">GEO TOOLS</div>
+      <div class="item" id="miKMLStudio">🌐 KML Studio... <span style="opacity:0.5;float:right">Ctrl+G</span></div>
+      <div class="item" id="miKMLStudioSelection">🌐 Open Selection in KML Studio</div>
     </div>
 
     <!-- Settings Menu -->
@@ -6107,6 +6151,18 @@
         <path d="M8 5 L16 5 L19 8" stroke-width="1.5"/>
       </svg>
       <span style="font-size:11px; margin-left:4px;">Routes</span>
+    </button>
+
+    <div class="tool-sep"></div>
+
+    <!-- KML Studio Button / Drop Zone -->
+    <button class="tool-btn" id="btnKMLStudio" type="button" title="KML Studio - Open geographic editor (drag entities here to open in KML Studio)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0096D6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 12L16 8L24 12L16 16Z" transform="scale(0.75) translate(4,4)" fill="#0096D6" opacity="0.2"/>
+        <path d="M8 16L16 20L24 16" transform="scale(0.75) translate(4,4)"/>
+        <path d="M8 20L16 24L24 20" transform="scale(0.75) translate(4,4)"/>
+      </svg>
+      <span style="font-size:11px; margin-left:4px;">KML Studio</span>
     </button>
   </div>
 </header>
@@ -48235,6 +48291,377 @@ function handlePathKmlImport(e) {
   window.updateMLGCostDisplayForTemp = updateMLGCostDisplayForTemp;
 
   // ============== END MLG COMMERCIAL COST ==============
+
+  // =============================================
+  // KML STUDIO INTEGRATION MODULE
+  // =============================================
+  (function kmlStudioIntegration() {
+    let kmlStudioWindow = null;
+    const KML_STUDIO_URL = 'kml-studio.html';
+
+    // --- Utility: Extract geographic data from entities ---
+    function getNodeGeoData(node) {
+      if (node.gpsLat != null && node.gpsLon != null &&
+          !isNaN(node.gpsLat) && !isNaN(node.gpsLon)) {
+        return { entityType: 'node', id: node.id, name: node.name || node.code || ('N-' + node.id),
+                 code: node.code, lat: node.gpsLat, lng: node.gpsLon };
+      }
+      return null;
+    }
+
+    function getEdgeGeoData(edge) {
+      if (edge.cableGeometry && edge.cableGeometry.coordinates &&
+          edge.cableGeometry.coordinates.length > 0) {
+        return { entityType: 'link', id: edge.id, name: edge.name || edge.code || ('L-' + edge.id),
+                 code: edge.code, geometry: edge.cableGeometry };
+      }
+      return null;
+    }
+
+    function getGroupGeoData(group) {
+      if (group.dcLatitude != null && group.dcLongitude != null &&
+          !isNaN(parseFloat(group.dcLatitude)) && !isNaN(parseFloat(group.dcLongitude))) {
+        return { entityType: 'container', id: group.id, name: group.title || ('G-' + group.id),
+                 lat: parseFloat(group.dcLatitude), lng: parseFloat(group.dcLongitude) };
+      }
+      return null;
+    }
+
+    function getMLGGeoData(mlg) {
+      const links = [];
+      if (mlg.segments) {
+        mlg.segments.forEach(seg => {
+          seg.paths.forEach(path => {
+            path.links.forEach(linkId => {
+              const edge = state.edges.find(e => e.id === linkId);
+              if (edge) {
+                const geo = getEdgeGeoData(edge);
+                if (geo) links.push(geo);
+              }
+            });
+          });
+        });
+      }
+      if (links.length === 0) return null;
+      return { entityType: 'mlg', id: mlg.id, name: mlg.name || ('MLG-' + mlg.id), links };
+    }
+
+    // --- Collect selected entities with geo data ---
+    function getSelectedGeoEntities() {
+      const entities = [];
+      // Single selection
+      if (state.selected) {
+        if (state.selected.type === 'node') {
+          const n = state.nodes.find(x => x.id === state.selected.id);
+          if (n) { const g = getNodeGeoData(n); if (g) entities.push(g); }
+        } else if (state.selected.type === 'edge') {
+          const e = state.edges.find(x => x.id === state.selected.id);
+          if (e) { const g = getEdgeGeoData(e); if (g) entities.push(g); }
+        } else if (state.selected.type === 'group') {
+          const gr = state.groups.find(x => x.id === state.selected.id);
+          if (gr) { const g = getGroupGeoData(gr); if (g) entities.push(g); }
+        }
+      }
+      // Multi-selection
+      const addedIds = new Set(entities.map(e => e.entityType + '-' + e.id));
+      if (state.selection) {
+        state.selection.nodes.forEach(id => {
+          if (addedIds.has('node-' + id)) return;
+          const n = state.nodes.find(x => x.id === id);
+          if (n) { const g = getNodeGeoData(n); if (g) { entities.push(g); addedIds.add('node-' + id); } }
+        });
+        state.selection.edges.forEach(id => {
+          if (addedIds.has('link-' + id)) return;
+          const e = state.edges.find(x => x.id === id);
+          if (e) { const g = getEdgeGeoData(e); if (g) { entities.push(g); addedIds.add('link-' + id); } }
+        });
+        state.selection.groups.forEach(id => {
+          if (addedIds.has('container-' + id)) return;
+          const gr = state.groups.find(x => x.id === id);
+          if (gr) { const g = getGroupGeoData(gr); if (g) { entities.push(g); addedIds.add('container-' + id); } }
+        });
+      }
+      return entities;
+    }
+
+    // --- Open KML Studio popup ---
+    function openKMLStudio(entities) {
+      if (kmlStudioWindow && !kmlStudioWindow.closed) {
+        kmlStudioWindow.focus();
+        if (entities && entities.length > 0) {
+          kmlStudioWindow.postMessage({ type: 'neximap-import', entities }, '*');
+          showToast('Sent ' + entities.length + ' entity(s) to KML Studio');
+        }
+        return;
+      }
+      const w = Math.min(1200, screen.availWidth * 0.7);
+      const h = Math.min(800, screen.availHeight * 0.8);
+      const left = screen.availLeft + (screen.availWidth - w) / 2;
+      const top = screen.availTop + (screen.availHeight - h) / 2;
+      kmlStudioWindow = window.open(KML_STUDIO_URL, 'NeximapKMLStudio',
+        `width=${w},height=${h},left=${left},top=${top},menubar=no,toolbar=no,status=no,resizable=yes`);
+      if (!kmlStudioWindow) {
+        showToast('Popup blocked — please allow popups for this site');
+        return;
+      }
+      // Send entities after the window loads
+      if (entities && entities.length > 0) {
+        const checkReady = setInterval(() => {
+          try {
+            if (kmlStudioWindow.closed) { clearInterval(checkReady); return; }
+            kmlStudioWindow.postMessage({ type: 'neximap-ping' }, '*');
+          } catch (e) { /* cross-origin before load */ }
+        }, 300);
+        kmlStudioWindow._pendingEntities = entities;
+        kmlStudioWindow._readyCheckInterval = checkReady;
+      }
+    }
+
+    // --- Receive messages from KML Studio ---
+    window.addEventListener('message', (event) => {
+      if (!event.data || typeof event.data !== 'object') return;
+
+      if (event.data.type === 'kml-studio-ready' || event.data.type === 'kml-studio-pong') {
+        if (kmlStudioWindow && kmlStudioWindow._pendingEntities) {
+          kmlStudioWindow.postMessage({
+            type: 'neximap-import',
+            entities: kmlStudioWindow._pendingEntities
+          }, '*');
+          showToast('Sent ' + kmlStudioWindow._pendingEntities.length + ' entity(s) to KML Studio');
+          delete kmlStudioWindow._pendingEntities;
+          if (kmlStudioWindow._readyCheckInterval) {
+            clearInterval(kmlStudioWindow._readyCheckInterval);
+            delete kmlStudioWindow._readyCheckInterval;
+          }
+        }
+      }
+
+      if (event.data.type === 'kml-export-to-neximap') {
+        showKMLImportConfirmDialog(event.data.entities);
+      }
+    });
+
+    // --- KML Import Confirmation Dialog ---
+    function showKMLImportConfirmDialog(entities) {
+      if (!entities || entities.length === 0) {
+        showToast('No entities received from KML Studio');
+        return;
+      }
+
+      const overlay = document.createElement('div');
+      overlay.id = 'kmlStudioConfirmDialog';
+
+      const folders = entities.filter(e => e.entityType === 'folder');
+      const pins = entities.filter(e => e.entityType === 'pin');
+
+      const linkOptions = state.edges.map(e =>
+        `<option value="${e.id}">${e.name || e.code || 'L-' + e.id}</option>`
+      ).join('');
+      const nodeOptions = state.nodes.map(n =>
+        `<option value="${n.id}">${n.name || n.code || 'N-' + n.id}</option>`
+      ).join('');
+      const groupOptions = state.groups.map(g =>
+        `<option value="${g.id}">${g.title || 'G-' + g.id}</option>`
+      ).join('');
+
+      let bodyHTML = '';
+
+      if (folders.length > 0) {
+        bodyHTML += `<div style="margin-bottom:12px;">
+          <div style="font-weight:600; margin-bottom:6px;">Folders (assign geometry to links):</div>
+          <table><tr><th>Folder</th><th>Lines</th><th>Assign to Link</th></tr>`;
+        folders.forEach((f, i) => {
+          const lineCount = f.layers ? f.layers.filter(l => l.type === 'line').length : 0;
+          bodyHTML += `<tr>
+            <td>${f.name}</td>
+            <td>${lineCount} line(s)</td>
+            <td><select class="kml-folder-target" data-idx="${i}">
+              <option value="">— Select link —</option>${linkOptions}
+            </select></td>
+          </tr>`;
+        });
+        bodyHTML += '</table></div>';
+      }
+
+      if (pins.length > 0) {
+        bodyHTML += `<div style="margin-bottom:12px;">
+          <div style="font-weight:600; margin-bottom:6px;">Pins (assign position to nodes/containers):</div>
+          <table><tr><th>Pin</th><th>Coordinates</th><th>Assign to</th><th>Target</th></tr>`;
+        pins.forEach((p, i) => {
+          bodyHTML += `<tr>
+            <td>${p.name}</td>
+            <td style="font-family:monospace; font-size:11px;">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}</td>
+            <td><select class="kml-pin-type" data-idx="${i}">
+              <option value="node">Node</option>
+              <option value="container">Container</option>
+            </select></td>
+            <td><select class="kml-pin-target" data-idx="${i}">
+              <option value="">— Select —</option>${nodeOptions}
+            </select></td>
+          </tr>`;
+        });
+        bodyHTML += '</table></div>';
+      }
+
+      overlay.innerHTML = `<div class="kml-confirm-box">
+        <div class="kml-confirm-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0096D6" stroke-width="2"><path d="M8 12L16 8L24 12L16 16Z" transform="scale(0.75) translate(4,4)" fill="#0096D6" opacity="0.2"/></svg>
+          Import from KML Studio
+        </div>
+        <div class="kml-confirm-body">
+          <div style="margin-bottom:8px; color:#6b7280;">The following items were sent from KML Studio. Select which Neximap entities to assign them to:</div>
+          ${bodyHTML}
+          ${(folders.length === 0 && pins.length === 0) ? '<div style="color:#9ca3af;">No compatible items to import.</div>' : ''}
+        </div>
+        <div class="kml-confirm-footer">
+          <button class="kml-cancel-btn">Cancel</button>
+          <button class="kml-apply-btn primary">Apply</button>
+        </div>
+      </div>`;
+
+      document.body.appendChild(overlay);
+
+      // Toggle node/container options when pin type changes
+      overlay.querySelectorAll('.kml-pin-type').forEach(sel => {
+        sel.addEventListener('change', () => {
+          const idx = sel.dataset.idx;
+          const targetSel = overlay.querySelector(`.kml-pin-target[data-idx="${idx}"]`);
+          if (sel.value === 'container') {
+            targetSel.innerHTML = '<option value="">— Select —</option>' + groupOptions;
+          } else {
+            targetSel.innerHTML = '<option value="">— Select —</option>' + nodeOptions;
+          }
+        });
+      });
+
+      // Cancel
+      overlay.querySelector('.kml-cancel-btn').addEventListener('click', () => overlay.remove());
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+      // Apply
+      overlay.querySelector('.kml-apply-btn').addEventListener('click', () => {
+        let applied = 0;
+
+        // Apply folders to links
+        overlay.querySelectorAll('.kml-folder-target').forEach(sel => {
+          const idx = parseInt(sel.dataset.idx);
+          const linkId = parseInt(sel.value);
+          if (!linkId || isNaN(linkId)) return;
+          const folder = folders[idx];
+          if (!folder || !folder.layers) return;
+          const lines = folder.layers.filter(l => l.type === 'line' && l.coords && l.coords.length > 0);
+          if (lines.length === 0) return;
+
+          const edge = state.edges.find(e => e.id === linkId);
+          if (!edge) return;
+
+          // Convert KML Studio coords [lat,lng] to GeoJSON [lng,lat]
+          if (lines.length === 1) {
+            edge.cableGeometry = { type: 'LineString', coordinates: lines[0].coords.map(c => [c[1], c[0]]) };
+          } else {
+            edge.cableGeometry = { type: 'MultiLineString', coordinates: lines.map(line => line.coords.map(c => [c[1], c[0]])) };
+          }
+          edge.pathSource = 'kml-import';
+          applied++;
+        });
+
+        // Apply pins to nodes/containers
+        overlay.querySelectorAll('.kml-pin-target').forEach(sel => {
+          const idx = parseInt(sel.dataset.idx);
+          const targetId = parseInt(sel.value);
+          if (!targetId || isNaN(targetId)) return;
+          const pin = pins[idx];
+          if (!pin) return;
+
+          const typeEl = overlay.querySelector(`.kml-pin-type[data-idx="${idx}"]`);
+          if (typeEl && typeEl.value === 'container') {
+            const group = state.groups.find(g => g.id === targetId);
+            if (group) { group.dcLatitude = pin.lat; group.dcLongitude = pin.lng; applied++; }
+          } else {
+            const node = state.nodes.find(n => n.id === targetId);
+            if (node) { node.gpsLat = pin.lat; node.gpsLon = pin.lng; applied++; }
+          }
+        });
+
+        overlay.remove();
+        if (applied > 0) {
+          showToast('Applied ' + applied + ' assignment(s) from KML Studio');
+          render();
+          updateInspector();
+        } else {
+          showToast('No assignments were made');
+        }
+      });
+    }
+
+    // --- Toolbar button: click to open, drag to send selection ---
+    const kmlBtn = document.getElementById('btnKMLStudio');
+    if (kmlBtn) {
+      kmlBtn.addEventListener('click', () => {
+        const entities = getSelectedGeoEntities();
+        openKMLStudio(entities.length > 0 ? entities : null);
+      });
+
+      // Drop zone for dragging canvas items onto the button
+      kmlBtn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        kmlBtn.classList.add('kml-drop-active');
+      });
+      kmlBtn.addEventListener('dragleave', () => kmlBtn.classList.remove('kml-drop-active'));
+      kmlBtn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        kmlBtn.classList.remove('kml-drop-active');
+        const data = e.dataTransfer.getData('application/neximap-entity');
+        if (data) {
+          try { openKMLStudio([JSON.parse(data)]); return; } catch (ex) { /* ignore */ }
+        }
+        const entities = getSelectedGeoEntities();
+        if (entities.length > 0) openKMLStudio(entities);
+        else showToast('No entities with geographic data in selection');
+      });
+    }
+
+    // --- Data menu: KML Studio items ---
+    const miKML = document.getElementById('miKMLStudio');
+    if (miKML) miKML.addEventListener('click', () => { closeAllMenus(); openKMLStudio(null); });
+    const miKMLSel = document.getElementById('miKMLStudioSelection');
+    if (miKMLSel) miKMLSel.addEventListener('click', () => {
+      closeAllMenus();
+      const entities = getSelectedGeoEntities();
+      if (entities.length === 0) { showToast('No selected entities with geographic data'); return; }
+      openKMLStudio(entities);
+    });
+
+    // --- Keyboard shortcut: Ctrl+G to open KML Studio ---
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === 'g') {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+        e.preventDefault();
+        const entities = getSelectedGeoEntities();
+        openKMLStudio(entities.length > 0 ? entities : null);
+      }
+    });
+
+    // --- Make canvas items draggable to KML Studio button ---
+    const canvasSvg = document.getElementById('svgCanvas');
+    if (canvasSvg) {
+      canvasSvg.addEventListener('dragstart', (e) => {
+        const entities = getSelectedGeoEntities();
+        if (entities.length > 0) {
+          e.dataTransfer.setData('application/neximap-entity', JSON.stringify(entities[0]));
+          e.dataTransfer.effectAllowed = 'copy';
+        }
+      });
+    }
+
+    // Expose globally
+    window.openKMLStudio = openKMLStudio;
+    window.getSelectedGeoEntities = getSelectedGeoEntities;
+    window.getMLGGeoData = getMLGGeoData;
+
+    console.log('[NexiMap] KML Studio integration loaded');
+  })();
 
   showToast('Welcome to NexiMap Studio — double-click to create a node.');
 })();
