@@ -49586,7 +49586,7 @@ function handlePathKmlImport(e) {
         openKMLStudio(result.entities.length > 0 ? result.entities : null);
       });
 
-      // Drop zone for dragging canvas items onto the button
+      // Drop zone for dragging canvas items, cable systems, or datacenters onto the button
       kmlBtn.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
@@ -49596,10 +49596,50 @@ function handlePathKmlImport(e) {
       kmlBtn.addEventListener('drop', (e) => {
         e.preventDefault();
         kmlBtn.classList.remove('kml-drop-active');
+
+        // Handle application/neximap-entity (canvas drag)
         const data = e.dataTransfer.getData('application/neximap-entity');
         if (data) {
           try { openKMLStudio([JSON.parse(data)]); return; } catch (ex) { /* ignore */ }
         }
+
+        // Handle cable-system drag from Cable System List
+        const textData = e.dataTransfer.getData('text/plain');
+        if (textData && textData.startsWith('cable-system:')) {
+          const csId = parseInt(textData.split(':')[1]);
+          const cs = state.cableSystems.find(c => c.id === csId);
+          if (cs) {
+            const entities = [];
+            // Add cable geometry as a link entity
+            if (cs.geometry && cs.geometry.coordinates) {
+              entities.push({ entityType: 'link', id: cs.id, name: cs.shortName || cs.name, code: cs.name, geometry: cs.geometry });
+            }
+            // Add landing points as node entities
+            if (cs.landingPoints && cs.landingPoints.length > 0) {
+              cs.landingPoints.forEach((lp, idx) => {
+                if (lp.latitude && lp.longitude) {
+                  entities.push({ entityType: 'node', id: 'cls-' + cs.id + '-' + idx, name: lp.name || lp.city || ('Station ' + (idx + 1)), lat: lp.latitude, lng: lp.longitude });
+                }
+              });
+            }
+            if (entities.length > 0) { openKMLStudio(entities); return; }
+            showToast('Cable system "' + (cs.shortName || cs.name) + '" has no geographic data');
+            return;
+          }
+        }
+
+        // Handle datacenter drag from DC Navigator
+        if (textData && textData.startsWith('datacenter:')) {
+          const dcId = parseInt(textData.split(':')[1]);
+          const fac = window._dcDatabase && window._dcDatabase.facilities.find(f => f.id === dcId);
+          if (fac && fac.latitude && fac.longitude) {
+            openKMLStudio([{ entityType: 'node', id: 'dc-' + fac.id, name: fac.name, lat: parseFloat(fac.latitude), lng: parseFloat(fac.longitude) }]);
+            return;
+          }
+          if (fac) { showToast('Datacenter "' + fac.name + '" has no coordinates'); return; }
+        }
+
+        // Fallback: use canvas selection
         const result = getSelectedGeoEntities(true);
         showKMLGeoWarnings(result.warnings);
         if (result.entities.length > 0) openKMLStudio(result.entities);
