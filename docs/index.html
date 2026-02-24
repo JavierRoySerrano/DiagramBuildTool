@@ -1129,7 +1129,7 @@
       border-color: #0077b6;
     }
     #cableVisorList {
-      flex: 0 1 180px;
+      flex: 1 1 200px;
       min-height: 80px;
       overflow-y: auto;
       border-top: 1px solid #e0e0e0;
@@ -1172,11 +1172,11 @@
       color: #666;
     }
     #cableVisorFooter {
-      padding: 8px 12px;
+      padding: 3px 12px;
       background: #f8f9fa;
       border-top: 1px solid #e0e0e0;
-      font-size: 11px;
-      color: #666;
+      font-size: 10px;
+      color: #999;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -1187,29 +1187,21 @@
     .visor-map-tooltip {
       position: absolute;
       pointer-events: none;
-      background: rgba(0,0,0,0.82);
-      color: #fff;
-      padding: 5px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 500;
+      background: rgba(255,255,255,0.95);
+      color: #1a1a2e;
+      padding: 3px 8px 3px 10px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
       white-space: nowrap;
       z-index: 200;
       transform: translate(-50%, -120%);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      border: 1px solid rgba(0,0,0,0.15);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
       max-width: 280px;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-    .visor-map-tooltip::after {
-      content: '';
-      position: absolute;
-      bottom: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-left: 5px solid transparent;
-      border-right: 5px solid transparent;
-      border-top: 5px solid rgba(0,0,0,0.82);
+      border-left: 3px solid #0077b6;
     }
     /* Fixed/pinned cable name labels on visor map */
     .visor-fixed-label {
@@ -22943,16 +22935,14 @@ function loadProjectObject(obj) {
       });
 
       let faCables = null;
-      if (currentYearCables.length > 0) {
-        if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Cross-checking ${currentYearCables.length} cables with RFS ${currentYear} against Live Status...</div>`;
+      if (true) { // Always load FA data for Live Status auto-linking
+        if (listEl) listEl.innerHTML = `<div style="padding:20px; text-align:center; color:#0077b6;">🌐 Loading Live Status data for cable auto-linking...</div>`;
         try {
           faCables = await fetchFiberAtlanticCables(true);
-          console.log(`[CableVisor] FiberAtlantic cable list: ${faCables ? faCables.length : 0} cables (for ${currentYearCables.length} current-year RFS cross-checks)`);
+          console.log('[CableVisor] FiberAtlantic cable list:', faCables ? faCables.length : 0, 'cables for Live Status auto-linking');
         } catch (faErr) {
           console.warn('[CableVisor] FiberAtlantic unavailable for cross-check:', faErr.message);
         }
-      } else {
-        console.log(`[CableVisor] No cables with RFS ${currentYear} — skipping FiberAtlantic cross-check`);
       }
 
       // Step 3b: Load Submarine Cable DB for metadata enrichment fallback
@@ -23086,6 +23076,15 @@ function loadProjectObject(obj) {
           } else {
             status = 'unknown';
             statusSource = 'no rfs data';
+          }
+        }
+
+        // FA auto-link pass: match any cable not already matched during status logic
+        if (!faMatchName && faCables) {
+          const faMatch = autoMatchFiberAtlantic(props.name, faCables);
+          if (faMatch && faMatch.match) {
+            faMatchName = faMatch.match.name;
+            faStatus = (faMatch.match.status || '').toLowerCase().trim();
           }
         }
 
@@ -24003,6 +24002,8 @@ function loadProjectObject(obj) {
   // Advanced Filter Initialization
   // ======================
   function initVisorAdvancedFilters() {
+    if (cableVisorState._filtersInitialized) return;
+    cableVisorState._filtersInitialized = true;
     // --- Status pills ---
     document.querySelectorAll('#visorStatusPills .visor-status-pill').forEach(pill => {
       pill.addEventListener('click', () => {
@@ -24733,6 +24734,16 @@ function loadProjectObject(obj) {
       if (cableVisorState.clsFilter && cableVisorState.clsFilter.cableSystems) {
         if (!cableMatchesCLSFilter(cable, cableVisorState.clsFilter.cableSystems)) return;
       }
+      // Status filter
+      if (cableVisorState.statusFilter.size < 5) {
+        if (!cableVisorState.statusFilter.has(cable.status || 'unknown')) return;
+      }
+      // RFS filter
+      if (cableVisorState.rfsFilter.size < 8) {
+        if (!cableMatchesRfsFilter(cable)) return;
+      }
+      // Owner filter
+      if (!cableMatchesOwnerFilter(cable)) return;
       if (!cableVisorState.selectedCables.has(String(cable.id))) {
         cablesToAdd.push(String(cable.id));
       }
@@ -24743,12 +24754,7 @@ function loadProjectObject(obj) {
       return;
     }
 
-    // Soft warning for large selections (no hard cap — unified source handles all)
-    if (cablesToAdd.length >= VISOR_SELECT_ALL_WARN_THRESHOLD) {
-      if (!confirm(`Display ${cablesToAdd.length} cables on the map?\n\nTip: Use region or station filters to narrow your selection.`)) {
-        return;
-      }
-    }
+
 
     // Add all at once to the selection set, then rebuild source once
     cablesToAdd.forEach(id => cableVisorState.selectedCables.add(id));
@@ -25008,7 +25014,9 @@ function loadProjectObject(obj) {
       const tooltip = getVisorTooltip();
       if (features.length > 0) {
         const name = features[0].properties.name || 'Unknown Cable';
+        const cableColor = features[0].properties.color || '#0077b6';
         tooltip.textContent = name;
+        tooltip.style.borderLeftColor = cableColor;
         tooltip.style.display = 'block';
         tooltip.style.left = e.point.x + 'px';
         tooltip.style.top = e.point.y + 'px';
@@ -51908,7 +51916,7 @@ function handlePathKmlImport(e) {
     </div>
   </div>
   <div id="cableVisorList">
-    <div style="padding:8px 12px; background:#f8f9fa; border-bottom:1px solid #e0e0e0; font-size:11px; font-weight:600; color:#495057; position:sticky; top:0; z-index:5;">
+    <div style="padding:3px 12px; background:#f8f9fa; border-bottom:1px solid #e0e0e0; font-size:10px; font-weight:600; color:#495057; position:sticky; top:0; z-index:5;">
       <span id="cableVisorListTitle">Cables from Database</span>
       <span id="cableVisorSelectedCount" style="float:right; color:#0077b6;">0 selected</span>
     </div>
@@ -51916,9 +51924,9 @@ function handlePathKmlImport(e) {
       <!-- Dynamic list -->
     </div>
   </div>
-  <div id="cableVisorFooter">
+  <div id="cableVisorFooter" style="padding:4px 12px;">
     <span id="cableVisorCableCount">0 cables</span>
-    <span>Click cables to show on map • Double-click to zoom</span>
+    <span style="font-size:9px;">Click cables to show on map • Double-click to zoom</span>
   </div>
 </aside>
 
