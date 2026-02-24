@@ -1,10 +1,32 @@
 <!doctype html>
 <html lang="en">
 <!--
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!                                                                 !!
+  !!   THIS IS THE DEVELOPMENT WORKING COPY                          !!
+  !!                                                                 !!
+  !!   The live / production site is served from /index.html          !!
+  !!   (repository root).  This docs/index.html is the development   !!
+  !!   copy where changes are made, then merged into root/index.html !!
+  !!   via Pull Request.                                             !!
+  !!                                                                 !!
+  !!   KNOWN "Failed to fetch" ERRORS DURING DEVELOPMENT:            !!
+  !!   This file references data files at relative path "data/..."   !!
+  !!   (e.g. data/telegeography_cables.json,                         !!
+  !!   data/cable_stations_db.json, data/peeringdb_facilities.json). !!
+  !!   Those files live at the REPOSITORY ROOT under /data/ and are  !!
+  !!   NOT present in /docs/data/.                                   !!
+  !!   When running this file directly, any feature that loads local  !!
+  !!   data will show "Failed to load: Failed to fetch".             !!
+  !!   This is expected and does NOT affect production.               !!
+  !!                                                                 !!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+-->
+<!--
   ====================== ENCODING WARNING ======================
   This file has 448+ UTF-8 emoji chars that WILL BREAK if edited
   with text-mode tools (str_replace, sed, awk, Python text I/O).
-  
+
   ONLY EDIT via Python raw bytes: open(path,'rb') / open(path,'wb')
   VALIDATE after every edit - see NEXIMAP_VERSION_SUMMARY.md
   If encoding breaks, start over from the clean source file.
