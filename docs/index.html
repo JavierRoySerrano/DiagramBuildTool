@@ -1713,26 +1713,39 @@
     .dc-detail-value { color: #1a1a2e; word-break: break-word; }
     .dc-detail-value a { color: #9333ea; text-decoration: none; }
     .dc-detail-net-tag { display: inline-block; background: #ede9fe; color: #6b21a8; border: 1px solid #c4b5fd; border-radius: 3px; padding: 1px 5px; margin: 2px; font-size: 11px; }
-    #aiAgentPanel { position: absolute; right: 24px; top: 40px; width: 380px; height: 540px; background: #fff; border: 1px solid #d0d0d0; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 160; display: none; flex-direction: column; overflow: hidden; resize: both; min-width: 300px; min-height: 300px; }
+    #aiAgentPanel { position: absolute; right: 24px; top: 40px; width: 420px; height: 600px; background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(102,126,234,0.1); z-index: 160; display: none; flex-direction: column; overflow: hidden; resize: both; min-width: 340px; min-height: 350px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     #aiAgentPanel.show { display: flex; }
-    #aiAgentHeader { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; cursor: move; user-select: none; }
-    #aiAgentHeader h3 { margin: 0; font-size: 14px; font-weight: 600; }
+    #aiAgentHeader { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-bottom: 1px solid #2a2a4a; cursor: move; user-select: none; }
+    #aiAgentHeader h3 { margin: 0; font-size: 14px; font-weight: 600; color: #e0e0ff; letter-spacing: 0.3px; }
+    .ai-header-badge { display: inline-block; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-left: 8px; letter-spacing: 0.5px; vertical-align: middle; }
     #aiAgentHeaderBtns { display: flex; gap: 6px; }
-    #aiAgentHeaderBtns button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 7px; font-size: 13px; }
-    .ai-msg { max-width: 90%; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; }
-    .ai-msg.user { align-self: flex-end; background: #667eea; color: #fff; }
-    .ai-msg.assistant { align-self: flex-start; background: #fff; border: 1px solid #e0e0e0; color: #1a1a2e; }
-    .ai-msg.system { align-self: center; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; font-size: 11px; font-style: italic; max-width: 95%; }
-    #aiAgentMessages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
-    #aiAgentInputRow { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #e0e0e0; background: #fff; }
-    #aiAgentInput { flex: 1; padding: 7px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 12px; resize: none; height: 58px; font-family: inherit; }
-    #aiAgentInput:focus { outline: none; border-color: #667eea; }
-    #btnAiSend { padding: 8px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; align-self: flex-end; }
-    #btnAiSend:hover { opacity: 0.9; }
-    #aiApiKeyRow { padding: 7px 12px; background: #fff7ed; border-top: 1px solid #fed7aa; display: flex; align-items: center; gap: 6px; font-size: 11px; }
-    #aiApiKeyInput { flex: 1; padding: 4px 8px; border: 1px solid #fed7aa; border-radius: 4px; font-size: 11px; font-family: monospace; }
-    #btnAiKeySave { padding: 3px 8px; background: #f97316; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
-    #aiContextInfo { padding: 5px 12px; background: #eff6ff; border-top: 1px solid #bfdbfe; font-size: 10px; color: #3b82f6; }
+    #aiAgentHeaderBtns button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #8888aa; border-radius: 6px; cursor: pointer; padding: 3px 8px; font-size: 12px; transition: all 0.15s; }
+    #aiAgentHeaderBtns button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    #aiAgentMessages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #0f0f1a; scrollbar-width: thin; scrollbar-color: #2a2a4a #0f0f1a; }
+    #aiAgentMessages::-webkit-scrollbar { width: 6px; }
+    #aiAgentMessages::-webkit-scrollbar-track { background: #0f0f1a; }
+    #aiAgentMessages::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 3px; }
+    .ai-msg { max-width: 92%; padding: 10px 14px; border-radius: 10px; font-size: 12.5px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; }
+    .ai-msg.user { align-self: flex-end; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-bottom-right-radius: 3px; }
+    .ai-msg.assistant { align-self: flex-start; background: #1a1a2e; border: 1px solid #2a2a4a; color: #d0d0e8; border-bottom-left-radius: 3px; }
+    .ai-msg.system { align-self: center; background: rgba(102,126,234,0.08); border: 1px solid rgba(102,126,234,0.2); color: #8888cc; font-size: 11px; max-width: 95%; text-align: center; padding: 8px 14px; border-radius: 8px; }
+    .ai-msg.action { align-self: flex-start; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; font-size: 11.5px; max-width: 95%; border-left: 3px solid #10b981; }
+    .ai-msg.error { align-self: center; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); color: #fca5a5; font-size: 11px; max-width: 95%; text-align: center; }
+    .ai-msg .action-label { font-size: 9px; font-weight: 700; color: #10b981; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; display: block; }
+    #aiAgentInputRow { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #2a2a4a; background: #12121f; }
+    #aiAgentInput { flex: 1; padding: 10px 14px; background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 8px; font-size: 12.5px; resize: none; height: 44px; font-family: inherit; color: #d0d0e8; transition: border-color 0.15s; }
+    #aiAgentInput::placeholder { color: #555577; }
+    #aiAgentInput:focus { outline: none; border-color: #667eea; box-shadow: 0 0 0 2px rgba(102,126,234,0.15); }
+    #btnAiSend { padding: 10px 18px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; align-self: flex-end; transition: all 0.15s; letter-spacing: 0.3px; }
+    #btnAiSend:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(102,126,234,0.3); }
+    #btnAiSend:active { transform: translateY(0); }
+    .ai-suggestions { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-top: 1px solid #1a1a2e; background: #12121f; }
+    .ai-suggestion-chip { padding: 5px 10px; background: rgba(102,126,234,0.08); border: 1px solid rgba(102,126,234,0.2); border-radius: 14px; color: #8888cc; font-size: 10.5px; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+    .ai-suggestion-chip:hover { background: rgba(102,126,234,0.15); color: #a0a0ee; border-color: rgba(102,126,234,0.4); }
+    .ai-status-bar { display: flex; align-items: center; gap: 8px; padding: 6px 16px; background: #0d0d18; border-top: 1px solid #1a1a2e; font-size: 10px; color: #555577; }
+    .ai-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; flex-shrink: 0; }
+    .ai-status-dot.processing { background: #f59e0b; animation: aiPulse 1s ease-in-out infinite; }
+    @keyframes aiPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
     /* Visor toolbar action menus */
     .visor-action-menu {
       position: absolute;
@@ -52659,28 +52672,29 @@ function handlePathKmlImport(e) {
 <!-- AI Agent Panel -->
 <div id="aiAgentPanel">
   <div id="aiAgentHeader" onmousedown="startDragPanel('aiAgentPanel', event)">
-    <h3>&#x1F916; AI Agent</h3>
+    <h3>&#x2728; NexiMap Agent<span class="ai-header-badge">NLP</span></h3>
     <div id="aiAgentHeaderBtns">
+      <button title="Clear chat" onclick="aiClearChat()">&#x1F5D1;</button>
       <button title="Close" onclick="toggleAiAgent()">&#x2715;</button>
     </div>
   </div>
-  <div id="aiApiKeyRow">
-    <label style="white-space:nowrap;color:#92400e">API Key:</label>
-    <input type="password" id="aiApiKeyInput" placeholder="sk-... (OpenAI key)" />
-    <select id="aiModelSelect" style="padding:3px 5px;border:1px solid #fed7aa;border-radius:4px;font-size:11px;">
-      <option value="gpt-4o-mini">GPT-4o mini</option>
-      <option value="gpt-4o">GPT-4o</option>
-      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-    </select>
-    <button id="btnAiKeySave" onclick="aiSaveKey()">Save</button>
-  </div>
-  <div id="aiContextInfo">Context: <span id="aiContextSummary">Loading...</span></div>
   <div id="aiAgentMessages">
-    <div class="ai-msg system">Welcome to AI Agent! I can help you analyze your network diagram, datacenters, and cable systems. Enter your OpenAI API key above to get started.</div>
+    <div class="ai-msg system">NexiMap Agent ready. I understand natural language commands to control your network diagram. Try typing what you want to do.</div>
+  </div>
+  <div class="ai-suggestions" id="aiSuggestions">
+    <span class="ai-suggestion-chip" onclick="aiRunSuggestion(this)">Create 3 nodes</span>
+    <span class="ai-suggestion-chip" onclick="aiRunSuggestion(this)">Route price Node1 to Node5</span>
+    <span class="ai-suggestion-chip" onclick="aiRunSuggestion(this)">Show Transatlantic cables</span>
+    <span class="ai-suggestion-chip" onclick="aiRunSuggestion(this)">Search DCs in Japan</span>
+    <span class="ai-suggestion-chip" onclick="aiRunSuggestion(this)">Filter tag GDE</span>
   </div>
   <div id="aiAgentInputRow">
-    <textarea id="aiAgentInput" placeholder="Ask about your diagram, datacenters, routes..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendMessage();}"></textarea>
-    <button id="btnAiSend" onclick="aiSendMessage()">Send</button>
+    <textarea id="aiAgentInput" placeholder="Type a command... e.g. &quot;create a link from Node1 to Node3&quot;" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendCommand();}"></textarea>
+    <button id="btnAiSend" onclick="aiSendCommand()">&#x25B6;</button>
+  </div>
+  <div class="ai-status-bar">
+    <span class="ai-status-dot" id="aiStatusDot"></span>
+    <span id="aiStatusText">Ready &mdash; local NLP engine (no API key needed)</span>
   </div>
 </div>
 <!-- Help Center Modal -->
@@ -54444,137 +54458,581 @@ function handlePathKmlImport(e) {
     });
   })();
 
-  // ── AI Agent Panel ─────────────────────────────────────────────────────────
-  var aiState = { messages: [], apiKey: '', model: 'gpt-4o-mini' };
-  (function() {
-    try { aiState.apiKey = localStorage.getItem('neximap_ai_key') || ''; } catch(e) {}
-    try { aiState.model = localStorage.getItem('neximap_ai_model') || 'gpt-4o-mini'; } catch(e) {}
-  })();
+  // ── AI Agent Panel — NLP Command Interpreter ──────────────────────────────
+  // No API key required — all processing is local pattern matching
+
   function toggleAiAgent() {
     var panel = document.getElementById('aiAgentPanel');
     if (!panel) return;
     var visible = panel.classList.toggle('show');
     var btn = document.getElementById('btnAiAgent');
     if (btn) btn.classList.toggle('active', visible);
-    if (visible) {
-      var keyInput = document.getElementById('aiApiKeyInput');
-      var modelSel = document.getElementById('aiModelSelect');
-      if (keyInput && aiState.apiKey) keyInput.value = aiState.apiKey;
-      if (modelSel && aiState.model) modelSel.value = aiState.model;
-      updateAiContext();
-    }
+    if (visible) aiUpdateSuggestions();
   }
-  function aiSaveKey() {
-    var keyInput = document.getElementById('aiApiKeyInput');
-    var modelSel = document.getElementById('aiModelSelect');
-    if (keyInput) {
-      aiState.apiKey = keyInput.value.trim();
-      try { localStorage.setItem('neximap_ai_key', aiState.apiKey); } catch(e) {}
-    }
-    if (modelSel) {
-      aiState.model = modelSel.value;
-      try { localStorage.setItem('neximap_ai_model', aiState.model); } catch(e) {}
-    }
-    aiAddMsg('system', 'API key saved! Ready to chat. Your key is stored in browser localStorage only.');
+
+  function aiClearChat() {
+    var msgs = document.getElementById('aiAgentMessages');
+    if (msgs) msgs.innerHTML = '<div class="ai-msg system">Chat cleared. Ready for commands.</div>';
   }
-  function updateAiContext() {
-    var summary = document.getElementById('aiContextSummary');
-    if (!summary) return;
-    try {
-      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
-      var edgeCount = (state && state.edges) ? state.edges.length : 0;
-      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
-      summary.textContent = 'Nodes: ' + nodeCount + ', Links: ' + edgeCount + ', DCs selected: ' + dcCount;
-    } catch(e) { summary.textContent = 'unavailable'; }
-  }
-  function getAiSystemPrompt() {
-    try {
-      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
-      var edgeCount = (state && state.edges) ? state.edges.length : 0;
-      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
-      var nodeNames = (state && state.nodes) ? state.nodes.slice(0,20).map(function(n){return n.label||n.id;}).filter(Boolean) : [];
-      var p = 'You are an AI assistant in NexiMap Studio, a professional network diagram and telecom infrastructure mapping tool. ';
-      p += 'Current diagram: ' + nodeCount + ' nodes, ' + edgeCount + ' links, ' + dcCount + ' selected DCs from PeeringDB. ';
-      if (nodeNames.length) p += 'Nodes: ' + nodeNames.join(', ') + '. ';
-      p += 'Help with network topology, submarine cables, datacenters, BGP, routing. Be concise.';
-      return p;
-    } catch(e) { return 'You are an AI assistant for NexiMap Studio, a network diagram tool.'; }
-  }
+
   function aiAddMsg(role, text) {
     var msgs = document.getElementById('aiAgentMessages');
     if (!msgs) return;
     var div = document.createElement('div');
     div.className = 'ai-msg ' + role;
-    div.textContent = text;
+    if (role === 'action') {
+      var label = document.createElement('span');
+      label.className = 'action-label';
+      label.textContent = 'Action Executed';
+      div.appendChild(label);
+      div.appendChild(document.createTextNode(text));
+    } else {
+      div.textContent = text;
+    }
     msgs.appendChild(div);
     msgs.scrollTop = msgs.scrollHeight;
-    if (role === 'user') aiState.messages.push({role:'user', content:text});
-    else if (role === 'assistant') aiState.messages.push({role:'assistant', content:text});
   }
-  function aiSendMessage() {
+
+  function aiSetStatus(text, processing) {
+    var dot = document.getElementById('aiStatusDot');
+    var st = document.getElementById('aiStatusText');
+    if (dot) { dot.className = processing ? 'ai-status-dot processing' : 'ai-status-dot'; }
+    if (st) st.textContent = text;
+  }
+
+  function aiRunSuggestion(el) {
+    var input = document.getElementById('aiAgentInput');
+    if (input) { input.value = el.textContent; aiSendCommand(); }
+  }
+
+  function aiUpdateSuggestions() {
+    // Dynamic suggestions based on current state
+    var chips = [];
+    var nn = state.nodes.length;
+    if (nn === 0) {
+      chips = ['Create 5 nodes', 'Open Cable Visor', 'Open DC Visor'];
+    } else if (nn < 3) {
+      chips = ['Create more nodes', 'Link Node1 to Node2', 'Open Cable Visor'];
+    } else {
+      var n1 = state.nodes[0] ? state.nodes[0].name : 'Node1';
+      var nL = state.nodes[state.nodes.length - 1] ? state.nodes[state.nodes.length - 1].name : 'Node' + nn;
+      chips = [
+        'Route price ' + n1 + ' to ' + nL,
+        'Protected route ' + n1 + ' to ' + nL,
+        'Show Transatlantic cables',
+        'Search DCs in Japan',
+        'Filter tag GDE'
+      ];
+    }
+    var container = document.getElementById('aiSuggestions');
+    if (!container) return;
+    container.innerHTML = '';
+    chips.forEach(function(c) {
+      var span = document.createElement('span');
+      span.className = 'ai-suggestion-chip';
+      span.textContent = c;
+      span.onclick = function() { aiRunSuggestion(span); };
+      container.appendChild(span);
+    });
+  }
+
+  // ── NLP Intent Parser ────────────────────────────────────────────────────
+  function aiParseIntent(text) {
+    var t = text.toLowerCase().trim();
+
+    // ─── CREATE NODES ───
+    var mCreateNodes = t.match(/(?:create|add|make|new)\s+(\d+)\s*(?:node|nodes)/);
+    if (mCreateNodes) return { intent: 'create_nodes', count: parseInt(mCreateNodes[1]) };
+
+    var mCreateNode = t.match(/(?:create|add|make|new)\s+(?:a\s+)?node(?:\s+(?:named?\s+|called?\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?)?$/);
+    if (mCreateNode) return { intent: 'create_node', name: mCreateNode[1] ? mCreateNode[1].trim() : null };
+
+    // ─── CREATE LINK ───
+    var mLink = t.match(/(?:create|add|make|new|connect)\s+(?:a\s+)?(?:link|edge|connection)\s+(?:from\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|and|with|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?$/);
+    if (mLink) return { intent: 'create_link', from: mLink[1].trim(), to: mLink[2].trim() };
+
+    var mLinkAlt = t.match(/(?:link|connect)\s+["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|and|with|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?$/);
+    if (mLinkAlt) return { intent: 'create_link', from: mLinkAlt[1].trim(), to: mLinkAlt[2].trim() };
+
+    // ─── ROUTE PRICE / PATHFINDER ───
+    var mPrice = t.match(/(?:price|cost|route\s*price|how\s*much|what(?:'s| is)\s+(?:the\s+)?(?:price|cost))\s*(?:of\s+)?(?:a\s+)?(?:route\s+)?(?:from\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?/);
+    if (mPrice) return { intent: 'route_price', from: mPrice[1].trim(), to: mPrice[2].trim() };
+
+    var mRouteFind = t.match(/(?:find|calculate|compute|show)\s+(?:a\s+)?(?:route|path)\s+(?:from\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?/);
+    if (mRouteFind) return { intent: 'route_price', from: mRouteFind[1].trim(), to: mRouteFind[2].trim() };
+
+    // ─── PROTECTED / DIVERSE ROUTE ───
+    var mProtected = t.match(/(?:build|create|find|calculate|show)\s+(?:a\s+)?(?:protected|diverse|protection|backup|redundant)\s+(?:route|path)\s*(?:fully\s+diverse\s*)?(?:from\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?/);
+    if (mProtected) {
+      var capMatch = t.match(/(?:capacity|cap)\s*(?:availability\s+)?(?:for\s+)?(\d+)\s*([gt])/i);
+      var capacity = capMatch ? capMatch[1] + (capMatch[2].toLowerCase() === 't' ? 'Tbps' : 'G') : null;
+      return { intent: 'protected_route', from: mProtected[1].trim(), to: mProtected[2].trim(), capacity: capacity };
+    }
+
+    var mProtAlt = t.match(/(?:protected|diverse|protection|backup)\s+(?:route|path)\s+["']?([a-zA-Z0-9_\- ]+?)["']?\s+(?:to|->)\s+["']?([a-zA-Z0-9_\- ]+?)["']?/);
+    if (mProtAlt) {
+      var capMatch2 = t.match(/(\d+)\s*([gt])\b/i);
+      var cap2 = capMatch2 ? capMatch2[1] + (capMatch2[2].toLowerCase() === 't' ? 'Tbps' : 'G') : null;
+      return { intent: 'protected_route', from: mProtAlt[1].trim(), to: mProtAlt[2].trim(), capacity: cap2 };
+    }
+
+    // ─── CABLE VISOR ───
+    var mCableVisor = t.match(/(?:open|show|display|launch)\s+(?:the\s+)?(?:cable|submarine)\s*(?:system\s*)?(?:visor|map|panel)/);
+    if (mCableVisor) {
+      var corridor = aiExtractCorridor(t);
+      return { intent: 'open_cable_visor', corridor: corridor };
+    }
+
+    var mShowCables = t.match(/(?:show|display|open|view)\s+(?:the\s+)?(transatlantic|transpacific|asia[\s-]*pacific|mediterranean|african|indian\s*ocean|intra[\s-]*asia|middle[\s-]*east|latin[\s-]*america|europe|americas?)\s*(?:cables?|corridor|submarine|systems?)/i);
+    if (mShowCables) return { intent: 'open_cable_visor', corridor: aiNormalizeCorridor(mShowCables[1]) };
+
+    // ─── DC VISOR ───
+    var mDCVisor = t.match(/(?:open|show|display|launch)\s+(?:the\s+)?(?:dc|datacenter|data\s*center|datacenters?|data\s*centers?)\s*(?:visor|map|panel)/);
+    if (mDCVisor) {
+      var searchMatch = t.match(/(?:search|filter|show|in|for)\s+(?:for\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/);
+      var search = searchMatch ? searchMatch[1].trim() : null;
+      if (!search) { var inMatch = t.match(/\bin\s+["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/); if (inMatch) search = inMatch[1].trim(); }
+      return { intent: 'open_dc_visor', search: search };
+    }
+
+    var mSearchDC = t.match(/(?:search|find|show)\s+(?:dc|datacenter|data\s*center|datacenters?|data\s*centers?)\s+(?:in\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/i);
+    if (mSearchDC) return { intent: 'open_dc_visor', search: mSearchDC[1].trim() };
+
+    var mSearchDCalt = t.match(/(?:search|find|show)\s+(?:for\s+)?(?:dc|datacenter|data\s*center)s?\s+(?:in|for|matching|named?|at)\s+["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/i);
+    if (mSearchDCalt) return { intent: 'open_dc_visor', search: mSearchDCalt[1].trim() };
+
+    // ─── TAG FILTER ───
+    var mTag = t.match(/(?:filter|activate|show|enable|set)\s+(?:a\s+)?(?:filter\s+)?(?:to\s+)?(?:show\s+)?(?:only\s+)?(?:tag|tags|with\s+tag|by\s+tag)[\s:]*["']?([a-zA-Z0-9_\-]+)["']?/i);
+    if (mTag) return { intent: 'filter_tag', tag: mTag[1].trim() };
+
+    var mTagAlt = t.match(/(?:filter|activate|show|enable)\s+(?:only\s+)?(?:nodes?\s+and\s+links?\s+|links?\s+and\s+nodes?\s+)?(?:with\s+)?tag[\s:]*["']?([a-zA-Z0-9_\-]+)["']?/i);
+    if (mTagAlt) return { intent: 'filter_tag', tag: mTagAlt[1].trim() };
+
+    var mFilterOnly = t.match(/(?:show|display|filter)\s+only\s+(?:nodes?\s+and\s+links?\s+|links?\s+and\s+nodes?\s+)?(?:with\s+)?(?:tag\s+)?["']?([a-zA-Z0-9_\-]+)["']?/i);
+    if (mFilterOnly) return { intent: 'filter_tag', tag: mFilterOnly[1].trim() };
+
+    // ─── CLEAR FILTERS ───
+    if (/(?:clear|reset|remove)\s+(?:all\s+)?(?:filter|filters|tag\s+filter)/i.test(t)) {
+      return { intent: 'clear_filters' };
+    }
+
+    // ─── OPEN ROUTE FINDER ───
+    if (/(?:open|show|launch|start)\s+(?:the\s+)?(?:route\s*finder|pathfinder|path\s*finder)/i.test(t)) {
+      return { intent: 'open_route_finder' };
+    }
+
+    // ─── LIST / INFO ───
+    if (/(?:list|show|what)\s+(?:all\s+)?(?:the\s+)?nodes/i.test(t)) return { intent: 'list_nodes' };
+    if (/(?:list|show|what)\s+(?:all\s+)?(?:the\s+)?(?:links|edges|connections)/i.test(t)) return { intent: 'list_links' };
+    if (/(?:how many|count)\s+(?:nodes|links|edges)/i.test(t)) return { intent: 'count_elements' };
+    if (/(?:help|what can you do|commands|capabilities)/i.test(t)) return { intent: 'help' };
+
+    // ─── DELETE NODE / LINK ───
+    var mDeleteNode = t.match(/(?:delete|remove|drop)\s+(?:node\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/i);
+    if (mDeleteNode) return { intent: 'delete_node', name: mDeleteNode[1].trim() };
+
+    // ─── SELECT NODE ───
+    var mSelect = t.match(/(?:select|pick|highlight)\s+(?:node\s+)?["']?([a-zA-Z0-9_\- ]+?)["']?\s*$/i);
+    if (mSelect) return { intent: 'select_node', name: mSelect[1].trim() };
+
+    return { intent: 'unknown' };
+  }
+
+  function aiExtractCorridor(t) {
+    if (/transatlantic/i.test(t)) return 'Transatlantic';
+    if (/transpacific/i.test(t)) return 'Transpacific';
+    if (/asia[\s-]*pacific/i.test(t)) return 'Asia-Pacific';
+    if (/mediterranean/i.test(t)) return 'Mediterranean';
+    if (/africa/i.test(t)) return 'Africa-ME';
+    if (/indian\s*ocean/i.test(t)) return 'Indian Ocean';
+    if (/intra[\s-]*asia/i.test(t)) return 'Intra-Asia';
+    if (/middle[\s-]*east/i.test(t)) return 'Middle East';
+    if (/latin[\s-]*americ/i.test(t)) return 'Latin America';
+    if (/europe/i.test(t)) return 'Europe';
+    if (/america/i.test(t)) return 'Americas';
+    return null;
+  }
+
+  function aiNormalizeCorridor(raw) {
+    var r = raw.toLowerCase().replace(/[\s-]+/g, '');
+    if (r.indexOf('transatlantic') >= 0) return 'Transatlantic';
+    if (r.indexOf('transpacific') >= 0) return 'Transpacific';
+    if (r.indexOf('asiapacific') >= 0) return 'Asia-Pacific';
+    if (r.indexOf('mediterranean') >= 0) return 'Mediterranean';
+    if (r.indexOf('africa') >= 0) return 'Africa-ME';
+    if (r.indexOf('indianocean') >= 0) return 'Indian Ocean';
+    if (r.indexOf('intraasia') >= 0) return 'Intra-Asia';
+    if (r.indexOf('middleeast') >= 0) return 'Middle East';
+    if (r.indexOf('latinamerica') >= 0) return 'Latin America';
+    if (r.indexOf('europe') >= 0) return 'Europe';
+    if (r.indexOf('america') >= 0) return 'Americas';
+    return raw;
+  }
+
+  // ── Helper: find node by name or id (fuzzy) ──────────────────────────────
+  function aiFindNode(nameOrId) {
+    if (!nameOrId) return null;
+    var q = nameOrId.toLowerCase().replace(/\s+/g, '');
+    // Try exact name match first
+    var exact = state.nodes.find(function(n) { return (n.name || '').toLowerCase().replace(/\s+/g, '') === q; });
+    if (exact) return exact;
+    // Try by id
+    var asNum = parseInt(nameOrId);
+    if (!isNaN(asNum)) {
+      var byId = state.nodes.find(function(n) { return n.id === asNum; });
+      if (byId) return byId;
+    }
+    // Try "node" + number pattern
+    var nodeNum = nameOrId.match(/node\s*(\d+)/i);
+    if (nodeNum) {
+      var nid = parseInt(nodeNum[1]);
+      var byNid = state.nodes.find(function(n) { return n.id === nid; });
+      if (byNid) return byNid;
+      var byName = state.nodes.find(function(n) { return (n.name || '').toLowerCase() === 'node' + nid; });
+      if (byName) return byName;
+    }
+    // Try code match
+    var byCode = state.nodes.find(function(n) { return (n.code || '').toLowerCase().replace(/\s+/g, '') === q; });
+    if (byCode) return byCode;
+    // Fuzzy: startsWith
+    var starts = state.nodes.find(function(n) { return (n.name || '').toLowerCase().replace(/\s+/g, '').indexOf(q) === 0; });
+    if (starts) return starts;
+    // Fuzzy: contains
+    var contains = state.nodes.find(function(n) { return (n.name || '').toLowerCase().indexOf(q) >= 0; });
+    return contains || null;
+  }
+
+  // ── Command Executor ─────────────────────────────────────────────────────
+  function aiExecuteIntent(intent) {
+    switch (intent.intent) {
+
+      case 'create_nodes': {
+        var count = Math.min(intent.count, 50); // Safety cap
+        var created = [];
+        for (var i = 0; i < count; i++) {
+          var x = 100 + (i % 10) * 120 + Math.random() * 30;
+          var y = 100 + Math.floor(i / 10) * 120 + Math.random() * 30;
+          createNode(x, y);
+          created.push(state.nodes[state.nodes.length - 1].name);
+        }
+        return 'Created ' + count + ' node(s): ' + created.join(', ');
+      }
+
+      case 'create_node': {
+        var cx = 200 + state.nodes.length * 80 + Math.random() * 50;
+        var cy = 200 + Math.random() * 200;
+        createNode(cx, cy);
+        var newNode = state.nodes[state.nodes.length - 1];
+        if (intent.name && newNode) {
+          newNode.name = intent.name;
+          commit(); render();
+        }
+        return 'Created node "' + (newNode ? newNode.name : '?') + '" (id: ' + (newNode ? newNode.id : '?') + ')';
+      }
+
+      case 'create_link': {
+        var fromNode = aiFindNode(intent.from);
+        var toNode = aiFindNode(intent.to);
+        if (!fromNode) return 'Could not find node "' + intent.from + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+        if (!toNode) return 'Could not find node "' + intent.to + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+        if (fromNode.id === toNode.id) return 'Cannot create a link from a node to itself.';
+        // Check if link already exists
+        var exists = state.edges.find(function(e) { return (e.a === fromNode.id && e.b === toNode.id) || (e.a === toNode.id && e.b === fromNode.id); });
+        if (exists) return 'A link already exists between ' + fromNode.name + ' and ' + toNode.name + ' (link id: ' + exists.id + ')';
+        createEdge(fromNode.id, toNode.id);
+        return 'Created link from ' + fromNode.name + ' to ' + toNode.name;
+      }
+
+      case 'route_price': {
+        var origin = aiFindNode(intent.from);
+        var dest = aiFindNode(intent.to);
+        if (!origin) return 'Could not find origin node "' + intent.from + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+        if (!dest) return 'Could not find destination node "' + intent.to + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+
+        // Open route finder if not active
+        if (!routeFinderState.active) { enterCalculationMode(); }
+        routeFinderState.originNodeId = origin.id;
+        routeFinderState.destNodeId = dest.id;
+        // Update dropdowns
+        var oSel = document.getElementById('routeOriginSelect');
+        var dSel = document.getElementById('routeDestSelect');
+        if (oSel) oSel.value = origin.id;
+        if (dSel) dSel.value = dest.id;
+        // Calculate routes
+        calculateRoutes();
+        // Build response with cost info
+        if (routeFinderState.routes.length === 0) return 'No path found from ' + origin.name + ' to ' + dest.name + '. Nodes may not be connected.';
+        var bestRoute = routeFinderState.routes[0];
+        var resp = 'Route from ' + origin.name + ' to ' + dest.name + ':\n';
+        resp += 'Hops: ' + (bestRoute.path.length - 1) + ' | Latency: ' + (bestRoute.totalLatency || 0).toFixed(1) + ' ms\n';
+        if (typeof calculateRouteCost === 'function') {
+          var tiers = ['1G', '10G', '100G', '400G'];
+          tiers.forEach(function(tier) {
+            try {
+              var cost = calculateRouteCost(bestRoute.segments, tier);
+              if (cost && (cost.totalMRC > 0 || cost.totalNRC > 0)) {
+                resp += tier + ': MRC $' + cost.totalMRC.toFixed(0) + '/mo | NRC $' + cost.totalNRC.toFixed(0) + '\n';
+              }
+            } catch(e) {}
+          });
+        }
+        resp += 'Path: ' + bestRoute.path.map(function(nid) { var n = findNode(nid); return n ? n.name : nid; }).join(' -> ');
+        if (routeFinderState.routes.length > 1) resp += '\n(' + routeFinderState.routes.length + ' routes found total — showing best)';
+        return resp;
+      }
+
+      case 'protected_route': {
+        var pOrigin = aiFindNode(intent.from);
+        var pDest = aiFindNode(intent.to);
+        if (!pOrigin) return 'Could not find origin node "' + intent.from + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+        if (!pDest) return 'Could not find destination node "' + intent.to + '". Available: ' + state.nodes.slice(0, 10).map(function(n) { return n.name; }).join(', ');
+
+        // Set capacity filter if specified
+        if (intent.capacity) {
+          var capNum = parseInt(intent.capacity);
+          var capUnit = intent.capacity.replace(/\d+/g, '').trim().toUpperCase();
+          if (capUnit === 'G' || capUnit === '10G') {
+            routeFinderState.capacityMode = 'units';
+            routeFinderState.capacityMin10G = capNum <= 10 ? capNum : 1;
+          }
+        }
+
+        // Step 1: Calculate primary route
+        if (!routeFinderState.active) { enterCalculationMode(); }
+        routeFinderState.originNodeId = pOrigin.id;
+        routeFinderState.destNodeId = pDest.id;
+        var oSel2 = document.getElementById('routeOriginSelect');
+        var dSel2 = document.getElementById('routeDestSelect');
+        if (oSel2) oSel2.value = pOrigin.id;
+        if (dSel2) dSel2.value = pDest.id;
+        calculateRoutes();
+
+        if (routeFinderState.routes.length === 0) return 'No primary path found from ' + pOrigin.name + ' to ' + pDest.name + '. Cannot build protected route.';
+
+        var primaryRoute = routeFinderState.routes[routeFinderState.activeRouteIndex || 0];
+        var resp2 = 'PRIMARY route ' + pOrigin.name + ' -> ' + pDest.name + ':\n';
+        resp2 += 'Hops: ' + (primaryRoute.path.length - 1) + ' | Latency: ' + (primaryRoute.totalLatency || 0).toFixed(1) + ' ms\n';
+        resp2 += 'Path: ' + primaryRoute.path.map(function(nid) { var n = findNode(nid); return n ? n.name : nid; }).join(' -> ') + '\n\n';
+
+        // Step 2: Set up protection mode
+        routeFinderState.primaryPathForProtection = primaryRoute;
+        routeFinderState.protectionClosureNodes = new Set([pOrigin.id, pDest.id]);
+
+        // Set physical diversity to 100%
+        var chkDiv = document.getElementById('chkPhysicalDiversity');
+        var inputDiv = document.getElementById('inputRequiredDiversity');
+        if (chkDiv) chkDiv.checked = true;
+        if (inputDiv) inputDiv.value = '100';
+
+        // Calculate protection path
+        calculateProtectionPath();
+
+        if (routeFinderState.protectionPath && routeFinderState.protectionPath.path && routeFinderState.protectionPath.path.length > 1) {
+          var protPath = routeFinderState.protectionPath;
+          resp2 += 'PROTECTION route (fully diverse):\n';
+          resp2 += 'Hops: ' + (protPath.path.length - 1) + ' | Latency: ' + (protPath.totalLatency || 0).toFixed(1) + ' ms\n';
+          resp2 += 'Path: ' + protPath.path.map(function(nid) { var n = findNode(nid); return n ? n.name : nid; }).join(' -> ');
+          if (intent.capacity) resp2 += '\nCapacity filter: ' + intent.capacity;
+        } else {
+          resp2 += 'PROTECTION: No fully diverse path found. The network may not have enough redundancy between these endpoints.';
+        }
+        return resp2;
+      }
+
+      case 'open_cable_visor': {
+        showCableVisor();
+        var msg = 'Opened Cable System Visor.';
+        if (intent.corridor) {
+          // Wait for panel to load then set the corridor filter
+          setTimeout(function() {
+            var regionSel = document.getElementById('cableVisorRegionFilter');
+            if (regionSel) {
+              // Find matching option
+              var found = false;
+              for (var i = 0; i < regionSel.options.length; i++) {
+                var opt = regionSel.options[i];
+                if (opt.text.toLowerCase().indexOf(intent.corridor.toLowerCase()) >= 0 ||
+                    opt.value.toLowerCase().indexOf(intent.corridor.toLowerCase()) >= 0) {
+                  regionSel.value = opt.value;
+                  regionSel.dispatchEvent(new Event('change'));
+                  found = true;
+                  break;
+                }
+              }
+              if (!found) {
+                // Try partial match
+                for (var j = 0; j < regionSel.options.length; j++) {
+                  if (regionSel.options[j].text.toLowerCase().indexOf(intent.corridor.substring(0, 5).toLowerCase()) >= 0) {
+                    regionSel.value = regionSel.options[j].value;
+                    regionSel.dispatchEvent(new Event('change'));
+                    break;
+                  }
+                }
+              }
+            }
+          }, 800);
+          msg += ' Filtering to ' + intent.corridor + ' corridor.';
+        }
+        return msg;
+      }
+
+      case 'open_dc_visor': {
+        showDCVisor();
+        var dcMsg = 'Opened Datacenter Visor.';
+        if (intent.search) {
+          setTimeout(function() {
+            var searchInput = document.getElementById('dcVisorSearch');
+            if (searchInput) {
+              searchInput.value = intent.search;
+              searchInput.dispatchEvent(new Event('input'));
+            }
+          }, 800);
+          dcMsg += ' Searching for "' + intent.search + '".';
+        }
+        return dcMsg;
+      }
+
+      case 'filter_tag': {
+        var tagName = intent.tag.toLowerCase();
+        state.tagFilter.mode = 'include';
+        state.tagFilter.selectedTags.clear();
+        state.tagFilter.selectedTags.add(tagName);
+        // Also update the UI radio buttons and checkboxes
+        var modeRadios = document.querySelectorAll('input[name="filterMode"]');
+        modeRadios.forEach(function(r) { r.checked = (r.value === 'include'); });
+        if (typeof updateTagFilterList === 'function') updateTagFilterList();
+        if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+        render();
+        return 'Tag filter activated: showing only elements with tag "' + intent.tag + '" (include mode).';
+      }
+
+      case 'clear_filters': {
+        state.tagFilter.mode = 'all';
+        state.tagFilter.selectedTags.clear();
+        var modeRadiosClear = document.querySelectorAll('input[name="filterMode"]');
+        modeRadiosClear.forEach(function(r) { r.checked = (r.value === 'all'); });
+        if (typeof updateTagFilterList === 'function') updateTagFilterList();
+        if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+        render();
+        return 'All tag filters cleared. Showing all elements.';
+      }
+
+      case 'open_route_finder': {
+        if (!routeFinderState.active) { toggleRouteFinder(); }
+        return 'Route Finder panel opened. Select origin and destination nodes to calculate routes.';
+      }
+
+      case 'list_nodes': {
+        if (state.nodes.length === 0) return 'No nodes in the diagram.';
+        var nodeList = state.nodes.slice(0, 30).map(function(n) {
+          var tags = (n.tags || []).join(', ');
+          return n.name + ' [' + (n.code || 'N-' + n.id) + ']' + (tags ? ' (' + tags + ')' : '');
+        });
+        var resp3 = state.nodes.length + ' nodes:\n' + nodeList.join('\n');
+        if (state.nodes.length > 30) resp3 += '\n... and ' + (state.nodes.length - 30) + ' more';
+        return resp3;
+      }
+
+      case 'list_links': {
+        if (state.edges.length === 0) return 'No links in the diagram.';
+        var linkList = state.edges.slice(0, 30).map(function(e) {
+          var nA = findNode(e.a);
+          var nB = findNode(e.b);
+          return (nA ? nA.name : '?') + ' <-> ' + (nB ? nB.name : '?') + ' [' + (e.code || 'L-' + e.id) + ']' + (e.tag ? ' tag:' + e.tag : '');
+        });
+        var resp4 = state.edges.length + ' links:\n' + linkList.join('\n');
+        if (state.edges.length > 30) resp4 += '\n... and ' + (state.edges.length - 30) + ' more';
+        return resp4;
+      }
+
+      case 'count_elements': {
+        return 'Diagram has ' + state.nodes.length + ' nodes, ' + state.edges.length + ' links, ' + state.groups.length + ' containers, ' + (state.cableSystems ? state.cableSystems.length : 0) + ' cable systems.';
+      }
+
+      case 'select_node': {
+        var selNode = aiFindNode(intent.name);
+        if (!selNode) return 'Could not find node "' + intent.name + '".';
+        select({ type: 'node', id: selNode.id });
+        render();
+        return 'Selected node "' + selNode.name + '" (id: ' + selNode.id + ')';
+      }
+
+      case 'delete_node': {
+        var delNode = aiFindNode(intent.name);
+        if (!delNode) return 'Could not find node "' + intent.name + '".';
+        // Remove connected edges
+        state.edges = state.edges.filter(function(e) { return e.a !== delNode.id && e.b !== delNode.id; });
+        state.nodes = state.nodes.filter(function(n) { return n.id !== delNode.id; });
+        clearSelection();
+        commit(); render();
+        return 'Deleted node "' + delNode.name + '" and its connected links.';
+      }
+
+      case 'help': {
+        return 'NexiMap Agent commands:\n\n' +
+          'NODES & LINKS:\n' +
+          '  "Create 5 nodes"\n' +
+          '  "Create a node named London"\n' +
+          '  "Link Node1 to Node3"\n' +
+          '  "Delete Node2"\n' +
+          '  "Select Node1"\n' +
+          '  "List nodes" / "List links"\n\n' +
+          'ROUTING & PRICING:\n' +
+          '  "Route price Node1 to Node20"\n' +
+          '  "Find route from London to NYC"\n' +
+          '  "Build protected route A to B with capacity 10G"\n' +
+          '  "Open route finder"\n\n' +
+          'VISORS:\n' +
+          '  "Open cable visor and show Transatlantic"\n' +
+          '  "Show Transpacific cables"\n' +
+          '  "Open DC visor and search Japan"\n' +
+          '  "Search datacenters in Frankfurt"\n\n' +
+          'FILTERS:\n' +
+          '  "Filter tag GDE"\n' +
+          '  "Show only tag submarine"\n' +
+          '  "Clear filters"';
+      }
+
+      default:
+        return 'I didn\'t understand that command. Type "help" to see what I can do, or try:\n' +
+          '  - "Create 3 nodes"\n' +
+          '  - "Route price Node1 to Node5"\n' +
+          '  - "Show Transatlantic cables"\n' +
+          '  - "Search DCs in Japan"\n' +
+          '  - "Filter tag GDE"';
+    }
+  }
+
+  // ── Main send handler ────────────────────────────────────────────────────
+  function aiSendCommand() {
     var input = document.getElementById('aiAgentInput');
     if (!input) return;
     var text = input.value.trim();
     if (!text) return;
-    if (!aiState.apiKey) {
-      aiAddMsg('system', 'Please enter and save your OpenAI API key first.');
-      return;
-    }
     input.value = '';
     aiAddMsg('user', text);
-    updateAiContext();
-    var msgsEl = document.getElementById('aiAgentMessages');
-    var thinking = document.createElement('div');
-    thinking.className = 'ai-msg assistant';
-    thinking.id = 'aiThinking';
-    thinking.textContent = 'Thinking...';
-    thinking.style.opacity = '0.5';
-    if (msgsEl) { msgsEl.appendChild(thinking); msgsEl.scrollTop = msgsEl.scrollHeight; }
-    var payload = [{ role: 'system', content: getAiSystemPrompt() }];
-    aiState.messages.slice(-10).forEach(function(m){ payload.push(m); });
-    fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + aiState.apiKey
-      },
-      body: JSON.stringify({
-        model: aiState.model || 'gpt-4o-mini',
-        messages: payload,
-        max_tokens: 700,
-        temperature: 0.7
-      })
-    }).then(function(r){ return r.json(); }).then(function(json){
-      var t = document.getElementById('aiThinking');
-      if (t) t.remove();
-      if (json.error) { aiAddMsg('system', 'API Error: ' + json.error.message); return; }
-      var reply = json.choices && json.choices[0] && json.choices[0].message ? json.choices[0].message.content : '(no response)';
-      aiAddMsg('assistant', reply);
-    }).catch(function(e){
-      var t = document.getElementById('aiThinking');
-      if (t) t.remove();
-      aiAddMsg('system', 'Error: ' + e.message);
-    });
+    aiSetStatus('Processing command...', true);
+
+    // Small delay for visual feedback
+    setTimeout(function() {
+      try {
+        var intent = aiParseIntent(text);
+        var result = aiExecuteIntent(intent);
+        if (intent.intent !== 'unknown' && intent.intent !== 'help') {
+          aiAddMsg('action', result);
+        } else {
+          aiAddMsg('assistant', result);
+        }
+      } catch(e) {
+        aiAddMsg('error', 'Error executing command: ' + e.message);
+        console.error('[AI Agent]', e);
+      }
+      aiSetStatus('Ready', false);
+      aiUpdateSuggestions();
+    }, 150);
   }
-  function startDragPanel(panelId, e) {
-    var panel = document.getElementById(panelId);
-    if (!panel || e.button !== 0) return;
-    var sx = e.clientX - panel.offsetLeft;
-    var sy = e.clientY - panel.offsetTop;
-    function mv(ev) {
-      panel.style.left = Math.max(0, ev.clientX - sx) + 'px';
-      panel.style.top = Math.max(0, ev.clientY - sy) + 'px';
-      panel.style.right = 'auto';
-    }
-    function up() {
-      document.removeEventListener('mousemove', mv);
-      document.removeEventListener('mouseup', up);
-    }
-    document.addEventListener('mousemove', mv);
-    document.addEventListener('mouseup', up);
-    e.preventDefault();
-  }
-  // ── End AI Agent Panel ──────────────────────────────────────────────────────
+
+  function aiSendMessage() { aiSendCommand(); } // Backward compat
   console.log('[NexiMap] Main script fully loaded');
 })();
 </script>
