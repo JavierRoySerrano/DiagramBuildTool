@@ -8,6 +8,7 @@
       "Transatlantic",
       "Transpacific",
       "Indian Ocean",
+      "Mediterranean-Middle East",
       "Africa Coastal",
       "Intra-Asia",
       "Intra-Europe",
@@ -546,7 +547,7 @@
     "seacom": {
       "id": "seacom",
       "name": "SEACOM",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2009",
       "length_km": 17000,
       "owners": [
@@ -705,7 +706,7 @@
     "seamewe-4": {
       "id": "seamewe-4",
       "name": "SEA-ME-WE 4",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2005",
       "length_km": 18800,
       "owners": [
@@ -796,7 +797,7 @@
     "peace": {
       "id": "peace",
       "name": "PEACE",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2022",
       "length_km": 15000,
       "owners": [
@@ -924,7 +925,7 @@
     "seamewe-5": {
       "id": "seamewe-5",
       "name": "SEA-ME-WE 5",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2016",
       "length_km": 20000,
       "owners": [
@@ -1011,7 +1012,7 @@
     "seamewe-6": {
       "id": "seamewe-6",
       "name": "SEA-ME-WE 6",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2025",
       "length_km": 21000,
       "owners": [
@@ -1169,7 +1170,7 @@
     "imewe": {
       "id": "imewe",
       "name": "IMEWE",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2010",
       "length_km": 12091,
       "owners": [
@@ -1296,7 +1297,7 @@
     "aae-1": {
       "id": "aae-1",
       "name": "AAE-1",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2017",
       "length_km": 25000,
       "owners": [
@@ -1391,7 +1392,7 @@
     "blue": {
       "id": "blue",
       "name": "Blue",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2024",
       "length_km": 15500,
       "owners": [
@@ -1778,7 +1779,7 @@
     "iex": {
       "id": "iex",
       "name": "IEX",
-      "region": "Indian Ocean",
+      "region": "Mediterranean-Middle East",
       "rfs": "2024",
       "length_km": 11000,
       "owners": [

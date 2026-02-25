@@ -23233,7 +23233,7 @@ function loadProjectObject(obj) {
           name: props.name,
           shortName: props.name.length > 20 ? props.name.substring(0, 18) + '...' : props.name,
           color: props.color || '#939597',
-          region: inferRegionFromLandingPoints(landingPoints, feature.geometry),
+          region: (sdbMatch && sdbMatch.region) ? sdbMatch.region : inferRegionFromLandingPoints(landingPoints, feature.geometry),
           status: status,
           rfs: meta.rfs || (rfsYear ? String(rfsYear) : ''),
           rfsYear: rfsYear,
@@ -23428,6 +23428,11 @@ function loadProjectObject(obj) {
       const hasMiddleEast = has('Middle East');
       const hasAfrica = has('Africa');
       const hasSouthAsia = has('South Asia');
+      const hasCentralAsia = has('Central Asia');
+      const hasIndianOceanTerritory = has('Indian Ocean');
+
+      // Fold Central Asia into Asia for corridor purposes
+      const hasAnyAsia = hasAsia || hasCentralAsia;
 
       // Single-region cables = intra-regional
       if (regions.length === 1) {
@@ -23437,33 +23442,41 @@ function loadProjectObject(obj) {
         if (hasMiddleEast) return 'Intra-Middle East';
         if (hasAfrica) return 'Africa Coastal';
         if (hasSouthAsia) return 'Indian Ocean';
+        if (hasCentralAsia) return 'Intra-Asia';
+        if (hasIndianOceanTerritory) return 'Indian Ocean';
         return 'Unknown';
       }
 
       // Multi-region: determine corridor by ocean basin crossed
       // Transpacific: Americas to Asia/Oceania across the Pacific
-      if (hasAmericas && (hasAsia || hasOceania)) return 'Transpacific';
+      if (hasAmericas && (hasAnyAsia || hasOceania)) return 'Transpacific';
 
       // Transatlantic: Europe to Americas across the Atlantic
       if (hasEurope && hasAmericas) return 'Transatlantic';
 
-      // Indian Ocean: Europe/Middle East to India/Asia, or India-Asia, or Middle East-Africa
-      if (hasEurope && (hasAsia || hasSouthAsia || hasMiddleEast)) return 'Indian Ocean';
-      if (hasMiddleEast && (hasAsia || hasSouthAsia || hasAfrica)) return 'Indian Ocean';
-      if (hasSouthAsia && hasAsia) return 'Indian Ocean';
-      if (hasSouthAsia && hasAfrica) return 'Indian Ocean';
+      // Mediterranean-Middle East: Europe to Asia/South Asia/Middle East via Med/Suez route
+      if (hasEurope && (hasAnyAsia || hasSouthAsia || hasMiddleEast)) return 'Mediterranean-Middle East';
+
+      // Indian Ocean: regional connections within Indian Ocean basin
+      if (hasMiddleEast && (hasAnyAsia || hasSouthAsia || hasAfrica)) return 'Indian Ocean';
+      if (hasSouthAsia && (hasAnyAsia || hasAfrica || hasOceania)) return 'Indian Ocean';
+      if (hasAfrica && (hasAnyAsia || hasSouthAsia)) return 'Indian Ocean';
+      if (hasIndianOceanTerritory) return 'Indian Ocean';
 
       // Africa Coastal: Europe to Africa (Atlantic side, no Asian/ME transit)
       if (hasEurope && hasAfrica && !hasAsia && !hasMiddleEast && !hasSouthAsia) return 'Africa Coastal';
 
-      // Intra-Asia: within Asia + Oceania
-      if ((hasAsia || hasOceania) && !hasEurope && !hasAmericas) return 'Intra-Asia';
+      // Intra-Asia: within Asia + Oceania (no Europe/Americas)
+      if ((hasAnyAsia || hasOceania) && !hasEurope && !hasAmericas) return 'Intra-Asia';
 
       // Intra-Americas: within the Americas
-      if (hasAmericas && !hasEurope && !hasAsia) return 'Intra-Americas';
+      if (hasAmericas && !hasEurope && !hasAnyAsia) return 'Intra-Americas';
 
       // Intra-Europe: Europe + nearby (e.g. North Africa via Mediterranean)
       if (hasEurope && hasAfrica && !hasAsia && !hasMiddleEast) return 'Intra-Europe';
+
+      // Middle East + Oceania fallback
+      if (hasMiddleEast && hasOceania) return 'Indian Ocean';
 
       return 'Unknown';
     }
@@ -23506,12 +23519,18 @@ function loadProjectObject(obj) {
     // Cross-ocean corridors
     if (hasEur && hasAmer) return 'Transatlantic';
     if (hasAmer && hasAsia) return 'Transpacific';
-    if (hasEur && hasAsia) return 'Indian Ocean';
+    if (hasEur && hasAsia) return 'Mediterranean-Middle East';
+
+    // AfricaME corridor detection
+    const hasAfricaME = r1 === 'AfricaME' || r2 === 'AfricaME';
+    if (hasEur && hasAfricaME) return 'Mediterranean-Middle East';
+    if (hasAfricaME && hasAsia) return 'Indian Ocean';
 
     // Single-region fallback
     if (hasEur) return 'Intra-Europe';
     if (hasAsia) return 'Intra-Asia';
     if (hasAmer) return 'Intra-Americas';
+    if (hasAfricaME) return 'Africa Coastal';
     return 'Unknown';
   }
 
