@@ -1701,6 +1701,38 @@
       flex-shrink: 0;
     }
 
+
+    /* DC Visor Detail Panel */
+    #dcVisorDetailPanel { border-top: 2px solid #9333ea; background: #faf5ff; padding: 0; max-height: 260px; overflow-y: auto; display: none; flex-direction: column; flex-shrink: 0; }
+    #dcVisorDetailPanel.visible { display: flex; }
+    #dcVisorDetailHeader { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px; background: #9333ea; color: #fff; font-size: 12px; font-weight: 600; }
+    #dcVisorDetailClose { background: none; border: none; color: #fff; cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; }
+    #dcVisorDetailBody { padding: 10px 12px; font-size: 12px; line-height: 1.6; }
+    .dc-detail-row { display: flex; gap: 8px; margin-bottom: 3px; flex-wrap: wrap; }
+    .dc-detail-label { color: #6b21a8; font-weight: 600; min-width: 86px; flex-shrink: 0; }
+    .dc-detail-value { color: #1a1a2e; word-break: break-word; }
+    .dc-detail-value a { color: #9333ea; text-decoration: none; }
+    .dc-detail-net-tag { display: inline-block; background: #ede9fe; color: #6b21a8; border: 1px solid #c4b5fd; border-radius: 3px; padding: 1px 5px; margin: 2px; font-size: 11px; }
+    #aiAgentPanel { position: absolute; right: 24px; top: 40px; width: 380px; height: 540px; background: #fff; border: 1px solid #d0d0d0; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 160; display: none; flex-direction: column; overflow: hidden; resize: both; min-width: 300px; min-height: 300px; }
+    #aiAgentPanel.show { display: flex; }
+    #aiAgentHeader { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; cursor: move; user-select: none; }
+    #aiAgentHeader h3 { margin: 0; font-size: 14px; font-weight: 600; }
+    #aiAgentHeaderBtns { display: flex; gap: 6px; }
+    #aiAgentHeaderBtns button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 7px; font-size: 13px; }
+    .ai-msg { max-width: 90%; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; }
+    .ai-msg.user { align-self: flex-end; background: #667eea; color: #fff; }
+    .ai-msg.assistant { align-self: flex-start; background: #fff; border: 1px solid #e0e0e0; color: #1a1a2e; }
+    .ai-msg.system { align-self: center; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; font-size: 11px; font-style: italic; max-width: 95%; }
+    #aiAgentMessages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
+    #aiAgentInputRow { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #e0e0e0; background: #fff; }
+    #aiAgentInput { flex: 1; padding: 7px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 12px; resize: none; height: 58px; font-family: inherit; }
+    #aiAgentInput:focus { outline: none; border-color: #667eea; }
+    #btnAiSend { padding: 8px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; align-self: flex-end; }
+    #btnAiSend:hover { opacity: 0.9; }
+    #aiApiKeyRow { padding: 7px 12px; background: #fff7ed; border-top: 1px solid #fed7aa; display: flex; align-items: center; gap: 6px; font-size: 11px; }
+    #aiApiKeyInput { flex: 1; padding: 4px 8px; border: 1px solid #fed7aa; border-radius: 4px; font-size: 11px; font-family: monospace; }
+    #btnAiKeySave { padding: 3px 8px; background: #f97316; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
+    #aiContextInfo { padding: 5px 12px; background: #eff6ff; border-top: 1px solid #bfdbfe; font-size: 10px; color: #3b82f6; }
     /* Visor toolbar action menus */
     .visor-action-menu {
       position: absolute;
@@ -6351,6 +6383,12 @@
         <path d="M2 12l10 5 10-5"/>
       </svg>
       <span style="font-size:11px; margin-left:4px;">Labels</span>
+    </button>
+    <!-- AI Agent Button -->
+    <div class="tool-sep"></div>
+    <button class="tool-btn" id="btnAiAgent" type="button" title="AI Agent - Chat with AI about your network" onclick="toggleAiAgent()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="12" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>
+      <span style="font-size:11px;margin-left:4px">AI Agent</span>
     </button>
 
     <!-- Main Canvas View Button -->
@@ -26216,11 +26254,42 @@ function loadProjectObject(obj) {
     if (dcVisorState.selectedDCs.has(dcId)) {
       dcVisorState.selectedDCs.delete(dcId);
       removeDCFromVisorMap(dcId);
+      if (dcVisorState.selectedDCs.size === 0) showDCVisorDetail(null);
     } else {
       dcVisorState.selectedDCs.add(dcId);
       addDCToVisorMap(dcId);
+      showDCVisorDetail(dcId);
     }
     renderDCVisorList();
+  }
+  function showDCVisorDetail(dcId) {
+    var panel = document.getElementById('dcVisorDetailPanel');
+    var body = document.getElementById('dcVisorDetailBody');
+    var titleEl = document.getElementById('dcVisorDetailTitle');
+    if (!panel || !body) return;
+    if (!dcId) { panel.classList.remove('visible'); return; }
+    var db = dcVisorState.dcDatabase;
+    var fac = db && db.facilities ? db.facilities.find(function(f){ return String(f.id) === String(dcId); }) : null;
+    if (!fac) { panel.classList.remove('visible'); return; }
+    if (titleEl) titleEl.textContent = '\u{1F3E2} ' + (fac.name || 'Datacenter');
+    var addr = [fac.address1, fac.address2, fac.city, fac.state, fac.zipcode, fac.country].filter(Boolean).join(', ');
+    var networks = (fac.networks || []).slice(0, 12);
+    var cables = (fac.cable_systems || []).slice(0, 8);
+    var moreNets = (fac.networks||[]).length > 12 ? (fac.networks.length - 12) : 0;
+    var moreCables = (fac.cable_systems||[]).length > 8 ? (fac.cable_systems.length - 8) : 0;
+    var rows = [];
+    if (fac.org_name) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Org:</span><span class="dc-detail-value">' + escapeHtml(fac.org_name) + '</span></div>');
+    if (addr) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Address:</span><span class="dc-detail-value">' + escapeHtml(addr) + '</span></div>');
+    if (fac.facility_type) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Type:</span><span class="dc-detail-value">' + escapeHtml(fac.facility_type) + '</span></div>');
+    if (fac.net_count != null) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Networks:</span><span class="dc-detail-value">' + fac.net_count + '</span></div>');
+    if (fac.ix_count != null) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">IX Points:</span><span class="dc-detail-value">' + fac.ix_count + '</span></div>');
+    if (fac.carrier_count != null) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Carriers:</span><span class="dc-detail-value">' + fac.carrier_count + '</span></div>');
+    if (fac.website) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Website:</span><span class="dc-detail-value"><a href="' + escapeHtml(fac.website) + '" target="_blank">' + escapeHtml(fac.website) + '</a></span></div>');
+    if (fac.latitude && fac.longitude) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">GPS:</span><span class="dc-detail-value">' + Number(fac.latitude).toFixed(4) + ', ' + Number(fac.longitude).toFixed(4) + '</span></div>');
+    if (cables.length) rows.push('<div class="dc-detail-row"><span class="dc-detail-label">Cables:</span><span class="dc-detail-value">' + cables.map(escapeHtml).join(', ') + (moreCables ? ' +' + moreCables + ' more' : '') + '</span></div>');
+    if (networks.length) rows.push('<div style="margin-top:6px"><span class="dc-detail-label">ASNs:</span><br>' + networks.map(function(n){ return '<span class="dc-detail-net-tag">' + escapeHtml(n.name || String(n)) + '</span>'; }).join('') + (moreNets ? '<span class="dc-detail-net-tag" style="background:#e5e7eb">+' + moreNets + ' more</span>' : '') + '</div>');
+    body.innerHTML = rows.join('');
+    panel.classList.add('visible');
   }
 
   function addDCToVisorMap(dcId) {
@@ -26618,6 +26687,13 @@ function loadProjectObject(obj) {
     });
 
     console.log('[DCVisor] Event handlers initialized');
+    var dcDetailCloseBtn = document.getElementById('dcVisorDetailClose');
+    if (dcDetailCloseBtn) {
+      dcDetailCloseBtn.addEventListener('click', function() {
+        var panel = document.getElementById('dcVisorDetailPanel');
+        if (panel) panel.classList.remove('visible');
+      });
+    }
   }
 
   // Initialize DC Visor on DOM ready
@@ -52565,12 +52641,48 @@ function handlePathKmlImport(e) {
       <!-- Dynamic list -->
     </div>
   </div>
+  <!-- DC Metadata Detail Panel -->
+  <div id="dcVisorDetailPanel">
+    <div id="dcVisorDetailHeader">
+      <span id="dcVisorDetailTitle">&#x1F3E2; Datacenter Details</span>
+      <button id="dcVisorDetailClose" title="Close">&#x2715;</button>
+    </div>
+    <div id="dcVisorDetailBody">
+      <div style="color:#888;font-size:12px;padding:4px 0">Click a datacenter in the list to see its details here.</div>
+    </div>
+  </div>
   <div id="dcVisorFooter">
     <span id="dcVisorDCCount">0 datacenters</span>
     <span>Click to show on map &#x2022; Double-click to zoom</span>
   </div>
 </aside>
-
+<!-- AI Agent Panel -->
+<div id="aiAgentPanel">
+  <div id="aiAgentHeader" onmousedown="startDragPanel('aiAgentPanel', event)">
+    <h3>&#x1F916; AI Agent</h3>
+    <div id="aiAgentHeaderBtns">
+      <button title="Close" onclick="toggleAiAgent()">&#x2715;</button>
+    </div>
+  </div>
+  <div id="aiApiKeyRow">
+    <label style="white-space:nowrap;color:#92400e">API Key:</label>
+    <input type="password" id="aiApiKeyInput" placeholder="sk-... (OpenAI key)" />
+    <select id="aiModelSelect" style="padding:3px 5px;border:1px solid #fed7aa;border-radius:4px;font-size:11px;">
+      <option value="gpt-4o-mini">GPT-4o mini</option>
+      <option value="gpt-4o">GPT-4o</option>
+      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+    </select>
+    <button id="btnAiKeySave" onclick="aiSaveKey()">Save</button>
+  </div>
+  <div id="aiContextInfo">Context: <span id="aiContextSummary">Loading...</span></div>
+  <div id="aiAgentMessages">
+    <div class="ai-msg system">Welcome to AI Agent! I can help you analyze your network diagram, datacenters, and cable systems. Enter your OpenAI API key above to get started.</div>
+  </div>
+  <div id="aiAgentInputRow">
+    <textarea id="aiAgentInput" placeholder="Ask about your diagram, datacenters, routes..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendMessage();}"></textarea>
+    <button id="btnAiSend" onclick="aiSendMessage()">Send</button>
+  </div>
+</div>
 <!-- Help Center Modal -->
 <div id="helpCenterModal">
   <div id="helpCenterContent">
@@ -54332,6 +54444,137 @@ function handlePathKmlImport(e) {
     });
   })();
 
+  // ── AI Agent Panel ─────────────────────────────────────────────────────────
+  var aiState = { messages: [], apiKey: '', model: 'gpt-4o-mini' };
+  (function() {
+    try { aiState.apiKey = localStorage.getItem('neximap_ai_key') || ''; } catch(e) {}
+    try { aiState.model = localStorage.getItem('neximap_ai_model') || 'gpt-4o-mini'; } catch(e) {}
+  })();
+  function toggleAiAgent() {
+    var panel = document.getElementById('aiAgentPanel');
+    if (!panel) return;
+    var visible = panel.classList.toggle('show');
+    var btn = document.getElementById('btnAiAgent');
+    if (btn) btn.classList.toggle('active', visible);
+    if (visible) {
+      var keyInput = document.getElementById('aiApiKeyInput');
+      var modelSel = document.getElementById('aiModelSelect');
+      if (keyInput && aiState.apiKey) keyInput.value = aiState.apiKey;
+      if (modelSel && aiState.model) modelSel.value = aiState.model;
+      updateAiContext();
+    }
+  }
+  function aiSaveKey() {
+    var keyInput = document.getElementById('aiApiKeyInput');
+    var modelSel = document.getElementById('aiModelSelect');
+    if (keyInput) {
+      aiState.apiKey = keyInput.value.trim();
+      try { localStorage.setItem('neximap_ai_key', aiState.apiKey); } catch(e) {}
+    }
+    if (modelSel) {
+      aiState.model = modelSel.value;
+      try { localStorage.setItem('neximap_ai_model', aiState.model); } catch(e) {}
+    }
+    aiAddMsg('system', 'API key saved! Ready to chat. Your key is stored in browser localStorage only.');
+  }
+  function updateAiContext() {
+    var summary = document.getElementById('aiContextSummary');
+    if (!summary) return;
+    try {
+      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
+      var edgeCount = (state && state.edges) ? state.edges.length : 0;
+      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
+      summary.textContent = 'Nodes: ' + nodeCount + ', Links: ' + edgeCount + ', DCs selected: ' + dcCount;
+    } catch(e) { summary.textContent = 'unavailable'; }
+  }
+  function getAiSystemPrompt() {
+    try {
+      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
+      var edgeCount = (state && state.edges) ? state.edges.length : 0;
+      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
+      var nodeNames = (state && state.nodes) ? state.nodes.slice(0,20).map(function(n){return n.label||n.id;}).filter(Boolean) : [];
+      var p = 'You are an AI assistant in NexiMap Studio, a professional network diagram and telecom infrastructure mapping tool. ';
+      p += 'Current diagram: ' + nodeCount + ' nodes, ' + edgeCount + ' links, ' + dcCount + ' selected DCs from PeeringDB. ';
+      if (nodeNames.length) p += 'Nodes: ' + nodeNames.join(', ') + '. ';
+      p += 'Help with network topology, submarine cables, datacenters, BGP, routing. Be concise.';
+      return p;
+    } catch(e) { return 'You are an AI assistant for NexiMap Studio, a network diagram tool.'; }
+  }
+  function aiAddMsg(role, text) {
+    var msgs = document.getElementById('aiAgentMessages');
+    if (!msgs) return;
+    var div = document.createElement('div');
+    div.className = 'ai-msg ' + role;
+    div.textContent = text;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+    if (role === 'user') aiState.messages.push({role:'user', content:text});
+    else if (role === 'assistant') aiState.messages.push({role:'assistant', content:text});
+  }
+  function aiSendMessage() {
+    var input = document.getElementById('aiAgentInput');
+    if (!input) return;
+    var text = input.value.trim();
+    if (!text) return;
+    if (!aiState.apiKey) {
+      aiAddMsg('system', 'Please enter and save your OpenAI API key first.');
+      return;
+    }
+    input.value = '';
+    aiAddMsg('user', text);
+    updateAiContext();
+    var msgsEl = document.getElementById('aiAgentMessages');
+    var thinking = document.createElement('div');
+    thinking.className = 'ai-msg assistant';
+    thinking.id = 'aiThinking';
+    thinking.textContent = 'Thinking...';
+    thinking.style.opacity = '0.5';
+    if (msgsEl) { msgsEl.appendChild(thinking); msgsEl.scrollTop = msgsEl.scrollHeight; }
+    var payload = [{ role: 'system', content: getAiSystemPrompt() }];
+    aiState.messages.slice(-10).forEach(function(m){ payload.push(m); });
+    fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + aiState.apiKey
+      },
+      body: JSON.stringify({
+        model: aiState.model || 'gpt-4o-mini',
+        messages: payload,
+        max_tokens: 700,
+        temperature: 0.7
+      })
+    }).then(function(r){ return r.json(); }).then(function(json){
+      var t = document.getElementById('aiThinking');
+      if (t) t.remove();
+      if (json.error) { aiAddMsg('system', 'API Error: ' + json.error.message); return; }
+      var reply = json.choices && json.choices[0] && json.choices[0].message ? json.choices[0].message.content : '(no response)';
+      aiAddMsg('assistant', reply);
+    }).catch(function(e){
+      var t = document.getElementById('aiThinking');
+      if (t) t.remove();
+      aiAddMsg('system', 'Error: ' + e.message);
+    });
+  }
+  function startDragPanel(panelId, e) {
+    var panel = document.getElementById(panelId);
+    if (!panel || e.button !== 0) return;
+    var sx = e.clientX - panel.offsetLeft;
+    var sy = e.clientY - panel.offsetTop;
+    function mv(ev) {
+      panel.style.left = Math.max(0, ev.clientX - sx) + 'px';
+      panel.style.top = Math.max(0, ev.clientY - sy) + 'px';
+      panel.style.right = 'auto';
+    }
+    function up() {
+      document.removeEventListener('mousemove', mv);
+      document.removeEventListener('mouseup', up);
+    }
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+    e.preventDefault();
+  }
+  // ── End AI Agent Panel ──────────────────────────────────────────────────────
   console.log('[NexiMap] Main script fully loaded');
 })();
 </script>
