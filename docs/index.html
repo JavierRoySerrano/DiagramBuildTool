@@ -54512,7 +54512,8 @@ function handlePathKmlImport(e) {
     open_kml_studio:'KML Studio', open_datacenter_visor:'Datacenter Visor',
     filter_by_tag:'Tag Filter', filter_by_cable_system:'Cable Filter',
     filter_by_nodes_or_containers:'Node Filter', filter_map:'Map Filter',
-    show_route_map:'Route Map', get_link_info:'Link Info'
+    show_route_map:'Route Map', get_link_info:'Link Info',
+    clear_all_filters:'Clear Filters', get_network_summary:'Network Summary'
   };
 
   function toggleAiAgent() {
@@ -54597,27 +54598,201 @@ function handlePathKmlImport(e) {
     nexiDispatchAction(tool, params);
   }
 
+  // Find a node by fuzzy city/PoP name match
+  function nexiFindNodeByName(name) {
+    if (!name || !state || !state.nodes) return null;
+    var q = name.toLowerCase().trim();
+    // Exact match first
+    var exact = state.nodes.find(function(n){ return (n.name||'').toLowerCase() === q; });
+    if (exact) return exact;
+    // Starts-with match
+    var starts = state.nodes.find(function(n){ return (n.name||'').toLowerCase().indexOf(q) === 0; });
+    if (starts) return starts;
+    // Contains match
+    var contains = state.nodes.find(function(n){ return (n.name||'').toLowerCase().indexOf(q) >= 0; });
+    if (contains) return contains;
+    // Code match
+    var code = state.nodes.find(function(n){ return (n.code||'').toLowerCase() === q; });
+    return code || null;
+  }
+
   function nexiDispatchAction(tool, params) {
     // Route tool calls to actual Neximap functions
     try {
-      if (tool === 'open_cable_visor' && typeof openCableVisor === 'function') {
-        openCableVisor();
-      } else if (tool === 'open_pathfinder' && typeof openPathfinder === 'function') {
-        openPathfinder();
-      } else if (tool === 'open_datacenter_visor' && typeof openDcVisor === 'function') {
-        openDcVisor();
-      } else if (tool === 'open_kml_studio') {
-        window.open('kml-studio.html','_blank');
-      } else if (tool === 'filter_map' || tool === 'filter_by_tag' || tool === 'filter_by_cable_system' || tool === 'filter_by_nodes_or_containers') {
-        console.log('[Nexi] Filter action — params:', params);
-      } else if (tool === 'show_route_map' && params.waypoints) {
-        console.log('[Nexi] Route map — waypoints:', params.waypoints);
-      } else if (tool === 'show_route_price') {
-        console.log('[Nexi] Route price — ', params.origin, '->', params.destination);
-      } else if (tool === 'get_link_info') {
-        console.log('[Nexi] Link info — ', params.point_a, '<->', params.point_b);
-      } else if (tool === 'create_network_diagram') {
-        console.log('[Nexi] Create diagram — type:', params.diagram_type);
+      switch (tool) {
+
+        case 'open_cable_visor':
+          if (typeof showCableVisor === 'function') showCableVisor();
+          break;
+
+        case 'open_datacenter_visor':
+          if (typeof showDCVisor === 'function') showDCVisor();
+          break;
+
+        case 'open_pathfinder':
+          if (typeof toggleRouteFinder === 'function') {
+            // Open the pathfinder panel if not already open
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            // Set origin/destination if provided
+            var originSel = document.getElementById('routeOriginSelect');
+            var destSel = document.getElementById('routeDestSelect');
+            if (params.origin && originSel) {
+              var oNode = nexiFindNodeByName(params.origin);
+              if (oNode) { originSel.value = oNode.id; originSel.dispatchEvent(new Event('change')); }
+            }
+            if (params.destination && destSel) {
+              var dNode = nexiFindNodeByName(params.destination);
+              if (dNode) { destSel.value = dNode.id; destSel.dispatchEvent(new Event('change')); }
+            }
+            // Auto-calculate if both are set or explicitly requested
+            if (params.run_calculation || (params.origin && params.destination)) {
+              setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+            }
+          }
+          break;
+
+        case 'open_kml_studio':
+          if (typeof openKMLStudio === 'function') openKMLStudio();
+          else window.open('kml-studio.html','_blank');
+          break;
+
+        case 'show_route_price':
+          // Open pathfinder with origin/destination and trigger calculation
+          if (typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var rpOriginSel = document.getElementById('routeOriginSelect');
+            var rpDestSel = document.getElementById('routeDestSelect');
+            if (params.origin && rpOriginSel) {
+              var rpO = nexiFindNodeByName(params.origin);
+              if (rpO) { rpOriginSel.value = rpO.id; rpOriginSel.dispatchEvent(new Event('change')); }
+            }
+            if (params.destination && rpDestSel) {
+              var rpD = nexiFindNodeByName(params.destination);
+              if (rpD) { rpDestSel.value = rpD.id; rpDestSel.dispatchEvent(new Event('change')); }
+            }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'show_route_map':
+          // Open pathfinder with first/last waypoint as origin/destination
+          if (params.waypoints && params.waypoints.length >= 2 && typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var rmOriginSel = document.getElementById('routeOriginSelect');
+            var rmDestSel = document.getElementById('routeDestSelect');
+            var rmO = nexiFindNodeByName(params.waypoints[0]);
+            var rmD = nexiFindNodeByName(params.waypoints[params.waypoints.length - 1]);
+            if (rmO && rmOriginSel) { rmOriginSel.value = rmO.id; rmOriginSel.dispatchEvent(new Event('change')); }
+            if (rmD && rmDestSel) { rmDestSel.value = rmD.id; rmDestSel.dispatchEvent(new Event('change')); }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'get_link_info':
+          // Open pathfinder between the two points
+          if (params.point_a && params.point_b && typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var liOriginSel = document.getElementById('routeOriginSelect');
+            var liDestSel = document.getElementById('routeDestSelect');
+            var liA = nexiFindNodeByName(params.point_a);
+            var liB = nexiFindNodeByName(params.point_b);
+            if (liA && liOriginSel) { liOriginSel.value = liA.id; liOriginSel.dispatchEvent(new Event('change')); }
+            if (liB && liDestSel) { liDestSel.value = liB.id; liDestSel.dispatchEvent(new Event('change')); }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'filter_by_tag':
+          if (params.tags && params.tags.length && state && state.tagFilter) {
+            // Open unified filter panel
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            // Clear if requested or by default
+            if (params.clear_existing !== false) state.tagFilter.selectedTags.clear();
+            params.tags.forEach(function(t) { state.tagFilter.selectedTags.add(t); });
+            state.tagFilter.mode = (params.match_mode === 'all') ? 'include' : 'include';
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof updateTagFilterList === 'function') updateTagFilterList();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_by_cable_system':
+          if (params.cable_systems && params.cable_systems.length && state && state.cableSystemFilter) {
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            state.cableSystemFilter.selectedSystems.clear();
+            params.cable_systems.forEach(function(s) { state.cableSystemFilter.selectedSystems.add(s); });
+            state.cableSystemFilter.mode = 'selected';
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof updateCableSystemFilterList === 'function') updateCableSystemFilterList();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_by_nodes_or_containers':
+          if (state) {
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            // Filter by node names
+            if (params.node_names && params.node_names.length && state.nodeFilter) {
+              state.nodeFilter.selectedNodes.clear();
+              params.node_names.forEach(function(name) {
+                var n = nexiFindNodeByName(name);
+                if (n) state.nodeFilter.selectedNodes.add(n.id);
+              });
+              state.nodeFilter.mode = 'selected';
+              if (typeof updateNodeFilterList === 'function') updateNodeFilterList();
+            }
+            // Filter by container names
+            if (params.container_names && params.container_names.length && state.containerFilter) {
+              state.containerFilter.selectedGroups.clear();
+              params.container_names.forEach(function(name) {
+                var q = name.toLowerCase();
+                var g = state.groups.find(function(gr){ return (gr.name||'').toLowerCase().indexOf(q) >= 0; });
+                if (g) state.containerFilter.selectedGroups.add(g.id);
+              });
+              state.containerFilter.mode = 'selected';
+            }
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_map':
+          // General filter — open the unified filter panel and apply what we can
+          if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+          // Apply tag-based region/technology/provider filters if they match existing tags
+          if (state && state.tagFilter) {
+            var filterTags = [];
+            if (params.region) filterTags.push(params.region);
+            if (params.technology) filterTags.push(params.technology);
+            if (params.provider) filterTags.push(params.provider);
+            if (filterTags.length) {
+              state.tagFilter.selectedTags.clear();
+              filterTags.forEach(function(t) { state.tagFilter.selectedTags.add(t); });
+              state.tagFilter.mode = 'include';
+              if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+              if (typeof updateTagFilterList === 'function') updateTagFilterList();
+              if (typeof render === 'function') render();
+            }
+          }
+          break;
+
+        case 'clear_all_filters':
+          var clearBtn = document.getElementById('btnClearAllFilters');
+          if (clearBtn) clearBtn.click();
+          break;
+
+        case 'get_network_summary':
+          // Log summary — the AI response text already contains the answer
+          console.log('[Nexi] Network summary:', { nodes: state.nodes.length, links: state.edges.length, groups: state.groups.length });
+          break;
+
+        case 'create_network_diagram':
+          // Open data table as the closest match for viewing/creating network data
+          if (typeof showDataTable === 'function') showDataTable();
+          break;
+
+        default:
+          console.log('[Nexi] Unhandled tool:', tool, params);
       }
     } catch(e) { console.warn('[Nexi] Dispatch error:', e); }
   }
