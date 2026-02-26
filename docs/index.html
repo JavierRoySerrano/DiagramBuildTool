@@ -1713,26 +1713,74 @@
     .dc-detail-value { color: #1a1a2e; word-break: break-word; }
     .dc-detail-value a { color: #9333ea; text-decoration: none; }
     .dc-detail-net-tag { display: inline-block; background: #ede9fe; color: #6b21a8; border: 1px solid #c4b5fd; border-radius: 3px; padding: 1px 5px; margin: 2px; font-size: 11px; }
-    #aiAgentPanel { position: absolute; right: 24px; top: 40px; width: 380px; height: 540px; background: #fff; border: 1px solid #d0d0d0; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); z-index: 160; display: none; flex-direction: column; overflow: hidden; resize: both; min-width: 300px; min-height: 300px; }
+    /* ── Nexi AI Agent Panel ─────────────────────────────────── */
+    #aiAgentPanel { position: absolute; right: 24px; top: 40px; width: 400px; height: 580px; background: rgba(12,16,28,0.97); border: 1px solid rgba(0,229,255,0.18); border-radius: 16px; box-shadow: 0 12px 48px rgba(0,0,0,0.5), 0 0 1px rgba(0,229,255,0.3), inset 0 1px 0 rgba(255,255,255,0.04); z-index: 160; display: none; flex-direction: column; overflow: hidden; resize: both; min-width: 320px; min-height: 340px; backdrop-filter: blur(20px); }
     #aiAgentPanel.show { display: flex; }
-    #aiAgentHeader { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; cursor: move; user-select: none; }
-    #aiAgentHeader h3 { margin: 0; font-size: 14px; font-weight: 600; }
-    #aiAgentHeaderBtns { display: flex; gap: 6px; }
-    #aiAgentHeaderBtns button { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 4px; cursor: pointer; padding: 2px 7px; font-size: 13px; }
-    .ai-msg { max-width: 90%; padding: 8px 12px; border-radius: 8px; font-size: 12.5px; line-height: 1.5; white-space: pre-wrap; }
-    .ai-msg.user { align-self: flex-end; background: #667eea; color: #fff; }
-    .ai-msg.assistant { align-self: flex-start; background: #fff; border: 1px solid #e0e0e0; color: #1a1a2e; }
-    .ai-msg.system { align-self: center; background: #fef3c7; border: 1px solid #fde68a; color: #92400e; font-size: 11px; font-style: italic; max-width: 95%; }
-    #aiAgentMessages { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
-    #aiAgentInputRow { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #e0e0e0; background: #fff; }
-    #aiAgentInput { flex: 1; padding: 7px 10px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 12px; resize: none; height: 58px; font-family: inherit; }
-    #aiAgentInput:focus { outline: none; border-color: #667eea; }
-    #btnAiSend { padding: 8px 14px; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; align-self: flex-end; }
-    #btnAiSend:hover { opacity: 0.9; }
-    #aiApiKeyRow { padding: 7px 12px; background: #fff7ed; border-top: 1px solid #fed7aa; display: flex; align-items: center; gap: 6px; font-size: 11px; }
-    #aiApiKeyInput { flex: 1; padding: 4px 8px; border: 1px solid #fed7aa; border-radius: 4px; font-size: 11px; font-family: monospace; }
-    #btnAiKeySave { padding: 3px 8px; background: #f97316; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
-    #aiContextInfo { padding: 5px 12px; background: #eff6ff; border-top: 1px solid #bfdbfe; font-size: 10px; color: #3b82f6; }
+    #aiAgentHeader { display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: linear-gradient(180deg, rgba(0,229,255,0.08) 0%, transparent 100%); border-bottom: 1px solid rgba(0,229,255,0.1); cursor: move; user-select: none; }
+    .nexi-hdr-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #00B4D8, #0077B6); display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 10px rgba(0,180,216,0.3); }
+    .nexi-hdr-avatar svg { width: 18px; height: 18px; fill: #fff; }
+    .nexi-hdr-info { flex: 1; }
+    .nexi-hdr-title { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: 0.3px; margin: 0; }
+    .nexi-hdr-sub { font-size: 10px; color: rgba(0,229,255,0.7); letter-spacing: 0.3px; margin-top: 1px; }
+    .nexi-hdr-status { width: 7px; height: 7px; border-radius: 50%; background: #00E676; box-shadow: 0 0 6px rgba(0,230,118,0.5); }
+    #aiAgentHeaderBtns { display: flex; gap: 4px; }
+    #aiAgentHeaderBtns button { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.5); border-radius: 6px; cursor: pointer; padding: 3px 8px; font-size: 11px; transition: all 0.2s; }
+    #aiAgentHeaderBtns button:hover { color: #fff; background: rgba(255,255,255,0.1); }
+    .ai-msg { max-width: 88%; padding: 10px 13px; border-radius: 14px; font-size: 12.5px; line-height: 1.55; animation: nexiMsgIn 0.3s ease-out; }
+    .ai-msg.user { align-self: flex-end; background: linear-gradient(135deg, #4F46E5, #4338CA); color: #fff; border-bottom-right-radius: 4px; }
+    .ai-msg.assistant { align-self: flex-start; background: rgba(255,255,255,0.06); color: #e0e6ed; border: 1px solid rgba(255,255,255,0.06); border-bottom-left-radius: 4px; }
+    .ai-msg.system { align-self: center; background: rgba(0,229,255,0.08); border: 1px solid rgba(0,229,255,0.15); color: rgba(0,229,255,0.8); font-size: 11px; font-style: normal; max-width: 95%; border-radius: 10px; }
+    .ai-msg strong { color: #fff; }
+    .ai-msg em { color: rgba(0,229,255,0.85); }
+    .ai-msg code { padding: 1px 5px; border-radius: 4px; background: rgba(0,229,255,0.1); color: #00E5FF; font-family: monospace; font-size: 11.5px; }
+    .ai-msg h2, .ai-msg h3 { font-size: 12.5px; font-weight: 600; color: #fff; margin: 6px 0 3px; }
+    .ai-msg ul { padding-left: 16px; margin: 3px 0; }
+    .ai-msg li { margin: 1px 0; }
+    @keyframes nexiMsgIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    #aiAgentMessages { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: transparent; }
+    #aiAgentMessages::-webkit-scrollbar { width: 4px; }
+    #aiAgentMessages::-webkit-scrollbar-track { background: transparent; }
+    #aiAgentMessages::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.15); border-radius: 10px; }
+    #aiAgentInputRow { display: flex; gap: 8px; padding: 10px 14px 14px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(8,12,24,0.5); }
+    #aiAgentInput { flex: 1; padding: 9px 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.05); color: #fff; border-radius: 12px; font-size: 12.5px; resize: none; height: 40px; font-family: inherit; transition: border-color 0.2s; }
+    #aiAgentInput::placeholder { color: rgba(255,255,255,0.25); }
+    #aiAgentInput:focus { outline: none; border-color: rgba(0,229,255,0.35); box-shadow: 0 0 0 3px rgba(0,229,255,0.06); }
+    #btnAiSend { width: 38px; height: 38px; background: linear-gradient(135deg, #00B4D8, #0077B6); color: #fff; border: none; border-radius: 10px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+    #btnAiSend:hover { background: linear-gradient(135deg, #00C4E8, #0087C6); box-shadow: 0 2px 12px rgba(0,180,216,0.4); }
+    #btnAiSend:disabled { opacity: 0.3; cursor: default; }
+    .nexi-powered { text-align: center; font-size: 9.5px; color: rgba(255,255,255,0.18); padding: 4px 0 8px; letter-spacing: 0.3px; }
+    /* Nexi tool action cards */
+    .nexi-action-card { margin-top: 6px; padding: 8px 10px; border-radius: 10px; background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.12); }
+    .nexi-action-hdr { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-weight: 600; color: #00E5FF; font-size: 11px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .nexi-action-params { display: flex; flex-wrap: wrap; gap: 3px 6px; }
+    .nexi-action-param { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 5px; background: rgba(0,229,255,0.08); font-size: 10.5px; color: rgba(255,255,255,0.7); }
+    .nexi-action-param-k { color: rgba(0,229,255,0.6); font-weight: 500; }
+    .nexi-action-param-v { color: #fff; }
+    .nexi-action-exec { margin-top: 6px; padding: 5px 12px; border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; background: rgba(0,229,255,0.08); color: #00E5FF; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .nexi-action-exec:hover { background: rgba(0,229,255,0.15); border-color: rgba(0,229,255,0.5); }
+    .nexi-action-exec.executed { color: #00E676; border-color: rgba(0,230,118,0.3); background: rgba(0,230,118,0.08); cursor: default; }
+    /* Nexi typing indicator */
+    .nexi-typing { display: flex; align-items: center; gap: 8px; animation: nexiMsgIn 0.3s ease-out; }
+    .nexi-typing-bubble { display: flex; gap: 4px; padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.06); border-bottom-left-radius: 4px; }
+    .nexi-typing-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(0,229,255,0.5); animation: nexiTypingBounce 1.4s ease-in-out infinite; }
+    .nexi-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .nexi-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes nexiTypingBounce { 0%,60%,100% { transform:translateY(0); opacity:0.4; } 30% { transform:translateY(-5px); opacity:1; } }
+    /* Nexi suggestion chips */
+    .nexi-suggestions { display: flex; flex-wrap: wrap; gap: 5px; padding: 8px 14px 2px; }
+    .nexi-chip { padding: 5px 10px; border-radius: 16px; border: 1px solid rgba(0,229,255,0.2); background: rgba(0,229,255,0.05); color: rgba(0,229,255,0.8); font-size: 11px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .nexi-chip:hover { background: rgba(0,229,255,0.12); border-color: rgba(0,229,255,0.4); color: #00E5FF; }
+    /* Nexi welcome */
+    .nexi-welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 20px; text-align: center; }
+    .nexi-welcome-icon { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, #00B4D8, #0077B6); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; box-shadow: 0 4px 20px rgba(0,180,216,0.3); }
+    .nexi-welcome-icon svg { width: 28px; height: 28px; fill: #fff; }
+    .nexi-welcome h3 { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+    .nexi-welcome p { font-size: 12px; color: rgba(255,255,255,0.4); line-height: 1.5; max-width: 280px; margin-bottom: 16px; }
+    .nexi-welcome-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; width: 100%; }
+    .nexi-wcard { padding: 10px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: all 0.2s; text-align: left; }
+    .nexi-wcard:hover { background: rgba(0,229,255,0.06); border-color: rgba(0,229,255,0.2); }
+    .nexi-wcard-title { font-size: 11.5px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+    .nexi-wcard-desc { font-size: 10px; color: rgba(255,255,255,0.38); line-height: 1.35; }
     /* Visor toolbar action menus */
     .visor-action-menu {
       position: absolute;
@@ -52656,32 +52704,43 @@ function handlePathKmlImport(e) {
     <span>Click to show on map &#x2022; Double-click to zoom</span>
   </div>
 </aside>
-<!-- AI Agent Panel -->
+<!-- Nexi AI Agent Panel -->
 <div id="aiAgentPanel">
   <div id="aiAgentHeader" onmousedown="startDragPanel('aiAgentPanel', event)">
-    <h3>&#x1F916; AI Agent</h3>
+    <div class="nexi-hdr-avatar"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+    <div class="nexi-hdr-info">
+      <div class="nexi-hdr-title">Nexi</div>
+      <div class="nexi-hdr-sub">Neximap AI Expert Assistant</div>
+    </div>
+    <div class="nexi-hdr-status"></div>
     <div id="aiAgentHeaderBtns">
+      <button title="Clear chat" onclick="nexiClearChat()">Clear</button>
       <button title="Close" onclick="toggleAiAgent()">&#x2715;</button>
     </div>
   </div>
-  <div id="aiApiKeyRow">
-    <label style="white-space:nowrap;color:#92400e">API Key:</label>
-    <input type="password" id="aiApiKeyInput" placeholder="sk-... (OpenAI key)" />
-    <select id="aiModelSelect" style="padding:3px 5px;border:1px solid #fed7aa;border-radius:4px;font-size:11px;">
-      <option value="gpt-4o-mini">GPT-4o mini</option>
-      <option value="gpt-4o">GPT-4o</option>
-      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-    </select>
-    <button id="btnAiKeySave" onclick="aiSaveKey()">Save</button>
-  </div>
-  <div id="aiContextInfo">Context: <span id="aiContextSummary">Loading...</span></div>
   <div id="aiAgentMessages">
-    <div class="ai-msg system">Welcome to AI Agent! I can help you analyze your network diagram, datacenters, and cable systems. Enter your OpenAI API key above to get started.</div>
+    <div class="nexi-welcome" id="nexiWelcome">
+      <div class="nexi-welcome-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div>
+      <h3>Hi, I'm Nexi</h3>
+      <p>Your AI expert for network routes, submarine cables, pricing, and more.</p>
+      <div class="nexi-welcome-grid">
+        <div class="nexi-wcard" onclick="nexiQuickSend('Find the best latency path from London to Singapore')"><div class="nexi-wcard-title">Find Routes</div><div class="nexi-wcard-desc">Optimal paths between cities</div></div>
+        <div class="nexi-wcard" onclick="nexiQuickSend('Show me submarine cables in the Mediterranean')"><div class="nexi-wcard-title">Explore Cables</div><div class="nexi-wcard-desc">Browse cable systems</div></div>
+        <div class="nexi-wcard" onclick="nexiQuickSend('What is the price for 100G between NYC and Frankfurt?')"><div class="nexi-wcard-title">Check Pricing</div><div class="nexi-wcard-desc">Bandwidth pricing between PoPs</div></div>
+        <div class="nexi-wcard" onclick="nexiQuickSend('Show Equinix datacenters in Frankfurt')"><div class="nexi-wcard-title">Datacenters</div><div class="nexi-wcard-desc">Find DCs by region or provider</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="nexi-suggestions" id="nexiSuggestions">
+    <span class="nexi-chip" onclick="nexiQuickSend('Show cables in the Atlantic')">Atlantic cables</span>
+    <span class="nexi-chip" onclick="nexiQuickSend('Find path London to Tokyo best latency')">London-Tokyo</span>
+    <span class="nexi-chip" onclick="nexiQuickSend('Show Equinix datacenters in Europe')">Equinix EU</span>
   </div>
   <div id="aiAgentInputRow">
-    <textarea id="aiAgentInput" placeholder="Ask about your diagram, datacenters, routes..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendMessage();}"></textarea>
-    <button id="btnAiSend" onclick="aiSendMessage()">Send</button>
+    <textarea id="aiAgentInput" placeholder="Ask Nexi about routes, cables, pricing..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();aiSendMessage();}" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px';"></textarea>
+    <button id="btnAiSend" onclick="aiSendMessage()">&#x27A4;</button>
   </div>
+  <div class="nexi-powered">Powered by Claude AI</div>
 </div>
 <!-- Help Center Modal -->
 <div id="helpCenterModal">
@@ -54444,12 +54503,19 @@ function handlePathKmlImport(e) {
     });
   })();
 
-  // ── AI Agent Panel ─────────────────────────────────────────────────────────
-  var aiState = { messages: [], apiKey: '', model: 'gpt-4o-mini' };
-  (function() {
-    try { aiState.apiKey = localStorage.getItem('neximap_ai_key') || ''; } catch(e) {}
-    try { aiState.model = localStorage.getItem('neximap_ai_model') || 'gpt-4o-mini'; } catch(e) {}
-  })();
+  // ── Nexi AI Agent Panel — Cloudflare Worker Integration ───────────────────
+  var NEXI_WORKER_URL = 'https://neximap-ai-agent.fcoroyse-spam.workers.dev/';
+  var nexiState = { history: [], hasMessages: false, isLoading: false };
+  var NEXI_TOOL_LABELS = {
+    show_route_price:'Route Pricing', create_network_diagram:'Network Diagram',
+    open_cable_visor:'Cable Visor', open_pathfinder:'Pathfinder',
+    open_kml_studio:'KML Studio', open_datacenter_visor:'Datacenter Visor',
+    filter_by_tag:'Tag Filter', filter_by_cable_system:'Cable Filter',
+    filter_by_nodes_or_containers:'Node Filter', filter_map:'Map Filter',
+    show_route_map:'Route Map', get_link_info:'Link Info',
+    clear_all_filters:'Clear Filters', get_network_summary:'Network Summary'
+  };
+
   function toggleAiAgent() {
     var panel = document.getElementById('aiAgentPanel');
     if (!panel) return;
@@ -54457,104 +54523,354 @@ function handlePathKmlImport(e) {
     var btn = document.getElementById('btnAiAgent');
     if (btn) btn.classList.toggle('active', visible);
     if (visible) {
-      var keyInput = document.getElementById('aiApiKeyInput');
-      var modelSel = document.getElementById('aiModelSelect');
-      if (keyInput && aiState.apiKey) keyInput.value = aiState.apiKey;
-      if (modelSel && aiState.model) modelSel.value = aiState.model;
-      updateAiContext();
+      setTimeout(function(){ var inp = document.getElementById('aiAgentInput'); if(inp) inp.focus(); }, 300);
     }
   }
-  function aiSaveKey() {
-    var keyInput = document.getElementById('aiApiKeyInput');
-    var modelSel = document.getElementById('aiModelSelect');
-    if (keyInput) {
-      aiState.apiKey = keyInput.value.trim();
-      try { localStorage.setItem('neximap_ai_key', aiState.apiKey); } catch(e) {}
-    }
-    if (modelSel) {
-      aiState.model = modelSel.value;
-      try { localStorage.setItem('neximap_ai_model', aiState.model); } catch(e) {}
-    }
-    aiAddMsg('system', 'API key saved! Ready to chat. Your key is stored in browser localStorage only.');
+
+  function nexiRenderMd(t) {
+    if (!t) return '';
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+      .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+      .replace(/\*\*\*(.+?)\*\*\*/g,'<strong><em>$1</em></strong>')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`([^`]+)`/g,'<code>$1</code>')
+      .replace(/^- (.+)$/gm,'<li>$1</li>')
+      .replace(/((?:<li>.*?<\/li>)+)/g,'<ul>$1</ul>')
+      .replace(/\n\n/g,'<br><br>')
+      .replace(/\n/g,'<br>');
   }
-  function updateAiContext() {
-    var summary = document.getElementById('aiContextSummary');
-    if (!summary) return;
-    try {
-      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
-      var edgeCount = (state && state.edges) ? state.edges.length : 0;
-      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
-      summary.textContent = 'Nodes: ' + nodeCount + ', Links: ' + edgeCount + ', DCs selected: ' + dcCount;
-    } catch(e) { summary.textContent = 'unavailable'; }
-  }
-  function getAiSystemPrompt() {
-    try {
-      var nodeCount = (state && state.nodes) ? state.nodes.length : 0;
-      var edgeCount = (state && state.edges) ? state.edges.length : 0;
-      var dcCount = (dcVisorState && dcVisorState.selectedDCs) ? dcVisorState.selectedDCs.size : 0;
-      var nodeNames = (state && state.nodes) ? state.nodes.slice(0,20).map(function(n){return n.label||n.id;}).filter(Boolean) : [];
-      var p = 'You are an AI assistant in NexiMap Studio, a professional network diagram and telecom infrastructure mapping tool. ';
-      p += 'Current diagram: ' + nodeCount + ' nodes, ' + edgeCount + ' links, ' + dcCount + ' selected DCs from PeeringDB. ';
-      if (nodeNames.length) p += 'Nodes: ' + nodeNames.join(', ') + '. ';
-      p += 'Help with network topology, submarine cables, datacenters, BGP, routing. Be concise.';
-      return p;
-    } catch(e) { return 'You are an AI assistant for NexiMap Studio, a network diagram tool.'; }
-  }
-  function aiAddMsg(role, text) {
+
+  function nexiAddMsg(role, content, isHtml) {
     var msgs = document.getElementById('aiAgentMessages');
     if (!msgs) return;
     var div = document.createElement('div');
     div.className = 'ai-msg ' + role;
-    div.textContent = text;
+    if (isHtml) div.innerHTML = content;
+    else div.textContent = content;
     msgs.appendChild(div);
-    msgs.scrollTop = msgs.scrollHeight;
-    if (role === 'user') aiState.messages.push({role:'user', content:text});
-    else if (role === 'assistant') aiState.messages.push({role:'assistant', content:text});
+    setTimeout(function(){ msgs.scrollTop = msgs.scrollHeight; }, 40);
   }
+
+  function nexiShowTyping() {
+    var msgs = document.getElementById('aiAgentMessages');
+    if (!msgs || document.getElementById('nexiTyping')) return;
+    var el = document.createElement('div');
+    el.className = 'nexi-typing';
+    el.id = 'nexiTyping';
+    el.innerHTML = '<div class="nexi-typing-bubble"><div class="nexi-typing-dot"></div><div class="nexi-typing-dot"></div><div class="nexi-typing-dot"></div></div>';
+    msgs.appendChild(el);
+    setTimeout(function(){ msgs.scrollTop = msgs.scrollHeight; }, 40);
+  }
+
+  function nexiHideTyping() {
+    var el = document.getElementById('nexiTyping');
+    if (el) el.remove();
+  }
+
+  function nexiBuildActionCard(action) {
+    var label = NEXI_TOOL_LABELS[action.tool] || action.tool;
+    var params = '';
+    if (action.parameters) {
+      Object.keys(action.parameters).forEach(function(k) {
+        var v = action.parameters[k];
+        if (Array.isArray(v)) v = v.join(', ');
+        params += '<span class="nexi-action-param"><span class="nexi-action-param-k">' + k + ':</span> <span class="nexi-action-param-v">' + v + '</span></span>';
+      });
+    }
+    return '<div class="nexi-action-card">' +
+      '<div class="nexi-action-hdr">' + label + '</div>' +
+      (params ? '<div class="nexi-action-params">' + params + '</div>' : '') +
+      '<button class="nexi-action-exec" data-tool="' + action.tool + '" data-params=\'' + JSON.stringify(action.parameters||{}).replace(/'/g,'&#39;') + '\' onclick="nexiExecAction(this)">Execute in Neximap</button>' +
+      '</div>';
+  }
+
+  function nexiExecAction(btn) {
+    if (btn.classList.contains('executed')) return;
+    var tool = btn.getAttribute('data-tool');
+    var params = {};
+    try { params = JSON.parse(btn.getAttribute('data-params')); } catch(e){}
+    btn.classList.add('executed');
+    btn.textContent = 'Executed';
+    // Dispatch tool actions to Neximap
+    console.log('[Nexi] Executing:', tool, params);
+    nexiDispatchAction(tool, params);
+  }
+
+  // Find a node by fuzzy city/PoP name match
+  function nexiFindNodeByName(name) {
+    if (!name || !state || !state.nodes) return null;
+    var q = name.toLowerCase().trim();
+    // Exact match first
+    var exact = state.nodes.find(function(n){ return (n.name||'').toLowerCase() === q; });
+    if (exact) return exact;
+    // Starts-with match
+    var starts = state.nodes.find(function(n){ return (n.name||'').toLowerCase().indexOf(q) === 0; });
+    if (starts) return starts;
+    // Contains match
+    var contains = state.nodes.find(function(n){ return (n.name||'').toLowerCase().indexOf(q) >= 0; });
+    if (contains) return contains;
+    // Code match
+    var code = state.nodes.find(function(n){ return (n.code||'').toLowerCase() === q; });
+    return code || null;
+  }
+
+  function nexiDispatchAction(tool, params) {
+    // Route tool calls to actual Neximap functions
+    try {
+      switch (tool) {
+
+        case 'open_cable_visor':
+          if (typeof showCableVisor === 'function') showCableVisor();
+          break;
+
+        case 'open_datacenter_visor':
+          if (typeof showDCVisor === 'function') showDCVisor();
+          break;
+
+        case 'open_pathfinder':
+          if (typeof toggleRouteFinder === 'function') {
+            // Open the pathfinder panel if not already open
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            // Set origin/destination if provided
+            var originSel = document.getElementById('routeOriginSelect');
+            var destSel = document.getElementById('routeDestSelect');
+            if (params.origin && originSel) {
+              var oNode = nexiFindNodeByName(params.origin);
+              if (oNode) { originSel.value = oNode.id; originSel.dispatchEvent(new Event('change')); }
+            }
+            if (params.destination && destSel) {
+              var dNode = nexiFindNodeByName(params.destination);
+              if (dNode) { destSel.value = dNode.id; destSel.dispatchEvent(new Event('change')); }
+            }
+            // Auto-calculate if both are set or explicitly requested
+            if (params.run_calculation || (params.origin && params.destination)) {
+              setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+            }
+          }
+          break;
+
+        case 'open_kml_studio':
+          if (typeof openKMLStudio === 'function') openKMLStudio();
+          else window.open('kml-studio.html','_blank');
+          break;
+
+        case 'show_route_price':
+          // Open pathfinder with origin/destination and trigger calculation
+          if (typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var rpOriginSel = document.getElementById('routeOriginSelect');
+            var rpDestSel = document.getElementById('routeDestSelect');
+            if (params.origin && rpOriginSel) {
+              var rpO = nexiFindNodeByName(params.origin);
+              if (rpO) { rpOriginSel.value = rpO.id; rpOriginSel.dispatchEvent(new Event('change')); }
+            }
+            if (params.destination && rpDestSel) {
+              var rpD = nexiFindNodeByName(params.destination);
+              if (rpD) { rpDestSel.value = rpD.id; rpDestSel.dispatchEvent(new Event('change')); }
+            }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'show_route_map':
+          // Open pathfinder with first/last waypoint as origin/destination
+          if (params.waypoints && params.waypoints.length >= 2 && typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var rmOriginSel = document.getElementById('routeOriginSelect');
+            var rmDestSel = document.getElementById('routeDestSelect');
+            var rmO = nexiFindNodeByName(params.waypoints[0]);
+            var rmD = nexiFindNodeByName(params.waypoints[params.waypoints.length - 1]);
+            if (rmO && rmOriginSel) { rmOriginSel.value = rmO.id; rmOriginSel.dispatchEvent(new Event('change')); }
+            if (rmD && rmDestSel) { rmDestSel.value = rmD.id; rmDestSel.dispatchEvent(new Event('change')); }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'get_link_info':
+          // Open pathfinder between the two points
+          if (params.point_a && params.point_b && typeof toggleRouteFinder === 'function') {
+            if (!window.routeFinderState || !window.routeFinderState.active) toggleRouteFinder();
+            var liOriginSel = document.getElementById('routeOriginSelect');
+            var liDestSel = document.getElementById('routeDestSelect');
+            var liA = nexiFindNodeByName(params.point_a);
+            var liB = nexiFindNodeByName(params.point_b);
+            if (liA && liOriginSel) { liOriginSel.value = liA.id; liOriginSel.dispatchEvent(new Event('change')); }
+            if (liB && liDestSel) { liDestSel.value = liB.id; liDestSel.dispatchEvent(new Event('change')); }
+            setTimeout(function(){ if (typeof calculateRoutes === 'function') calculateRoutes(); }, 300);
+          }
+          break;
+
+        case 'filter_by_tag':
+          if (params.tags && params.tags.length && state && state.tagFilter) {
+            // Open unified filter panel
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            // Clear if requested or by default
+            if (params.clear_existing !== false) state.tagFilter.selectedTags.clear();
+            params.tags.forEach(function(t) { state.tagFilter.selectedTags.add(t); });
+            state.tagFilter.mode = (params.match_mode === 'all') ? 'include' : 'include';
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof updateTagFilterList === 'function') updateTagFilterList();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_by_cable_system':
+          if (params.cable_systems && params.cable_systems.length && state && state.cableSystemFilter) {
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            state.cableSystemFilter.selectedSystems.clear();
+            params.cable_systems.forEach(function(s) { state.cableSystemFilter.selectedSystems.add(s); });
+            state.cableSystemFilter.mode = 'selected';
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof updateCableSystemFilterList === 'function') updateCableSystemFilterList();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_by_nodes_or_containers':
+          if (state) {
+            if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+            // Filter by node names
+            if (params.node_names && params.node_names.length && state.nodeFilter) {
+              state.nodeFilter.selectedNodes.clear();
+              params.node_names.forEach(function(name) {
+                var n = nexiFindNodeByName(name);
+                if (n) state.nodeFilter.selectedNodes.add(n.id);
+              });
+              state.nodeFilter.mode = 'selected';
+              if (typeof updateNodeFilterList === 'function') updateNodeFilterList();
+            }
+            // Filter by container names
+            if (params.container_names && params.container_names.length && state.containerFilter) {
+              state.containerFilter.selectedGroups.clear();
+              params.container_names.forEach(function(name) {
+                var q = name.toLowerCase();
+                var g = state.groups.find(function(gr){ return (gr.name||'').toLowerCase().indexOf(q) >= 0; });
+                if (g) state.containerFilter.selectedGroups.add(g.id);
+              });
+              state.containerFilter.mode = 'selected';
+            }
+            if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+            if (typeof render === 'function') render();
+          }
+          break;
+
+        case 'filter_map':
+          // General filter — open the unified filter panel and apply what we can
+          if (typeof toggleUnifiedFilterPanel === 'function') toggleUnifiedFilterPanel();
+          // Apply tag-based region/technology/provider filters if they match existing tags
+          if (state && state.tagFilter) {
+            var filterTags = [];
+            if (params.region) filterTags.push(params.region);
+            if (params.technology) filterTags.push(params.technology);
+            if (params.provider) filterTags.push(params.provider);
+            if (filterTags.length) {
+              state.tagFilter.selectedTags.clear();
+              filterTags.forEach(function(t) { state.tagFilter.selectedTags.add(t); });
+              state.tagFilter.mode = 'include';
+              if (typeof updateFilterButtonState === 'function') updateFilterButtonState();
+              if (typeof updateTagFilterList === 'function') updateTagFilterList();
+              if (typeof render === 'function') render();
+            }
+          }
+          break;
+
+        case 'clear_all_filters':
+          var clearBtn = document.getElementById('btnClearAllFilters');
+          if (clearBtn) clearBtn.click();
+          break;
+
+        case 'get_network_summary':
+          // Log summary — the AI response text already contains the answer
+          console.log('[Nexi] Network summary:', { nodes: state.nodes.length, links: state.edges.length, groups: state.groups.length });
+          break;
+
+        case 'create_network_diagram':
+          // Open data table as the closest match for viewing/creating network data
+          if (typeof showDataTable === 'function') showDataTable();
+          break;
+
+        default:
+          console.log('[Nexi] Unhandled tool:', tool, params);
+      }
+    } catch(e) { console.warn('[Nexi] Dispatch error:', e); }
+  }
+
+  function nexiQuickSend(text) {
+    var input = document.getElementById('aiAgentInput');
+    if (input) { input.value = text; input.dispatchEvent(new Event('input')); }
+    aiSendMessage();
+  }
+
   function aiSendMessage() {
     var input = document.getElementById('aiAgentInput');
     if (!input) return;
     var text = input.value.trim();
-    if (!text) return;
-    if (!aiState.apiKey) {
-      aiAddMsg('system', 'Please enter and save your OpenAI API key first.');
-      return;
+    if (!text || nexiState.isLoading) return;
+
+    // Remove welcome + suggestions on first message
+    if (!nexiState.hasMessages) {
+      nexiState.hasMessages = true;
+      var welcome = document.getElementById('nexiWelcome');
+      if (welcome) welcome.remove();
+      var sugg = document.getElementById('nexiSuggestions');
+      if (sugg) sugg.style.display = 'none';
     }
+
+    nexiAddMsg('user', text);
+    nexiState.history.push({ role: 'user', content: text });
     input.value = '';
-    aiAddMsg('user', text);
-    updateAiContext();
-    var msgsEl = document.getElementById('aiAgentMessages');
-    var thinking = document.createElement('div');
-    thinking.className = 'ai-msg assistant';
-    thinking.id = 'aiThinking';
-    thinking.textContent = 'Thinking...';
-    thinking.style.opacity = '0.5';
-    if (msgsEl) { msgsEl.appendChild(thinking); msgsEl.scrollTop = msgsEl.scrollHeight; }
-    var payload = [{ role: 'system', content: getAiSystemPrompt() }];
-    aiState.messages.slice(-10).forEach(function(m){ payload.push(m); });
-    fetch('https://api.openai.com/v1/chat/completions', {
+    input.style.height = 'auto';
+    nexiShowTyping();
+    nexiState.isLoading = true;
+
+    fetch(NEXI_WORKER_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + aiState.apiKey
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: aiState.model || 'gpt-4o-mini',
-        messages: payload,
-        max_tokens: 700,
-        temperature: 0.7
+        message: text,
+        conversation_history: nexiState.history.slice(0, -1)
       })
-    }).then(function(r){ return r.json(); }).then(function(json){
-      var t = document.getElementById('aiThinking');
-      if (t) t.remove();
-      if (json.error) { aiAddMsg('system', 'API Error: ' + json.error.message); return; }
-      var reply = json.choices && json.choices[0] && json.choices[0].message ? json.choices[0].message.content : '(no response)';
-      aiAddMsg('assistant', reply);
-    }).catch(function(e){
-      var t = document.getElementById('aiThinking');
-      if (t) t.remove();
-      aiAddMsg('system', 'Error: ' + e.message);
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error('Worker returned ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      nexiHideTyping();
+      nexiState.isLoading = false;
+      var html = '';
+      if (data.text) html += nexiRenderMd(data.text);
+      if (data.actions && data.actions.length > 0) {
+        data.actions.forEach(function(a) { html += nexiBuildActionCard(a); });
+      }
+      if (html) nexiAddMsg('assistant', html, true);
+      else nexiAddMsg('assistant', '(No response)');
+      nexiState.history.push({ role: 'assistant', content: data.text || '' });
+    })
+    .catch(function(err) {
+      nexiHideTyping();
+      nexiState.isLoading = false;
+      nexiAddMsg('system', 'Connection error: ' + err.message + '. Please check your network and try again.');
     });
+  }
+
+  function nexiClearChat() {
+    nexiState.history = [];
+    nexiState.hasMessages = false;
+    var msgs = document.getElementById('aiAgentMessages');
+    if (msgs) {
+      msgs.innerHTML = '';
+      // Rebuild welcome
+      var w = document.createElement('div');
+      w.className = 'nexi-welcome';
+      w.id = 'nexiWelcome';
+      w.innerHTML = '<div class="nexi-welcome-icon"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></div><h3>Hi, I\'m Nexi</h3><p>Your AI expert for network routes, submarine cables, pricing, and more.</p><div class="nexi-welcome-grid"><div class="nexi-wcard" onclick="nexiQuickSend(\'Find the best latency path from London to Singapore\')"><div class="nexi-wcard-title">Find Routes</div><div class="nexi-wcard-desc">Optimal paths between cities</div></div><div class="nexi-wcard" onclick="nexiQuickSend(\'Show me submarine cables in the Mediterranean\')"><div class="nexi-wcard-title">Explore Cables</div><div class="nexi-wcard-desc">Browse cable systems</div></div><div class="nexi-wcard" onclick="nexiQuickSend(\'What is the price for 100G between NYC and Frankfurt?\')"><div class="nexi-wcard-title">Check Pricing</div><div class="nexi-wcard-desc">Bandwidth pricing between PoPs</div></div><div class="nexi-wcard" onclick="nexiQuickSend(\'Show Equinix datacenters in Frankfurt\')"><div class="nexi-wcard-title">Datacenters</div><div class="nexi-wcard-desc">Find DCs by region or provider</div></div></div>';
+      msgs.appendChild(w);
+    }
+    var sugg = document.getElementById('nexiSuggestions');
+    if (sugg) sugg.style.display = '';
   }
   function startDragPanel(panelId, e) {
     var panel = document.getElementById(panelId);
