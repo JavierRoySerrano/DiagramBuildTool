@@ -54894,6 +54894,13 @@ function handlePathKmlImport(e) {
     document.addEventListener('mouseup', up);
     e.preventDefault();
   }
+  // Expose AI Agent functions to global scope (needed for inline onclick handlers)
+  window.toggleAiAgent = toggleAiAgent;
+  window.aiSendMessage = aiSendMessage;
+  window.nexiQuickSend = nexiQuickSend;
+  window.nexiClearChat = nexiClearChat;
+  window.nexiExecAction = nexiExecAction;
+  window.startDragPanel = startDragPanel;
   // ── End AI Agent Panel ──────────────────────────────────────────────────────
   console.log('[NexiMap] Main script fully loaded');
 })();
