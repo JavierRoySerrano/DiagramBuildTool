@@ -454,13 +454,29 @@ header {
 #neximapObjectsPanel .nxp-item .nxp-icon {
     font-size: 14px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+#neximapObjectsPanel .nxp-item .nxp-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
 }
 #neximapObjectsPanel .nxp-item .nxp-name {
-    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text);
+}
+#neximapObjectsPanel .nxp-item .nxp-info {
+    font-size: 10px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 #neximapObjectsPanel .nxp-empty {
     padding: 16px 12px;
@@ -7829,7 +7845,11 @@ function renderNeximapObjects(links, nodes, containers) {
     if (neximapObjects.links.length === 0) {
         linksItems.innerHTML = '<div class="nxp-empty">No links found</div>';
     } else {
-        neximapObjects.links.forEach(link => linksItems.appendChild(createNxpItem('link', link.id || link.name, link.name || link.id, '\uD83D\uDCCB')));
+        neximapObjects.links.forEach(link => {
+            const routeText = (link.aNodeName && link.bNodeName) ? (link.aNodeName + ' \u2192 ' + link.bNodeName) : '';
+            const linkSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+            linksItems.appendChild(createNxpItem('link', link.id || link.name, link.name || link.id, linkSvg, routeText));
+        });
     }
     linksItems.style.maxHeight = linksItems.scrollHeight + 'px';
 
@@ -7842,7 +7862,10 @@ function renderNeximapObjects(links, nodes, containers) {
     if (neximapObjects.nodes.length === 0) {
         nodesItems.innerHTML = '<div class="nxp-empty">No nodes found</div>';
     } else {
-        neximapObjects.nodes.forEach(node => nodesItems.appendChild(createNxpItem('node', node.id || node.name, node.name || node.id, '\uD83D\uDCCD')));
+        neximapObjects.nodes.forEach(node => {
+            const infoText = '(' + (node.linkCount || 0) + ' links, ' + (node.cableSystemCount || 0) + ' cable systems)';
+            nodesItems.appendChild(createNxpItem('node', node.id || node.name, node.name || node.id, '\uD83D\uDCCD', infoText));
+        });
     }
     nodesItems.style.maxHeight = nodesItems.scrollHeight + 'px';
 
@@ -7860,7 +7883,7 @@ function renderNeximapObjects(links, nodes, containers) {
     contItems.style.maxHeight = contItems.scrollHeight + 'px';
 }
 
-function createNxpItem(objectType, objectId, objectName, icon) {
+function createNxpItem(objectType, objectId, objectName, icon, infoText) {
     const el = document.createElement('div');
     el.className = 'nxp-item';
     el.dataset.objectType = objectType;
@@ -7870,13 +7893,29 @@ function createNxpItem(objectType, objectId, objectName, icon) {
 
     const iconEl = document.createElement('span');
     iconEl.className = 'nxp-icon';
-    iconEl.textContent = icon;
+    if (typeof icon === 'string' && icon.startsWith('<svg')) {
+        iconEl.innerHTML = icon;
+    } else {
+        iconEl.textContent = icon;
+    }
     el.appendChild(iconEl);
+
+    const contentEl = document.createElement('div');
+    contentEl.className = 'nxp-content';
 
     const nameEl = document.createElement('span');
     nameEl.className = 'nxp-name';
     nameEl.textContent = objectName;
-    el.appendChild(nameEl);
+    contentEl.appendChild(nameEl);
+
+    if (infoText) {
+        const infoEl = document.createElement('span');
+        infoEl.className = 'nxp-info';
+        infoEl.textContent = infoText;
+        contentEl.appendChild(infoEl);
+    }
+
+    el.appendChild(contentEl);
 
     el.addEventListener('dragover', (e) => {
         if (!e.dataTransfer.types.includes('text/plain')) return;
