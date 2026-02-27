@@ -342,6 +342,149 @@ header {
     width: 0; min-width: 0; overflow: hidden; border-left: none; opacity: 0; padding: 0;
 }
 
+/* === NEXIMAP OBJECTS PANEL (right-side fixed drawer) === */
+#neximapObjectsPanel {
+    position: fixed;
+    top: 40px;
+    right: 0;
+    width: 280px;
+    height: calc(100vh - 40px);
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border);
+    box-shadow: -2px 0 12px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    z-index: 1500;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow: hidden;
+}
+#neximapObjectsPanel.open {
+    transform: translateX(0);
+}
+#neximapObjectsPanel .nxp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    height: 38px;
+    background: var(--accent);
+    color: white;
+    flex-shrink: 0;
+}
+#neximapObjectsPanel .nxp-header h3 {
+    font-size: 13px;
+    font-weight: 600;
+    margin: 0;
+}
+#neximapObjectsPanel .nxp-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0.8;
+}
+#neximapObjectsPanel .nxp-close:hover { opacity: 1; background: rgba(255,255,255,0.2); }
+#neximapObjectsPanel .nxp-refresh {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 3px 7px;
+    border-radius: 3px;
+    margin-right: 6px;
+}
+#neximapObjectsPanel .nxp-refresh:hover { background: rgba(255,255,255,0.35); }
+#neximapObjectsPanel .nxp-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+#neximapObjectsPanel .nxp-section {
+    border-bottom: 1px solid var(--border);
+}
+#neximapObjectsPanel .nxp-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-header);
+    cursor: pointer;
+    user-select: none;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+}
+#neximapObjectsPanel .nxp-section-header:hover { background: var(--bg-hover); }
+#neximapObjectsPanel .nxp-section-header .nxp-arrow {
+    font-size: 10px;
+    transition: transform 0.15s;
+}
+#neximapObjectsPanel .nxp-section-header.collapsed .nxp-arrow { transform: rotate(-90deg); }
+#neximapObjectsPanel .nxp-section-items {
+    overflow: hidden;
+    transition: max-height 0.2s ease;
+}
+#neximapObjectsPanel .nxp-section-items.collapsed { max-height: 0 !important; }
+#neximapObjectsPanel .nxp-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    background: white;
+    cursor: default;
+    transition: background 0.1s, border-color 0.1s;
+    gap: 6px;
+    min-height: 32px;
+}
+#neximapObjectsPanel .nxp-item:last-child { border-bottom: none; }
+#neximapObjectsPanel .nxp-item:hover { background: var(--bg-hover); }
+#neximapObjectsPanel .nxp-item.drag-over {
+    background: var(--accent-light);
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+}
+#neximapObjectsPanel .nxp-item .nxp-icon {
+    font-size: 14px;
+    flex-shrink: 0;
+}
+#neximapObjectsPanel .nxp-item .nxp-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+}
+#neximapObjectsPanel .nxp-empty {
+    padding: 16px 12px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: center;
+}
+#neximapObjectsPanel .nxp-not-connected {
+    padding: 20px 12px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+#neximapObjectsPanel .nxp-not-connected svg { opacity: 0.4; margin-bottom: 8px; display: block; margin: 0 auto 8px; }
+#neximapObjectsPanel .nxp-badge {
+    font-size: 10px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
 .prop-section {
     padding: 10px 12px;
     border-bottom: 1px solid var(--border);
@@ -1186,6 +1329,10 @@ header {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6"/><path d="M10 14L21 3"/><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/></svg>
         <span style="font-size:10px; margin-left:2px;">NexiMap</span>
     </button>
+    <button class="tool-btn" id="btnToggleNeximapObjects" onclick="toggleNeximapObjectsPanel()" title="Neximap Objects — Links, Nodes &amp; Containers" style="color:#5a67d8;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M7.5 6h9M5 8.5v7M19 8.5v7M7.5 18h9"/></svg>
+        <span style="font-size:10px; margin-left:2px;">Objects</span>
+    </button>
 
     <div class="spacer"></div>
 
@@ -1338,7 +1485,7 @@ header {
     </div>
 
     <!-- RIGHT PANEL -->
-    <div id="rightPanel">
+    <div id="rightPanel" class="hidden">
         <div class="panel-header"><h3>Properties</h3></div>
         <div id="propsContent">
             <div class="prop-section" id="propNone">
@@ -1496,6 +1643,56 @@ header {
                 <div style="height:5px;"></div>
                 <button class="prop-btn danger" onclick="deleteMultiSelected()">Delete Selected</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- NEXIMAP OBJECTS PANEL -->
+<div id="neximapObjectsPanel">
+    <div class="nxp-header">
+        <h3>Neximap Objects</h3>
+        <div style="display:flex;align-items:center;">
+            <button class="nxp-refresh" onclick="fetchNeximapObjects()" title="Refresh list">&#8635; Refresh</button>
+            <button class="nxp-close" onclick="toggleNeximapObjectsPanel()" title="Close">&times;</button>
+        </div>
+    </div>
+    <div class="nxp-body" id="neximapObjectsBody">
+        <div class="nxp-not-connected" id="nxpNotConnected">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="4" y1="4" x2="20" y2="20" stroke="currentColor" stroke-width="1.5"/></svg>
+            <p>Not connected to NexiMap Studio.<br>Open KML Studio from within NexiMap to use this panel.</p>
+        </div>
+        <!-- Links section -->
+        <div class="nxp-section" id="nxpLinksSection" style="display:none;">
+            <div class="nxp-section-header" onclick="toggleNxpSection('nxpLinksItems', this)">
+                <span>&#9135; Links</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="nxp-badge" id="nxpLinksCount">0</span>
+                    <span class="nxp-arrow">&#9660;</span>
+                </div>
+            </div>
+            <div class="nxp-section-items" id="nxpLinksItems"></div>
+        </div>
+        <!-- Nodes section -->
+        <div class="nxp-section" id="nxpNodesSection" style="display:none;">
+            <div class="nxp-section-header" onclick="toggleNxpSection('nxpNodesItems', this)">
+                <span>&#9679; Nodes</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="nxp-badge" id="nxpNodesCount">0</span>
+                    <span class="nxp-arrow">&#9660;</span>
+                </div>
+            </div>
+            <div class="nxp-section-items" id="nxpNodesItems"></div>
+        </div>
+        <!-- Containers section -->
+        <div class="nxp-section" id="nxpContainersSection" style="display:none;">
+            <div class="nxp-section-header" onclick="toggleNxpSection('nxpContainersItems', this)">
+                <span>&#9633; Containers</span>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <span class="nxp-badge" id="nxpContainersCount">0</span>
+                    <span class="nxp-arrow">&#9660;</span>
+                </div>
+            </div>
+            <div class="nxp-section-items" id="nxpContainersItems"></div>
         </div>
     </div>
 </div>
@@ -7581,6 +7778,204 @@ window.sendSelectionToNeximap = function() {
         toast('Failed to send to NexiMap Studio: ' + e.message, 'error');
     }
 }
+
+// =============================================
+// NEXIMAP OBJECTS PANEL
+// =============================================
+
+let neximapObjects = { links: [], nodes: [], containers: [] };
+
+window.toggleNeximapObjectsPanel = function() {
+    const panel = document.getElementById('neximapObjectsPanel');
+    const btn = document.getElementById('btnToggleNeximapObjects');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    if (btn) btn.classList.toggle('active', !isOpen);
+    if (!isOpen) {
+        fetchNeximapObjects();
+    }
+};
+
+window.fetchNeximapObjects = function() {
+    if (!neximapParent || neximapParent.closed) {
+        if (window.opener && !window.opener.closed) {
+            neximapParent = window.opener;
+        } else {
+            document.getElementById('nxpNotConnected').style.display = '';
+            document.getElementById('nxpLinksSection').style.display = 'none';
+            document.getElementById('nxpNodesSection').style.display = 'none';
+            document.getElementById('nxpContainersSection').style.display = 'none';
+            return;
+        }
+    }
+    try {
+        neximapParent.postMessage({ type: 'kml-request-neximap-objects' }, '*');
+    } catch (e) {
+        toast('Failed to request Neximap objects: ' + e.message, 'error');
+    }
+};
+
+function renderNeximapObjects(links, nodes, containers) {
+    neximapObjects = { links: links || [], nodes: nodes || [], containers: containers || [] };
+
+    document.getElementById('nxpNotConnected').style.display = 'none';
+
+    // Links
+    const linksSection = document.getElementById('nxpLinksSection');
+    const linksItems = document.getElementById('nxpLinksItems');
+    linksSection.style.display = '';
+    document.getElementById('nxpLinksCount').textContent = neximapObjects.links.length;
+    linksItems.innerHTML = '';
+    if (neximapObjects.links.length === 0) {
+        linksItems.innerHTML = '<div class="nxp-empty">No links found</div>';
+    } else {
+        neximapObjects.links.forEach(link => linksItems.appendChild(createNxpItem('link', link.id || link.name, link.name || link.id, '\uD83D\uDCCB')));
+    }
+    linksItems.style.maxHeight = linksItems.scrollHeight + 'px';
+
+    // Nodes
+    const nodesSection = document.getElementById('nxpNodesSection');
+    const nodesItems = document.getElementById('nxpNodesItems');
+    nodesSection.style.display = '';
+    document.getElementById('nxpNodesCount').textContent = neximapObjects.nodes.length;
+    nodesItems.innerHTML = '';
+    if (neximapObjects.nodes.length === 0) {
+        nodesItems.innerHTML = '<div class="nxp-empty">No nodes found</div>';
+    } else {
+        neximapObjects.nodes.forEach(node => nodesItems.appendChild(createNxpItem('node', node.id || node.name, node.name || node.id, '\uD83D\uDCCD')));
+    }
+    nodesItems.style.maxHeight = nodesItems.scrollHeight + 'px';
+
+    // Containers
+    const contSection = document.getElementById('nxpContainersSection');
+    const contItems = document.getElementById('nxpContainersItems');
+    contSection.style.display = '';
+    document.getElementById('nxpContainersCount').textContent = neximapObjects.containers.length;
+    contItems.innerHTML = '';
+    if (neximapObjects.containers.length === 0) {
+        contItems.innerHTML = '<div class="nxp-empty">No containers found</div>';
+    } else {
+        neximapObjects.containers.forEach(cont => contItems.appendChild(createNxpItem('container', cont.id || cont.name, cont.name || cont.id, '\uD83D\uDCE6')));
+    }
+    contItems.style.maxHeight = contItems.scrollHeight + 'px';
+}
+
+function createNxpItem(objectType, objectId, objectName, icon) {
+    const el = document.createElement('div');
+    el.className = 'nxp-item';
+    el.dataset.objectType = objectType;
+    el.dataset.objectId = String(objectId);
+    el.dataset.objectName = objectName;
+    el.title = 'Drop a ' + (objectType === 'link' ? 'KML folder' : 'KML pin') + ' here to assign to this ' + objectType;
+
+    const iconEl = document.createElement('span');
+    iconEl.className = 'nxp-icon';
+    iconEl.textContent = icon;
+    el.appendChild(iconEl);
+
+    const nameEl = document.createElement('span');
+    nameEl.className = 'nxp-name';
+    nameEl.textContent = objectName;
+    el.appendChild(nameEl);
+
+    el.addEventListener('dragover', (e) => {
+        if (!e.dataTransfer.types.includes('text/plain')) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        el.classList.add('drag-over');
+    });
+    el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+    el.addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        el.classList.remove('drag-over');
+        handleNxpDrop(e.dataTransfer.getData('text/plain'), objectType, objectId, objectName);
+    });
+    return el;
+}
+
+function handleNxpDrop(dragData, objectType, objectId, objectName) {
+    if (!dragData) { toast('No drag data found', 'error'); return; }
+
+    if (objectType === 'link') {
+        if (!dragData.startsWith('FOLDER:')) {
+            toast('Drop a KML folder onto a Link to assign its route geometry', 'warning');
+            return;
+        }
+        const folderId = dragData.slice(7);
+        const folder = projectData.folders.find(f => f.id === folderId);
+        if (!folder) { toast('Folder not found', 'error'); return; }
+
+        const lineCoords = [];
+        folder.items.forEach(itemId => {
+            const layer = projectData.layers[itemId];
+            if (layer && layer.type === 'line' && layer.coords && layer.coords.length > 0) {
+                layer.coords.forEach(c => lineCoords.push([c[0], c[1]]));
+            }
+        });
+        if (lineCoords.length === 0) {
+            toast('No line geometry found in folder \u201c' + folder.name + '\u201d', 'error');
+            return;
+        }
+        sendAssignmentToNeximap('link', objectId, objectName, 'folder', { folderName: folder.name, lineCoords });
+        toast('Folder \u201c' + folder.name + '\u201d assigned to Link \u201c' + objectName + '\u201d', 'info');
+
+    } else {
+        if (dragData.startsWith('FOLDER:')) {
+            toast('Drop a KML pin (not a folder) onto a ' + objectType + ' to assign its position', 'warning');
+            return;
+        }
+        const layer = projectData.layers[dragData];
+        if (!layer) { toast('Layer not found', 'error'); return; }
+        if (layer.type !== 'point' || !layer.coords || layer.coords.length === 0) {
+            toast('Only KML pins (Point geometry) can be assigned to ' + objectType + 's', 'warning');
+            return;
+        }
+        sendAssignmentToNeximap(objectType, objectId, objectName, 'pin', {
+            pinName: layer.name, lat: layer.coords[0][0], lng: layer.coords[0][1]
+        });
+        toast('Pin \u201c' + layer.name + '\u201d assigned to ' + objectType.charAt(0).toUpperCase() + objectType.slice(1) + ' \u201c' + objectName + '\u201d', 'info');
+    }
+}
+
+function sendAssignmentToNeximap(targetType, targetId, targetName, entityType, data) {
+    if (!neximapParent || neximapParent.closed) {
+        if (window.opener && !window.opener.closed) { neximapParent = window.opener; }
+        else { toast('Not connected to NexiMap Studio', 'error'); return; }
+    }
+    try {
+        neximapParent.postMessage({ type: 'kml-assign-to-neximap',
+            assignment: { targetType, targetId, targetName, entityType, data } }, '*');
+    } catch (e) {
+        toast('Failed to send assignment: ' + e.message, 'error');
+    }
+}
+
+window.toggleNxpSection = function(itemsId, headerEl) {
+    const items = document.getElementById(itemsId);
+    if (items.classList.contains('collapsed')) {
+        items.style.maxHeight = items.scrollHeight + 'px';
+        items.classList.remove('collapsed');
+        headerEl.classList.remove('collapsed');
+    } else {
+        items.style.maxHeight = items.scrollHeight + 'px';
+        requestAnimationFrame(() => items.classList.add('collapsed'));
+        headerEl.classList.add('collapsed');
+    }
+};
+
+// Listen for neximap-objects response from parent window
+window.addEventListener('message', (event) => {
+    if (!event.data || typeof event.data !== 'object') return;
+    if (event.data.type === 'neximap-objects') {
+        if (event.source) neximapParent = event.source;
+        renderNeximapObjects(event.data.links || [], event.data.nodes || [], event.data.containers || []);
+    }
+    if (event.data.type === 'neximap-ping') {
+        const notConn = document.getElementById('nxpNotConnected');
+        if (notConn) notConn.style.display = 'none';
+    }
+});
 
 } // end initApp
 </script>
