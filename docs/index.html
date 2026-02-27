@@ -51118,11 +51118,17 @@ function handlePathKmlImport(e) {
       // KML Studio requests the list of available Neximap objects for its right panel
       if (event.data.type === 'kml-request-neximap-objects') {
         const objects = {
-          nodes: state.nodes.map(n => ({
-            id: n.id, name: n.name || n.code || ('N-' + n.id),
-            code: n.code, hasGeo: (n.gpsLat != null && n.gpsLon != null && !isNaN(n.gpsLat) && !isNaN(n.gpsLon)),
-            lat: n.gpsLat, lon: n.gpsLon
-          })),
+          nodes: state.nodes.map(n => {
+            const _connEdges = state.edges.filter(e => e.a === n.id || e.b === n.id);
+            const _csSysIds = new Set(_connEdges.map(e => e.cableSystemId).filter(id => id != null));
+            return {
+              id: n.id, name: n.name || n.code || ('N-' + n.id),
+              code: n.code, hasGeo: (n.gpsLat != null && n.gpsLon != null && !isNaN(n.gpsLat) && !isNaN(n.gpsLon)),
+              lat: n.gpsLat, lon: n.gpsLon,
+              linkCount: _connEdges.length,
+              cableSystemCount: _csSysIds.size
+            };
+          }),
           links: state.edges.map(e => ({
             id: e.id, name: e.name || e.code || ('L-' + e.id),
             code: e.code,
