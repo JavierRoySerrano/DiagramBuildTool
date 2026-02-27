@@ -26176,13 +26176,73 @@ function loadProjectObject(obj) {
       }
 
       populateDCVisorRegionFilter();
-      renderDCVisorList();
+      populateDCVisorCountryFilter();
+      populateDCVisorOwnerFilter();
+      dcVisorAutoRefreshSelection();
       console.log('[DCVisor] Loaded', dcVisorState.dcDatabase.facilities.length, 'facilities (DCs + cable stations)');
 
     } catch (err) {
       console.error('[DCVisor] Failed to load DCs:', err);
       if (listEl) listEl.innerHTML = '<div style="padding:20px; text-align:center; color:#c00;">Error: ' + err.message + '</div>';
     }
+  }
+
+  // Helper: returns filtered array of DC facilities based on all active filter controls
+  function getFilteredDCFacilities() {
+    if (!dcVisorState.dcDatabase || !dcVisorState.dcDatabase.facilities) return [];
+    const search = (document.getElementById('dcVisorSearch')?.value || '').toLowerCase().trim();
+    const regionFilter = document.getElementById('dcVisorRegionFilter')?.value || '';
+    const typeFilter = document.getElementById('dcVisorTypeFilter')?.value || '';
+    const countryFilter = document.getElementById('dcVisorCountryFilter')?.value || '';
+    const cityFilter = (document.getElementById('dcVisorCityFilter')?.value || '').toLowerCase().trim();
+    const ownerFilter = document.getElementById('dcVisorOwnerFilter')?.value || '';
+    const networkFilter = (document.getElementById('dcVisorNetworkFilter')?.value || '').toLowerCase().trim();
+    return dcVisorState.dcDatabase.facilities.filter(fac => {
+      if (typeFilter && (fac.facility_type || 'datacenter') !== typeFilter) return false;
+      if (regionFilter && fac.region_continent !== regionFilter) return false;
+      if (countryFilter && fac.country !== countryFilter) return false;
+      if (cityFilter && !(fac.city || '').toLowerCase().includes(cityFilter)) return false;
+      if (ownerFilter && (fac.org_name || '') !== ownerFilter) return false;
+      if (networkFilter) {
+        const nets = (fac.networks || []).map(n => (n.name || String(n)).toLowerCase()).join(' ');
+        if (!nets.includes(networkFilter)) return false;
+      }
+      if (search) {
+        const name = (fac.name || '').toLowerCase();
+        const org = (fac.org_name || '').toLowerCase();
+        const city = (fac.city || '').toLowerCase();
+        const country = (fac.country || '').toLowerCase();
+        const cables = (fac.cable_systems || []).join(' ').toLowerCase();
+        return name.includes(search) || org.includes(search) || city.includes(search) || country.includes(search) || cables.includes(search);
+      }
+      return true;
+    });
+  }
+
+  // Reactive map rendering: auto-select all filtered DCs and show on map
+  function dcVisorAutoRefreshSelection() {
+    clearTimeout(dcVisorState._autoRefreshTimer);
+    dcVisorState._autoRefreshTimer = setTimeout(() => {
+      if (!dcVisorState.dcDatabase) return;
+      // Clear all existing markers
+      Object.keys(dcVisorState.dcMarkers).forEach(dcId => {
+        if (dcVisorState.dcMarkers[dcId]) dcVisorState.dcMarkers[dcId].remove();
+      });
+      dcVisorState.dcMarkers = {};
+      dcVisorState.selectedDCs.clear();
+      const filtered = getFilteredDCFacilities();
+      const maxShow = 300;
+      let count = 0;
+      filtered.forEach(fac => {
+        if (count >= maxShow) return;
+        if (!fac.latitude || !fac.longitude) return;
+        dcVisorState.selectedDCs.add(String(fac.id));
+        addDCToVisorMap(String(fac.id));
+        count++;
+      });
+      if (dcVisorState.showNames) updateFixedDCLabels();
+      renderDCVisorList();
+    }, 80);
   }
 
   function populateDCVisorRegionFilter() {
@@ -26195,8 +26255,34 @@ function loadProjectObject(obj) {
     });
 
     const sorted = Array.from(regions).sort();
-    select.innerHTML = '<option value="">All Corridors</option>' +
+    select.innerHTML = '<option value="">All Regions</option>' +
       sorted.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+  }
+
+  function populateDCVisorCountryFilter() {
+    const select = document.getElementById('dcVisorCountryFilter');
+    if (!select || !dcVisorState.dcDatabase) return;
+    const countries = new Set();
+    dcVisorState.dcDatabase.facilities.forEach(fac => {
+      if (fac.country) countries.add(fac.country);
+    });
+    const sorted = Array.from(countries).sort((a, b) =>
+      (getCountryName(a) || a).localeCompare(getCountryName(b) || b)
+    );
+    select.innerHTML = '<option value="">All Countries</option>' +
+      sorted.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(getCountryName(c) || c)}</option>`).join('');
+  }
+
+  function populateDCVisorOwnerFilter() {
+    const select = document.getElementById('dcVisorOwnerFilter');
+    if (!select || !dcVisorState.dcDatabase) return;
+    const owners = new Set();
+    dcVisorState.dcDatabase.facilities.forEach(fac => {
+      if (fac.org_name) owners.add(fac.org_name);
+    });
+    const sorted = Array.from(owners).sort();
+    select.innerHTML = '<option value="">All Owners</option>' +
+      sorted.map(o => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('');
   }
 
   // Get density class for DC (same logic as DC Navigator)
@@ -26221,23 +26307,7 @@ function loadProjectObject(obj) {
       return;
     }
 
-    const search = (document.getElementById('dcVisorSearch')?.value || '').toLowerCase().trim();
-    const regionFilter = document.getElementById('dcVisorRegionFilter')?.value || '';
-    const typeFilter = document.getElementById('dcVisorTypeFilter')?.value || '';
-
-    let facilities = dcVisorState.dcDatabase.facilities.filter(fac => {
-      if (typeFilter && (fac.facility_type || 'datacenter') !== typeFilter) return false;
-      if (regionFilter && fac.region_continent !== regionFilter) return false;
-      if (search) {
-        const name = (fac.name || '').toLowerCase();
-        const org = (fac.org_name || '').toLowerCase();
-        const city = (fac.city || '').toLowerCase();
-        const country = (fac.country || '').toLowerCase();
-        const cables = (fac.cable_systems || []).join(' ').toLowerCase();
-        return name.includes(search) || org.includes(search) || city.includes(search) || country.includes(search) || cables.includes(search);
-      }
-      return true;
-    });
+    let facilities = getFilteredDCFacilities();
 
     // Sort by name
     facilities.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
@@ -26393,6 +26463,10 @@ function loadProjectObject(obj) {
       popup.remove();
     });
 
+    el.addEventListener('click', () => {
+      showDCVisorDetail(String(fac.id));
+    });
+
     dcVisorState.dcMarkers[dcId] = marker;
 
     // Update fixed labels if active
@@ -26419,22 +26493,10 @@ function loadProjectObject(obj) {
 
   function selectAllVisorDCs() {
     if (!dcVisorState.dcDatabase) return;
-
-    const search = (document.getElementById('dcVisorSearch')?.value || '').toLowerCase().trim();
-    const regionFilter = document.getElementById('dcVisorRegionFilter')?.value || '';
-
+    const maxSelect = 300;
     let count = 0;
-    const maxSelect = 200; // Limit to prevent performance issues
-
-    dcVisorState.dcDatabase.facilities.forEach(fac => {
+    getFilteredDCFacilities().forEach(fac => {
       if (count >= maxSelect) return;
-      if (regionFilter && fac.region_continent !== regionFilter) return;
-      if (search) {
-        const name = (fac.name || '').toLowerCase();
-        const org = (fac.org_name || '').toLowerCase();
-        const city = (fac.city || '').toLowerCase();
-        if (!name.includes(search) && !org.includes(search) && !city.includes(search)) return;
-      }
       if (!fac.latitude || !fac.longitude) return;
       if (!dcVisorState.selectedDCs.has(String(fac.id))) {
         dcVisorState.selectedDCs.add(String(fac.id));
@@ -26442,11 +26504,9 @@ function loadProjectObject(obj) {
         count++;
       }
     });
-
     if (count >= maxSelect) {
       showToast(`Selected ${maxSelect} datacenters (limit). Narrow your search for more.`, 'info');
     }
-
     renderDCVisorList();
   }
 
@@ -26728,9 +26788,13 @@ function loadProjectObject(obj) {
     document.getElementById('btnOpenDCVisor')?.addEventListener('click', showDCVisor);
     document.getElementById('btnDCVisorSelectAll')?.addEventListener('click', selectAllVisorDCs);
     document.getElementById('btnDCVisorClearAll')?.addEventListener('click', clearAllVisorDCs);
-    document.getElementById('dcVisorSearch')?.addEventListener('input', () => renderDCVisorList());
-    document.getElementById('dcVisorRegionFilter')?.addEventListener('change', () => renderDCVisorList());
-    document.getElementById('dcVisorTypeFilter')?.addEventListener('change', () => renderDCVisorList());
+    document.getElementById('dcVisorSearch')?.addEventListener('input', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorRegionFilter')?.addEventListener('change', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorTypeFilter')?.addEventListener('change', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorCountryFilter')?.addEventListener('change', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorCityFilter')?.addEventListener('input', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorOwnerFilter')?.addEventListener('change', () => dcVisorAutoRefreshSelection());
+    document.getElementById('dcVisorNetworkFilter')?.addEventListener('input', () => dcVisorAutoRefreshSelection());
 
     // DC name labels toggle
     document.getElementById('btnDCVisorShowNames')?.addEventListener('click', () => {
@@ -52646,16 +52710,26 @@ function handlePathKmlImport(e) {
     </div>
   </div>
   <div id="dcVisorToolbar">
-    <div style="display:flex; gap:8px; align-items:center;">
-      <input type="text" id="dcVisorSearch" placeholder="Search facilities..." style="flex:1; padding:6px 10px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px;" />
-      <select id="dcVisorTypeFilter" style="padding:6px 10px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px; background:white; max-width:120px;">
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+      <input type="text" id="dcVisorSearch" placeholder="Search facilities..." style="flex:1; min-width:120px; padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px;" />
+      <select id="dcVisorTypeFilter" style="padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px; background:white; max-width:110px;">
         <option value="">All Types</option>
         <option value="datacenter">Datacenters</option>
         <option value="cable_station">Cable Stations</option>
       </select>
-      <select id="dcVisorRegionFilter" style="padding:6px 10px; border:1px solid #d0d0d0; border-radius:4px; font-size:12px; background:white; max-width:140px;">
-        <option value="">All Corridors</option>
+      <select id="dcVisorRegionFilter" style="padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px; background:white; max-width:140px;">
+        <option value="">All Regions</option>
       </select>
+    </div>
+    <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-top:4px;">
+      <select id="dcVisorCountryFilter" style="padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px; background:white; flex:1; min-width:110px; max-width:170px;">
+        <option value="">All Countries</option>
+      </select>
+      <input type="text" id="dcVisorCityFilter" placeholder="City..." style="flex:1; min-width:70px; max-width:100px; padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px;" />
+      <select id="dcVisorOwnerFilter" style="padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px; background:white; flex:1; min-width:110px; max-width:170px;">
+        <option value="">All Owners</option>
+      </select>
+      <input type="text" id="dcVisorNetworkFilter" placeholder="Network..." style="flex:1; min-width:80px; max-width:110px; padding:5px 8px; border:1px solid #d0d0d0; border-radius:4px; font-size:11px;" />
     </div>
     <div style="display:flex; gap:6px; align-items:center; margin-top:4px;">
       <button class="btn" id="btnDCVisorSelectAll" style="padding:4px 8px; font-size:11px;" title="Select all visible">&#x2713; All</button>
