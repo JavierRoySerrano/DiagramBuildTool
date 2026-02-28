@@ -36401,6 +36401,356 @@ function loadProjectObject(obj) {
     }
   }
 
+  // ===========================================================
+  // HEADLESS PATHFINDER - callable by AI agent without UI
+  // Decouples the pathfinding engine from DOM/UI state.
+  // ===========================================================
+  function runPathfinderHeadless(params) {
+    if (!params || !params.originNodeId || !params.destNodeId) {
+      return { success: false, primaryRoutes: [], protectionPath: null,
+               error: 'originNodeId and destNodeId are required' };
+    }
+
+    function toSet(arr) {
+      return arr instanceof Set ? arr : new Set(Array.isArray(arr) ? arr : []);
+    }
+    function normalizeTagMode(mode) {
+      if (mode === 'all')  return 'include';
+      if (mode === 'none') return 'exclude';
+      return mode || 'any';
+    }
+    function resolveCapMode(p) {
+      if (+p.capacityMinTotal > 0 || +p.capacityMin1G > 0 || +p.capacityMin10G > 0 ||
+          +p.capacityMin100G > 0  || +p.capacityMin400G > 0 || +p.capacityMinTbps > 0) {
+        return p.capacityMode || 'total';
+      }
+      return 'none';
+    }
+
+    // Snapshot current routeFinderState so we can restore it after the call
+    var saved = {
+      originNodeId:             routeFinderState.originNodeId,
+      destNodeId:               routeFinderState.destNodeId,
+      visibleOnly:              routeFinderState.visibleOnly,
+      skipImplicitTransit:      routeFinderState.skipImplicitTransit,
+      enableContainerTransit:   routeFinderState.enableContainerTransit,
+      enableRegionTransit:      routeFinderState.enableRegionTransit,
+      containerLatency:         routeFinderState.containerLatency,
+      regionLatency:            routeFinderState.regionLatency,
+      nodeTagMode:              routeFinderState.nodeTagMode,
+      nodeTagFilter:            routeFinderState.nodeTagFilter,
+      linkTagMode:              routeFinderState.linkTagMode,
+      linkTagFilter:            routeFinderState.linkTagFilter,
+      capacityMode:             routeFinderState.capacityMode,
+      capacityMinTotal:         routeFinderState.capacityMinTotal,
+      capacityMin1G:            routeFinderState.capacityMin1G,
+      capacityMin10G:           routeFinderState.capacityMin10G,
+      capacityMin100G:          routeFinderState.capacityMin100G,
+      capacityMin400G:          routeFinderState.capacityMin400G,
+      capacityMinTbps:          routeFinderState.capacityMinTbps,
+      capacityIncludeUndefined: routeFinderState.capacityIncludeUndefined,
+      excludedNodes:            routeFinderState.excludedNodes,
+      excludedLinks:            routeFinderState.excludedLinks,
+      mustUseNodes:             routeFinderState.mustUseNodes,
+      mustUseLinks:             routeFinderState.mustUseLinks,
+      diverseFromLinks:         routeFinderState.diverseFromLinks,
+      preferMLGs:               routeFinderState.preferMLGs,
+      mlgTopologyFilter:        routeFinderState.mlgTopologyFilter,
+      mustUseMLGs:              routeFinderState.mustUseMLGs,
+      excludedMLGs:             routeFinderState.excludedMLGs,
+      mlgCapacityMode:          routeFinderState.mlgCapacityMode,
+      mlgCapacityMinTotal:      routeFinderState.mlgCapacityMinTotal,
+      mlgCapacityMin1G:         routeFinderState.mlgCapacityMin1G,
+      mlgCapacityMin10G:        routeFinderState.mlgCapacityMin10G,
+      mlgCapacityMin100G:       routeFinderState.mlgCapacityMin100G,
+      mlgCapacityMin400G:       routeFinderState.mlgCapacityMin400G,
+      mlgCapacityMinTbps:       routeFinderState.mlgCapacityMinTbps,
+      mlgCapacityIncludeUndefined: routeFinderState.mlgCapacityIncludeUndefined,
+      optimizationBalance:      routeFinderState.optimizationBalance,
+      costMetric:               routeFinderState.costMetric,
+      costScale:                routeFinderState.costScale,
+      capacityTier:             routeFinderState.capacityTier,
+      routes:                   routeFinderState.routes,
+      activeRouteIndex:         routeFinderState.activeRouteIndex,
+      primaryPathForProtection: routeFinderState.primaryPathForProtection,
+      protectionClosureNodes:   routeFinderState.protectionClosureNodes,
+      protectionPath:           routeFinderState.protectionPath
+    };
+
+    try {
+      // Apply primary path params to routeFinderState
+      routeFinderState.originNodeId            = params.originNodeId;
+      routeFinderState.destNodeId              = params.destNodeId;
+      routeFinderState.visibleOnly             = !!params.visibleOnly;
+      routeFinderState.skipImplicitTransit     = !!params.skipImplicitTransit;
+      routeFinderState.enableContainerTransit  = params.enableContainerTransit !== false;
+      routeFinderState.enableRegionTransit     = params.enableRegionTransit !== false;
+      routeFinderState.containerLatency        = +params.containerLatency || 1;
+      routeFinderState.regionLatency           = +params.regionLatency || 10;
+      routeFinderState.nodeTagMode             = normalizeTagMode(params.nodeTagMode);
+      routeFinderState.nodeTagFilter           = toSet(params.nodeTagFilter);
+      routeFinderState.linkTagMode             = normalizeTagMode(params.linkTagMode);
+      routeFinderState.linkTagFilter           = toSet(params.linkTagFilter);
+      routeFinderState.capacityMode            = resolveCapMode(params);
+      routeFinderState.capacityMinTotal        = +params.capacityMinTotal || 0;
+      routeFinderState.capacityMin1G           = +params.capacityMin1G || 0;
+      routeFinderState.capacityMin10G          = +params.capacityMin10G || 0;
+      routeFinderState.capacityMin100G         = +params.capacityMin100G || 0;
+      routeFinderState.capacityMin400G         = +params.capacityMin400G || 0;
+      routeFinderState.capacityMinTbps         = +params.capacityMinTbps || 0;
+      routeFinderState.capacityIncludeUndefined = params.capacityIncludeUndefined !== false;
+      routeFinderState.excludedNodes           = toSet(params.excludedNodes);
+      routeFinderState.excludedLinks           = toSet(params.excludedLinks);
+      routeFinderState.mustUseNodes            = toSet(params.mustUseNodes);
+      routeFinderState.mustUseLinks            = toSet(params.mustUseLinks);
+      routeFinderState.diverseFromLinks        = toSet(params.diverseFromLinks);
+      routeFinderState.preferMLGs              = !!params.preferMLGs;
+      routeFinderState.mlgTopologyFilter       = toSet(params.mlgTopologyFilter || ['linear', 'ring', 'ring_linear']);
+      routeFinderState.mustUseMLGs             = toSet(params.mustUseMLGs);
+      routeFinderState.excludedMLGs            = toSet(params.excludedMLGs);
+      routeFinderState.mlgCapacityMode         = params.mlgCapacityMode || 'none';
+      routeFinderState.mlgCapacityMinTotal     = +params.mlgCapacityMinTotal || 0;
+      routeFinderState.mlgCapacityMin1G        = +params.mlgCapacityMin1G || 0;
+      routeFinderState.mlgCapacityMin10G       = +params.mlgCapacityMin10G || 0;
+      routeFinderState.mlgCapacityMin100G      = +params.mlgCapacityMin100G || 0;
+      routeFinderState.mlgCapacityMin400G      = +params.mlgCapacityMin400G || 0;
+      routeFinderState.mlgCapacityMinTbps      = +params.mlgCapacityMinTbps || 0;
+      routeFinderState.mlgCapacityIncludeUndefined = params.mlgCapacityIncludeUndefined !== false;
+      routeFinderState.optimizationBalance     = +params.optimizationBalance || 0;
+      routeFinderState.costMetric              = params.costMetric || 'lease';
+      routeFinderState.costScale               = params.costScale || 'logarithmic';
+      routeFinderState.capacityTier            = params.capacityTier || '10G';
+
+      // Run primary pathfinding using existing engine functions
+      var k = params.k || 3;
+      var routes;
+      if (routeFinderState.preferMLGs) {
+        routes = findKShortestPathsWithMLGPreference(params.originNodeId, params.destNodeId, k);
+      } else {
+        routes = findKShortestPaths(params.originNodeId, params.destNodeId, k);
+      }
+
+      // Helper: build human-readable path summary
+      function summarizePath(nodeIds, segs) {
+        var parts = [];
+        nodeIds.forEach(function(id, i) {
+          var n = typeof findNode === 'function' ? findNode(id) : null;
+          parts.push((n && n.name) ? n.name : id);
+          if (i < segs.length) {
+            var e = (segs[i] && segs[i].edgeId && typeof findEdge === 'function') ? findEdge(segs[i].edgeId) : null;
+            parts.push((e && e.name) ? ' -[' + e.name + ']- ' : ' -> ');
+          }
+        });
+        return parts.join('');
+      }
+
+      // Format primary routes into the return schema
+      var primaryRoutes = (routes || []).map(function(route, idx) {
+        var nodeIds = route.path || [];
+        var segs    = route.segments || [];
+        var linkIds = segs.filter(function(s) { return s.edgeId && !s.implicit; }).map(function(s) { return s.edgeId; });
+        var totalLatency = segs.reduce(function(sum, s) { return sum + (s.latency || 0); }, 0);
+        var usedMLGs = [];
+        segs.forEach(function(s) { if (s.mlgId && usedMLGs.indexOf(s.mlgId) === -1) usedMLGs.push(s.mlgId); });
+        return {
+          index:        idx,
+          nodes:        nodeIds,
+          links:        linkIds,
+          totalLatency: Math.round(totalLatency * 1000) / 1000,
+          totalCost:    route.totalCost || 0,
+          hopCount:     nodeIds.length,
+          mlgsUsed:     usedMLGs,
+          summary:      summarizePath(nodeIds, segs)
+        };
+      });
+
+      // Protection path (headless: no DOM reads, independent filter set)
+      var protectionPath = null;
+      if (params.calculateProtection && primaryRoutes.length > 0) {
+        var prot = Object.assign({
+          visibleOnly: false, skipImplicitTransit: false,
+          nodeTagMode: 'any', nodeTagFilter: [],
+          linkTagMode: 'any', linkTagFilter: [],
+          capacityMode: 'total', capacityMinTotal: 0,
+          capacityMin1G: 0, capacityMin10G: 0, capacityMin100G: 0,
+          capacityMin400G: 0, capacityMinTbps: 0, capacityIncludeUndefined: true,
+          excludedNodes: [], excludedLinks: [], mustUseNodes: [], mustUseLinks: [],
+          diverseFromLinks: []
+        }, params.protection || {});
+
+        var primaryRoute   = routes[0];
+        var primaryLinkIds = new Set(
+          (primaryRoute.segments || []).filter(function(s) { return !!s.edgeId; })
+                                       .map(function(s) { return s.edgeId; })
+        );
+
+        // Physical-diversity exclusions (100% strict for headless calls)
+        var physicalDiversityExcluded = new Set();
+        primaryLinkIds.forEach(function(plId) {
+          var pe = typeof findEdge === 'function' ? findEdge(plId) : null;
+          if (!pe || !pe.routingOverlap) return;
+          var entries = window.normalizeRoutingOverlap ?
+            window.normalizeRoutingOverlap(pe.routingOverlap) : pe.routingOverlap;
+          entries.forEach(function(entry) {
+            var pct    = typeof entry === 'object' ? (entry.diversityPercent || 0) : 0;
+            var linkId = typeof entry === 'object' ? entry.linkId : entry;
+            if (pct < 100) physicalDiversityExcluded.add(linkId);
+          });
+        });
+
+        // Apply protection-specific filter state temporarily
+        routeFinderState.excludedNodes           = toSet(prot.excludedNodes);
+        routeFinderState.excludedLinks           = toSet(prot.excludedLinks);
+        routeFinderState.visibleOnly             = !!prot.visibleOnly;
+        routeFinderState.nodeTagMode             = normalizeTagMode(prot.nodeTagMode);
+        routeFinderState.nodeTagFilter           = toSet(prot.nodeTagFilter);
+        routeFinderState.linkTagMode             = normalizeTagMode(prot.linkTagMode);
+        routeFinderState.linkTagFilter           = toSet(prot.linkTagFilter);
+        routeFinderState.capacityMode            = resolveCapMode(prot);
+        routeFinderState.capacityMinTotal        = +prot.capacityMinTotal || 0;
+        routeFinderState.capacityMin1G           = +prot.capacityMin1G || 0;
+        routeFinderState.capacityMin10G          = +prot.capacityMin10G || 0;
+        routeFinderState.capacityMin100G         = +prot.capacityMin100G || 0;
+        routeFinderState.capacityMin400G         = +prot.capacityMin400G || 0;
+        routeFinderState.capacityMinTbps         = +prot.capacityMinTbps || 0;
+        routeFinderState.capacityIncludeUndefined = prot.capacityIncludeUndefined !== false;
+        routeFinderState.mustUseNodes            = toSet(prot.mustUseNodes);
+        routeFinderState.mustUseLinks            = toSet(prot.mustUseLinks);
+
+        // Capture protection filter snapshots for graph builder
+        var protExcludedNodes = routeFinderState.excludedNodes;
+        var protExcludedLinks = routeFinderState.excludedLinks;
+        var protVisibleOnly   = routeFinderState.visibleOnly;
+
+        // Build adjacency list for protection pathfinding
+        var adj = new Map();
+        var validNodeIds = new Set();
+        if (typeof state !== 'undefined' && state.nodes) {
+          state.nodes.forEach(function(n) {
+            if (protExcludedNodes.has(n.id)) return;
+            if (protVisibleOnly && typeof isNodeVisible === 'function' && !isNodeVisible(n)) return;
+            validNodeIds.add(n.id);
+            adj.set(n.id, []);
+          });
+          state.edges.forEach(function(e) {
+            if (primaryLinkIds.has(e.id) || physicalDiversityExcluded.has(e.id)) return;
+            if (protVisibleOnly && e.hidden) return;
+            if (protExcludedLinks.has(e.id)) return;
+            if (!validNodeIds.has(e.a) || !validNodeIds.has(e.b)) return;
+            var lat = parseFloat(e.latencyMs) || parseFloat(e.latency) || (routeFinderState.minLatency || 0.001);
+            adj.get(e.a).push({ to: e.b, edgeId: e.id, latency: lat, cost: lat });
+            adj.get(e.b).push({ to: e.a, edgeId: e.id, latency: lat, cost: lat });
+          });
+        }
+
+        // Self-contained Dijkstra (no dependency on UI state)
+        function headlessDijkstra(adjacency, start, end) {
+          if (!adjacency.has(start) || !adjacency.has(end)) return null;
+          var dist = new Map(), prev = new Map(), visited = new Set();
+          adjacency.forEach(function(_, id) { dist.set(id, Infinity); });
+          dist.set(start, 0);
+          prev.set(start, null);
+          var pq = [{ id: start, d: 0 }];
+          while (pq.length > 0) {
+            pq.sort(function(a, b) { return a.d - b.d; });
+            var cur = pq.shift();
+            if (visited.has(cur.id)) continue;
+            visited.add(cur.id);
+            if (cur.id === end) break;
+            (adjacency.get(cur.id) || []).forEach(function(edge) {
+              if (visited.has(edge.to)) return;
+              var nd = dist.get(cur.id) + edge.cost;
+              if (nd < dist.get(edge.to)) {
+                dist.set(edge.to, nd);
+                prev.set(edge.to, { from: cur.id, edge: edge });
+                pq.push({ id: edge.to, d: nd });
+              }
+            });
+          }
+          if (dist.get(end) === Infinity) return null;
+          var path = [], segs = [], totalLatency = 0, c = end;
+          while (c !== null) {
+            path.unshift(c);
+            var pi = prev.get(c);
+            if (pi && pi.edge) {
+              segs.unshift({ edgeId: pi.edge.edgeId, latency: pi.edge.latency, cost: pi.edge.cost });
+              totalLatency += pi.edge.latency;
+            }
+            c = pi ? pi.from : null;
+          }
+          return { path: path, segments: segs, totalCost: dist.get(end), totalLatency: totalLatency };
+        }
+
+        // Route through any must-use waypoints from protection params
+        var mustUseArr = (prot.mustUseNodes || []).filter(function(id) {
+          return id !== params.originNodeId && id !== params.destNodeId;
+        });
+        var waypoints = [params.originNodeId].concat(mustUseArr).concat([params.destNodeId]);
+        var protResult = null;
+
+        if (waypoints.length === 2) {
+          protResult = headlessDijkstra(adj, waypoints[0], waypoints[1]);
+        } else {
+          var fullPath = [], fullSegs = [], totalCost = 0, totalLatency = 0, failed = false;
+          for (var wi = 0; wi < waypoints.length - 1; wi++) {
+            var wseg = headlessDijkstra(adj, waypoints[wi], waypoints[wi + 1]);
+            if (!wseg) { failed = true; break; }
+            fullPath     = wi === 0 ? wseg.path : fullPath.concat(wseg.path.slice(1));
+            fullSegs     = fullSegs.concat(wseg.segments);
+            totalCost    += wseg.totalCost;
+            totalLatency += wseg.totalLatency;
+          }
+          if (!failed && fullPath.length > 0) {
+            protResult = { path: fullPath, segments: fullSegs, totalCost: totalCost, totalLatency: totalLatency };
+          }
+        }
+
+        if (protResult && protResult.segments.length > 0) {
+          var protLinkIds = protResult.segments
+            .filter(function(s) { return !!s.edgeId; })
+            .map(function(s) { return s.edgeId; });
+          var isDiverse = !protLinkIds.some(function(id) { return primaryLinkIds.has(id); });
+          protectionPath = {
+            nodes:        protResult.path,
+            links:        protLinkIds,
+            totalLatency: Math.round(protResult.totalLatency * 1000) / 1000,
+            totalCost:    protResult.totalCost,
+            hopCount:     protResult.path.length,
+            isDiverse:    isDiverse,
+            summary:      summarizePath(protResult.path, protResult.segments)
+          };
+        }
+      }
+
+      // Restore routeFinderState to pre-call snapshot
+      Object.assign(routeFinderState, saved);
+
+      return { success: true, primaryRoutes: primaryRoutes, protectionPath: protectionPath, error: null };
+
+    } catch (err) {
+      // Always restore state even on error
+      Object.assign(routeFinderState, saved);
+      return { success: false, primaryRoutes: [], protectionPath: null, error: err.message };
+    }
+  }
+
+  // Expose headless pathfinder globally for AI agent tool calls and external scripts
+  window.runPathfinderHeadless = runPathfinderHeadless;
+
+  // Console smoke-test: run window._pfTest() in browser DevTools to verify
+  window._pfTest = function() {
+    var nodes = (typeof state !== 'undefined' && state.nodes) ? state.nodes : [];
+    if (nodes.length < 2) { console.log('[_pfTest] Need at least 2 nodes on the diagram'); return null; }
+    var result = runPathfinderHeadless({
+      originNodeId:        nodes[0].id,
+      destNodeId:          nodes[nodes.length - 1].id,
+      k:                   3,
+      calculateProtection: true
+    });
+    console.log('[_pfTest] runPathfinderHeadless result:', result);
+    return result;
+  };
+
   // Display route results
   function displayRouteResults() {
     if (!routeResultsContent) return;
@@ -55053,6 +55403,27 @@ function handlePathKmlImport(e) {
     .then(function(r) {
       if (!r.ok) throw new Error('Worker returned ' + r.status);
       return r.json();
+    })
+    .then(function(data) {
+      // tool_call dispatcher: if worker requests a pathfinder call,
+      // execute it locally and re-send the result back to the worker.
+      if (data.tool_call && data.tool_call.type === 'run_pathfinder') {
+        var pfResult = runPathfinderHeadless(data.tool_call.params || {});
+        nexiState.history.push({
+          role: 'tool',
+          tool_call_id: data.tool_call.id || 'pf',
+          content: JSON.stringify(pfResult)
+        });
+        return fetch(NEXI_WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: '', conversation_history: nexiState.history })
+        }).then(function(r2) {
+          if (!r2.ok) throw new Error('Worker returned ' + r2.status);
+          return r2.json();
+        });
+      }
+      return data;
     })
     .then(function(data) {
       nexiHideTyping();
