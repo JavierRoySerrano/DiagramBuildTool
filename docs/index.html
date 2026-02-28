@@ -51950,6 +51950,16 @@ function handlePathKmlImport(e) {
     console.log('[NexiMap] KML Studio integration loaded');
   })();
 
+  // Expose core canvas functions globally for the AI Agent dispatcher
+  window.makeNode = makeNode;
+  window.makeEdge = makeEdge;
+  window.commit = commit;
+  window.showToast = showToast;
+  window.updateNodeGroupMembership = updateNodeGroupMembership;
+  window.refreshAllMemberships = refreshAllMemberships;
+  window.applyHeatMapMode = applyHeatMapMode;
+  window.clearRouteHighlights = clearRouteHighlights;
+
   showToast('Welcome to NexiMap Studio — double-click to create a node.');
 })();
 </script>
